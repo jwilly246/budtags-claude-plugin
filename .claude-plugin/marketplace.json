@@ -1,13 +1,19 @@
 {
-  "name": "jwilly246",
-  "description": "BudTags Claude Plugin Marketplace",
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "budtags-claude-plugin",
   "version": "1.0.0",
+  "description": "BudTags Claude Plugin Marketplace - development toolkit for Metrc, LeafLink, QuickBooks integrations",
+  "owner": {
+    "name": "jwilly246",
+    "email": "jwilly246@users.noreply.github.com"
+  },
   "plugins": [
     {
       "name": "budtags",
-      "path": "budtags",
       "description": "BudTags development toolkit: Metrc, LeafLink, TanStack, QuickBooks integrations + coding standards",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "source": "./budtags",
+      "category": "development"
     }
   ]
 }
