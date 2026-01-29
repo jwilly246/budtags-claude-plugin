@@ -12,6 +12,65 @@ Use this template when writing the final plan document in Phase 10.
 
 ---
 
+## Existing Code to Reuse
+
+### Components (DO NOT recreate)
+
+| Component | Location | Use For |
+|-----------|----------|---------|
+| `Button` | `resources/js/Components/Button.tsx` | All button actions |
+| `TextInput` | `resources/js/Components/Inputs/TextInput.tsx` | Text form fields |
+| `SelectInput` | `resources/js/Components/Inputs/SelectInput.tsx` | Dropdown selects |
+| `DataTable` | `resources/js/Components/DataTable.tsx` | Tabular data display |
+| `Modal` | `resources/js/Components/Modal.tsx` | Modal dialogs |
+| `{Component}` | `{path}` | {purpose} |
+
+### Services to Extend
+
+| Service | Location | Pattern |
+|---------|----------|---------|
+| `{ExistingService}` | `app/Services/{Service}.php` | {Pattern description to follow} |
+
+### Traits to Apply
+
+| Trait | Location | Purpose |
+|-------|----------|---------|
+| `HasOrganization` | `app/Models/Traits/HasOrganization.php` | Organization scoping |
+| `{Trait}` | `{path}` | {purpose} |
+
+### Patterns to Follow
+
+| Pattern | Reference File | Study For |
+|---------|---------------|-----------|
+| Controller structure | `app/Http/Controllers/{Similar}Controller.php` | Method naming, request handling |
+| Modal forms | `resources/js/Components/Modals/{Similar}Modal.tsx` | Form state, submission patterns |
+| State machines | `app/Models/{Similar}.php` | Status constants, transitions |
+| {Pattern} | `{path}` | {what to learn} |
+
+---
+
+## Package Dependencies
+
+### Already Installed (use these)
+
+| Package | Version | Relevant Features |
+|---------|---------|-------------------|
+| Laravel | `{version from composer.json}` | Core framework |
+| React | `{version from package.json}` | Frontend framework |
+| Inertia | `{version}` | SPA routing, forms |
+| TanStack Query | `{version}` | Data fetching, caching |
+| {package} | `{version}` | {relevant features} |
+
+### Suggested Additions (needs buy-in)
+
+| Package | Purpose | Why It Helps | Without It |
+|---------|---------|--------------|------------|
+| {package} | {what it does} | {benefit} | {what we'd have to build} |
+
+> **Note:** Packages above have been pitched and approved during planning.
+
+---
+
 ## Requirements Summary
 
 | Area | Requirements |

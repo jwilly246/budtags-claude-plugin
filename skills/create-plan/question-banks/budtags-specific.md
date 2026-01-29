@@ -4,6 +4,71 @@ Reference this throughout planning to ensure BudTags pattern compliance.
 
 ---
 
+## Reusability Discovery (RUN FIRST)
+
+### Package Version Check
+
+Before planning ANY feature, verify installed packages:
+
+```bash
+# Check PHP/Laravel packages
+cat composer.json | grep -E '"(laravel|spatie|inertia)"'
+
+# Check JS packages
+cat package.json | grep -E '"(react|@tanstack|@inertiajs|@headlessui)"'
+```
+
+### Reusability Questions
+
+**Components:**
+- What existing UI components can be reused for this feature?
+- Is there a similar modal, form, or page that can serve as a template?
+- Are there custom hooks that provide needed functionality?
+
+**Services:**
+- Is there an existing service that handles similar logic?
+- Can this extend an existing service rather than create a new one?
+- Are there utility functions that already do what's needed?
+
+**Models:**
+- Are there existing traits that provide needed functionality?
+- Is there a similar model with patterns to follow?
+- Can relationships be added to existing models vs creating new ones?
+
+**Patterns:**
+- What's the established naming convention for this type of feature?
+- How do similar features handle authorization?
+- What's the standard flow for this type of operation?
+
+### Reusability Checklist
+
+Before writing ANY new code, verify:
+
+- [ ] Searched for existing components that could be reused
+- [ ] Checked for similar pages/modals as templates
+- [ ] Looked for existing services with similar functionality
+- [ ] Found relevant traits that could be applied
+- [ ] Identified patterns from similar features
+- [ ] Documented what WILL be reused vs created new
+
+### Package Awareness Questions
+
+**Before suggesting a new package, research:**
+- Is this functionality available in an already-installed package?
+- Is the package compatible with our Laravel/React versions?
+- Who maintains it? Last release date? GitHub stars/activity?
+- What's the bundle size / dependency footprint?
+
+**When pitching a package:**
+- Explain the problem it solves
+- Show what we'd have to build without it
+- Note any downsides (complexity, size, learning curve)
+- Get explicit buy-in before adding to plan
+
+**User is open to packages** - just make a reasonable case for them.
+
+---
+
 ## Organization Scoping (HIGHEST PRIORITY)
 
 ### Critical Questions

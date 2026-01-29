@@ -14,9 +14,9 @@ auto_activate:
 
 # Create Plan Skill
 
-**PURPOSE:** Transform a feature idea into a comprehensive, implementation-ready plan through thorough questioning.
+**PURPOSE:** Transform a feature idea into a comprehensive, implementation-ready plan through active codebase research and thorough questioning.
 
-**PHILOSOPHY:** 5 hours planning, 1 hour coding. Ask questions you haven't thought of. Fill gaps with questions, not assumptions.
+**PHILOSOPHY:** 5 hours planning, 1 hour coding. Research before asking. Ask questions you haven't thought of. Fill gaps with questions, not assumptions. Reuse before creating.
 
 ---
 
@@ -24,8 +24,12 @@ auto_activate:
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║  THIS SKILL ASKS QUESTIONS AND WRITES A PLAN DOCUMENT.          ║
+║  THIS SKILL RESEARCHES THE CODEBASE, ASKS QUESTIONS, AND WRITES ║
+║  A PLAN DOCUMENT.                                                ║
 ║                                                                   ║
+║  ✅ DO: Research the codebase BEFORE asking questions            ║
+║  ✅ DO: Identify reusable code, patterns, and components         ║
+║  ✅ DO: Check installed packages before suggesting new ones      ║
 ║  ✅ DO: Ask probing questions before making decisions            ║
 ║  ✅ DO: Challenge assumptions                                     ║
 ║  ✅ DO: Cover edge cases and error scenarios                      ║
@@ -34,12 +38,15 @@ auto_activate:
 ║  ✅ DO: Produce a plan ready for /decompose-plan                  ║
 ║                                                                   ║
 ║  ❌ DO NOT: Make assumptions without asking                       ║
+║  ❌ DO NOT: Skip codebase research                                ║
+║  ❌ DO NOT: Assume package versions - READ them                   ║
+║  ❌ DO NOT: Install packages without explicit permission          ║
 ║  ❌ DO NOT: Skip domains (security, testing, edge cases)          ║
 ║  ❌ DO NOT: Write implementation code                             ║
 ║  ❌ DO NOT: Rush through phases to "get to coding"                ║
 ║  ❌ DO NOT: Accept vague answers - dig deeper                     ║
 ║                                                                   ║
-║  WHEN IN DOUBT: ASK. NEVER ASSUME.                               ║
+║  WHEN IN DOUBT: RESEARCH FIRST, THEN ASK. NEVER ASSUME.         ║
 ╚══════════════════════════════════════════════════════════════════╝
 ```
 
@@ -60,9 +67,10 @@ auto_activate:
 
 ## Workflow Overview
 
-The skill progresses through **10 phases**, each with targeted questions. Don't rush - each phase matters.
+The skill progresses through **11 phases**, starting with codebase research. Don't rush - each phase matters.
 
 ```
+Phase 0: Codebase Discovery → Research existing code, packages, patterns (MANDATORY)
 Phase 1: Discovery          → What are we building? Why?
 Phase 2: User Stories       → Who uses it? What do they do?
 Phase 3: Data Model         → What entities? Relationships?
@@ -75,13 +83,142 @@ Phase 9: Testing Strategy   → What to test? How to verify?
 Phase 10: Synthesis         → Write the plan document
 ```
 
+**Phase 0 is MANDATORY:** Always research the codebase before asking questions.
 **Between phases:** Summarize what was decided, confirm understanding, then proceed.
+
+---
+
+## Phase 0: Codebase Discovery (MANDATORY)
+
+**Goal:** Research the codebase before asking ANY user questions. Understand what exists, what can be reused, and what patterns to follow.
+
+### 0.1 Package Inventory
+
+Run these checks FIRST:
+
+```bash
+# Read composer.json - note Laravel version, installed packages
+cat composer.json
+
+# Read package.json - note React version, UI libraries, tooling
+cat package.json
+
+# Check for Laravel Boost (if installed)
+composer show spatie/laravel-boost 2>/dev/null || echo "Laravel Boost not installed"
+```
+
+**Document:**
+- Laravel version (e.g., `^11.0`)
+- PHP version requirement
+- React/Inertia version
+- Key packages: Spatie permissions, Tanstack Query, etc.
+- UI framework: Tailwind, Headless UI, etc.
+
+### 0.2 Architecture Mapping
+
+Use Laravel Boost (if available) or manual exploration:
+
+```bash
+# With Laravel Boost
+php artisan boost:models  # List all models with relationships
+php artisan boost:routes  # List all routes
+
+# Without Laravel Boost - manual exploration
+ls -la app/Models/
+ls -la app/Http/Controllers/
+ls -la resources/js/Components/
+ls -la app/Services/
+```
+
+**Document:**
+- Existing models and their relationships
+- Controller organization pattern
+- Component library structure
+- Service layer patterns
+
+### 0.3 Similar Feature Search
+
+Search for features similar to what the user is requesting:
+
+```bash
+# Grep for related keywords in controllers, models, components
+grep -r "keyword" app/Http/Controllers/
+grep -r "keyword" app/Models/
+grep -r "keyword" resources/js/
+
+# Find similar implementations
+find . -name "*Similar*.php" -o -name "*Related*.tsx"
+```
+
+**Actions:**
+- Read 2-3 similar implementations to understand patterns
+- Note reusable code, services, or components
+- Identify established conventions
+
+### 0.4 Component & Service Inventory
+
+Catalog reusable assets:
+
+**Frontend Components:**
+```bash
+ls resources/js/Components/
+ls resources/js/Components/Inputs/
+ls resources/js/Components/Modals/
+ls resources/js/hooks/
+```
+
+**Backend Services:**
+```bash
+ls app/Services/
+ls app/Models/Traits/
+```
+
+### 0.5 Document Findings
+
+Before Phase 1, present to user:
+
+```markdown
+## Phase 0 Summary: Codebase Discovery
+
+### Package Versions
+| Package | Version |
+|---------|---------|
+| Laravel | {version from composer.json} |
+| React | {version from package.json} |
+| Inertia | {version} |
+| TanStack Query | {version} |
+
+### Similar Features Found
+- **{FeatureName}**: {location} - {what it does}
+- **{FeatureName}**: {location} - {what it does}
+
+### Reusable Components Discovered
+- **UI Components**: Button, TextInput, DataTable, Modal...
+- **Services**: {ServiceName} pattern in app/Services/
+- **Traits**: {TraitName} in app/Models/Traits/
+
+### Patterns Observed
+- Controller naming: {pattern}
+- Route structure: {pattern}
+- Modal patterns: {pattern}
+
+### Proceeding to Phase 1: Discovery
+```
 
 ---
 
 ## Phase 1: Discovery
 
 **Goal:** Understand the feature at a high level.
+
+### Research Directive (run alongside questions)
+
+Before asking discovery questions, search for existing related features:
+1. Search for keywords related to the feature in controllers, models, routes
+2. Read any similar existing features to understand precedents
+3. Note if this extends, replaces, or interacts with existing functionality
+
+**Present discoveries:** "I found existing {feature} in {location} that may be related to what you're describing."
 
 ### Questions to Ask
 
@@ -113,6 +250,15 @@ Phase 10: Synthesis         → Write the plan document
 ## Phase 2: User Stories
 
 **Goal:** Understand ALL user types and their complete journeys.
+
+### Research Directive (run alongside questions)
+
+Before asking user story questions, check existing role/permission implementations:
+1. Search for existing roles, permissions, policies in the codebase
+2. Find how other features handle multi-role access
+3. Check existing user type distinctions (admin vs seller vs buyer, etc.)
+
+**Present discoveries:** "I found these existing user roles/permissions: {list}. The {SimilarFeature} handles role-based access by {pattern}."
 
 ### Questions to Ask
 
@@ -148,6 +294,16 @@ Phase 10: Synthesis         → Write the plan document
 ## Phase 3: Data Model
 
 **Goal:** Define all entities, their attributes, and relationships.
+
+### Research Directive (run alongside questions)
+
+Before asking data model questions, examine existing models:
+1. Read existing models to understand attribute patterns, relationships, traits
+2. Find models with similar purposes or patterns
+3. Check for reusable traits (HasOrganization, HasStatus, etc.)
+4. Note existing state machine implementations
+
+**Present discoveries:** "I found these relevant model patterns: {Model} uses {Trait} for {purpose}. The {SimilarModel} has a status state machine you could follow."
 
 ### Questions to Ask
 
@@ -201,6 +357,16 @@ Entity: AdvertisingOrder
 
 **Goal:** Capture ALL the rules, constraints, and edge cases.
 
+### Research Directive (run alongside questions)
+
+Before asking business rules questions, find existing validation patterns:
+1. Search for Form Request classes with similar validation
+2. Find existing state machines and transition logic
+3. Look for validation helpers or services
+4. Check how other features handle edge cases
+
+**Present discoveries:** "I found these existing validation patterns: {FormRequest} validates {similar fields}. The {Service} handles state transitions using {pattern}."
+
 ### Questions to Ask
 
 **Validation Rules:**
@@ -241,6 +407,17 @@ Entity: AdvertisingOrder
 ## Phase 5: UI/UX
 
 **Goal:** Understand where this lives in the app and how users interact.
+
+### Research Directive (run alongside questions)
+
+Before asking UI questions, catalog what exists:
+1. List all components in `resources/js/Components/`
+2. Find similar pages/modals to the feature being planned
+3. Identify form patterns already in use
+4. Note any custom hooks in `resources/js/hooks/`
+5. Check existing page layouts and navigation patterns
+
+**Present discoveries:** "I found these existing components you could reuse: Button, TextInput, DataTable, Modal. There's also an existing {SimilarModal} that has a similar pattern to what you're describing. The {SimilarPage} shows how navigation is structured."
 
 ### Questions to Ask
 
@@ -302,6 +479,17 @@ Entity: AdvertisingOrder
 
 **Goal:** Understand all integration points with external systems and existing code.
 
+### Research Directive (run alongside questions)
+
+Before asking integration questions, map existing integrations:
+1. Find existing API clients in `app/Services/`
+2. Check for existing job patterns in `app/Jobs/`
+3. Look for notification patterns in `app/Notifications/`
+4. Find existing webhook handlers
+5. Check file storage patterns
+
+**Present discoveries:** "I found existing integrations: {Service} handles {ExternalAPI} calls with retry logic. The {Job} pattern shows how background processing is structured."
+
 ### Questions to Ask
 
 **External APIs:**
@@ -341,6 +529,16 @@ Entity: AdvertisingOrder
 ## Phase 7: Security
 
 **Goal:** Identify and address ALL security concerns.
+
+### Research Directive (run alongside questions)
+
+Before asking security questions, find existing auth patterns:
+1. Check existing policies in `app/Policies/`
+2. Find middleware patterns in `app/Http/Middleware/`
+3. Look for authorization patterns in existing controllers
+4. Check how org-scoping is enforced in similar features
+
+**Present discoveries:** "I found these security patterns: {Policy} handles {authorization}. The {Controller} enforces org-scoping using {pattern}. Existing middleware: {list}."
 
 ### Questions to Ask
 
@@ -392,6 +590,16 @@ Entity: AdvertisingOrder
 
 **Goal:** Ensure the feature will perform well at scale.
 
+### Research Directive (run alongside questions)
+
+Before asking performance questions, check existing patterns:
+1. Find caching implementations in existing code
+2. Look for query optimization patterns (eager loading, etc.)
+3. Check existing indexes in migrations
+4. Find rate limiting implementations
+
+**Present discoveries:** "I found these performance patterns: {Model} uses eager loading for {relationships}. The {Controller} caches {data} for {duration}. Existing indexes: {list}."
+
 ### Questions to Ask
 
 **Scale Expectations:**
@@ -422,6 +630,16 @@ Entity: AdvertisingOrder
 ## Phase 9: Testing Strategy
 
 **Goal:** Define how to verify the feature works correctly.
+
+### Research Directive (run alongside questions)
+
+Before asking testing questions, find existing test patterns:
+1. Find test patterns in `tests/Feature/` for similar features
+2. Check for test helper traits in `tests/`
+3. Look at existing factories and their states
+4. Find how security/org-scoping tests are structured
+
+**Present discoveries:** "I found these test patterns: {TestClass} tests {feature} with {pattern}. The {Factory} has useful states: {states}. Security tests follow {pattern}."
 
 ### Questions to Ask
 
@@ -529,6 +747,62 @@ For comprehensive question coverage, reference:
 
 ---
 
+## Package Awareness Rules
+
+### CRITICAL: Never Assume Versions
+
+- Always READ `composer.json` and `package.json` before referencing packages
+- Don't assume Laravel 11 - check the actual version
+- Don't assume React 19 - check the actual version
+- Don't assume TanStack Query v5 - check the actual version
+
+### Package Suggestion Protocol
+
+1. **Check if functionality exists in already-installed packages FIRST**
+2. If new package would help, **make the case for it:**
+   - What problem does it solve?
+   - What's the alternative without it? (more code, reinventing the wheel, etc.)
+   - Is it well-maintained? What's the community like?
+   - Any downsides? (bundle size, complexity, learning curve)
+3. Get explicit approval before adding to the plan
+4. User is open to packages - just needs reasonable justification
+
+### Package Research Workflow
+
+```markdown
+## Before suggesting any package:
+
+1. Read composer.json and package.json
+2. Check if functionality exists in already-installed packages
+3. If new package would help, pitch it:
+   - "This feature needs X. Package Y does this well because..."
+   - "Without it, we'd have to build [effort]. With it, we get [benefit]."
+   - "It's maintained by [who], last release [when], [N] stars."
+4. Get buy-in, then add to plan
+```
+
+### Laravel Boost Integration
+
+BudTags projects have Laravel Boost installed. Leverage it for introspection:
+
+```bash
+# Model introspection
+php artisan boost:models  # List all models with relationships
+
+# Route introspection
+php artisan boost:routes  # List all routes
+
+# Use in Phase 0 for rapid codebase mapping
+```
+
+---
+
+## Research Directives Reference
+
+For detailed research instructions per phase, see: `research-directives.md`
+
+---
+
 ## Conversation Flow Guidelines
 
 ### How to Ask Questions
@@ -580,13 +854,17 @@ After each phase:
 
 The planning is complete when:
 
-- [ ] All 10 phases have been covered
+- [ ] Phase 0 codebase research completed
+- [ ] Package versions documented (not assumed)
+- [ ] Reusable code identified and cataloged
+- [ ] All 10 question phases have been covered
 - [ ] User stories are documented for ALL user types
 - [ ] Data model is fully defined with state machines
 - [ ] Edge cases are identified and addressed
 - [ ] Security concerns are documented
 - [ ] Integration points are mapped
 - [ ] Testing strategy is defined
+- [ ] Plan document includes reusable code references
 - [ ] Plan document is comprehensive enough for `/decompose-plan`
 - [ ] User confirms the plan matches their vision
 
