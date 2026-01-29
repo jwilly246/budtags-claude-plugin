@@ -1,0 +1,282 @@
+{
+  "skills": [
+    {
+      "id": "budtags-testing",
+      "name": "BudTags Testing",
+      "description": "PHPUnit test patterns, Mockery mocking, multi-tenancy test helpers",
+      "default": true
+    },
+    {
+      "id": "create-plan",
+      "name": "Create Plan",
+      "description": "Research-driven feature planning with codebase discovery",
+      "default": true
+    },
+    {
+      "id": "decompose-plan",
+      "name": "Decompose Plan",
+      "description": "Break plans into context-window-sized work units",
+      "default": true
+    },
+    {
+      "id": "inertia",
+      "name": "Inertia",
+      "description": "Inertia.js v2 patterns for Laravel + React full-stack development",
+      "default": true
+    },
+    {
+      "id": "inertia-react-development",
+      "name": "Inertia React Dev",
+      "description": "Inertia.js v2 React client-side development patterns",
+      "default": true
+    },
+    {
+      "id": "labelary-help",
+      "name": "Labelary Help",
+      "description": "ZPL label preview and conversion via Labelary API",
+      "default": false
+    },
+    {
+      "id": "leaflink",
+      "name": "LeafLink",
+      "description": "LeafLink wholesale marketplace API integration",
+      "default": true
+    },
+    {
+      "id": "metrc-api",
+      "name": "Metrc API",
+      "description": "Cannabis compliance tracking API integration",
+      "default": true
+    },
+    {
+      "id": "quickbooks",
+      "name": "QuickBooks",
+      "description": "QuickBooks Online OAuth, invoices, customers, payments",
+      "default": true
+    },
+    {
+      "id": "quill",
+      "name": "Quill",
+      "description": "Quill.js rich text editor API and configuration",
+      "default": false
+    },
+    {
+      "id": "react-19",
+      "name": "React 19",
+      "description": "React 19 new hooks, Actions, and migration guides",
+      "default": true
+    },
+    {
+      "id": "run-plan",
+      "name": "Run Plan",
+      "description": "Autonomously execute decomposed work units",
+      "default": true
+    },
+    {
+      "id": "skill-builder",
+      "name": "Skill Builder",
+      "description": "Create new Claude Code skills following patterns",
+      "default": false
+    },
+    {
+      "id": "tailwindcss-development",
+      "name": "Tailwind CSS",
+      "description": "Tailwind CSS v4 styling patterns and utilities",
+      "default": true
+    },
+    {
+      "id": "tanstack-query",
+      "name": "TanStack Query",
+      "description": "React Query v5 data fetching, caching, mutations",
+      "default": true
+    },
+    {
+      "id": "tanstack-table",
+      "name": "TanStack Table",
+      "description": "Headless table components with sorting, filtering, pagination",
+      "default": true
+    },
+    {
+      "id": "tanstack-virtual",
+      "name": "TanStack Virtual",
+      "description": "Virtualized list rendering for large datasets",
+      "default": false
+    },
+    {
+      "id": "verify-alignment",
+      "name": "Verify Alignment",
+      "description": "Verify code against BudTags coding standards",
+      "default": true
+    },
+    {
+      "id": "zpl",
+      "name": "ZPL",
+      "description": "Zebra Programming Language for label printing",
+      "default": false
+    }
+  ],
+  "agents": [
+    {
+      "id": "budtags-specialist",
+      "name": "BudTags Specialist",
+      "description": "Code review for BudTags patterns and security",
+      "default": true
+    },
+    {
+      "id": "code-reviewer",
+      "name": "Code Reviewer",
+      "description": "General code review for best practices and clean code",
+      "default": true
+    },
+    {
+      "id": "context-gathering",
+      "name": "Context Gathering",
+      "description": "Gather comprehensive context for new tasks",
+      "default": true
+    },
+    {
+      "id": "context-refinement",
+      "name": "Context Refinement",
+      "description": "Update task context with session discoveries",
+      "default": true
+    },
+    {
+      "id": "debugger",
+      "name": "Debugger",
+      "description": "Systematic debugging and root cause analysis",
+      "default": true
+    },
+    {
+      "id": "fullstack-developer",
+      "name": "Fullstack Developer",
+      "description": "End-to-end feature implementation (Laravel + React)",
+      "default": true
+    },
+    {
+      "id": "knowledge-researcher",
+      "name": "Knowledge Researcher",
+      "description": "Search and synthesize organizational knowledge",
+      "default": true
+    },
+    {
+      "id": "leaflink-specialist",
+      "name": "LeafLink Specialist",
+      "description": "LeafLink marketplace API integration expertise",
+      "default": true
+    },
+    {
+      "id": "logging",
+      "name": "Logging",
+      "description": "Consolidate and organize work logs for tasks",
+      "default": true
+    },
+    {
+      "id": "metrc-specialist",
+      "name": "Metrc Specialist",
+      "description": "Metrc cannabis tracking API expertise",
+      "default": true
+    },
+    {
+      "id": "mutation-testing-specialist",
+      "name": "Mutation Testing",
+      "description": "Mutation testing to measure and improve test quality",
+      "default": false
+    },
+    {
+      "id": "mysql-specialist",
+      "name": "MySQL Specialist",
+      "description": "MySQL performance tuning and query optimization",
+      "default": true
+    },
+    {
+      "id": "php-developer",
+      "name": "PHP Developer",
+      "description": "Laravel, PHPUnit, Composer, and modern PHP 8+",
+      "default": true
+    },
+    {
+      "id": "quickbooks-specialist",
+      "name": "QuickBooks Specialist",
+      "description": "QuickBooks Online OAuth and API integration",
+      "default": true
+    },
+    {
+      "id": "react-specialist",
+      "name": "React Specialist",
+      "description": "React 19 + Inertia + TypeScript frontend expertise",
+      "default": true
+    },
+    {
+      "id": "redis-specialist",
+      "name": "Redis Specialist",
+      "description": "Redis caching, pub/sub, and performance optimization",
+      "default": false
+    },
+    {
+      "id": "security-auditor",
+      "name": "Security Auditor",
+      "description": "Security vulnerability audits and compliance checks",
+      "default": true
+    },
+    {
+      "id": "tanstack-specialist",
+      "name": "TanStack Specialist",
+      "description": "TanStack Query, Table, Virtual, Form, Router expertise",
+      "default": true
+    },
+    {
+      "id": "terraform-specialist",
+      "name": "Terraform Specialist",
+      "description": "Infrastructure as code and multi-cloud provisioning",
+      "default": false
+    },
+    {
+      "id": "typescript-developer",
+      "name": "TypeScript Developer",
+      "description": "TypeScript/Node.js backend and React frontend",
+      "default": true
+    }
+  ],
+  "hooks": [
+    {
+      "id": "auto-approve-reads",
+      "name": "Auto-Approve Reads",
+      "description": "Automatically approve safe file read operations",
+      "default": true
+    },
+    {
+      "id": "file-protection",
+      "name": "File Protection",
+      "description": "Confirm before editing sensitive files (.env, etc.)",
+      "default": true
+    },
+    {
+      "id": "post-edit-tests",
+      "name": "Post-Edit Tests",
+      "description": "Run related tests after file edits",
+      "default": false
+    },
+    {
+      "id": "pre-commit-gate",
+      "name": "Pre-Commit Gate",
+      "description": "Validate commits before allowing",
+      "default": true
+    },
+    {
+      "id": "skill-forced-eval",
+      "name": "Skill Eval",
+      "description": "Evaluate skill usage on prompt submission",
+      "default": true
+    }
+  ],
+  "dependencies": {
+    "laravel-simplifier": {
+      "check_path": "~/.claude/plugins/laravel-simplifier",
+      "install_commands": [
+        "cd ~/.claude && git clone https://github.com/laravel/claude-code laravel-simplifier"
+      ],
+      "description": "Laravel code simplification and refactoring patterns",
+      "required_by": ["php-developer", "fullstack-developer"]
+    }
+  }
+}

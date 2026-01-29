@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "configured_at": "2025-01-15T10:30:00-08:00",
+  "mode": "custom",
+  "skills": [
+    "budtags-testing",
+    "create-plan",
+    "decompose-plan",
+    "inertia",
+    "inertia-react-development",
+    "leaflink",
+    "metrc-api",
+    "quickbooks",
+    "react-19",
+    "run-plan",
+    "tailwindcss-development",
+    "tanstack-query",
+    "tanstack-table",
+    "verify-alignment"
+  ],
+  "agents": [
+    "budtags-specialist",
+    "code-reviewer",
+    "context-gathering",
+    "context-refinement",
+    "debugger",
+    "fullstack-developer",
+    "knowledge-researcher",
+    "leaflink-specialist",
+    "logging",
+    "metrc-specialist",
+    "mysql-specialist",
+    "php-developer",
+    "quickbooks-specialist",
+    "react-specialist",
+    "security-auditor",
+    "tanstack-specialist",
+    "typescript-developer"
+  ],
+  "hooks": [
+    "auto-approve-reads",
+    "file-protection",
+    "pre-commit-gate",
+    "skill-forced-eval"
+  ]
+}
