@@ -43,9 +43,9 @@ This gives you direct access to all features without namespacing.
 
 | Type | Count | Description |
 |------|-------|-------------|
-| Skills | 20 | Specialized domain knowledge (Metrc, LeafLink, TanStack, etc.) |
-| Commands | 23 | Slash commands for common workflows |
-| Agents | 40 | Subagent definitions for Task tool |
+| Skills | 19 | Specialized domain knowledge (Metrc, LeafLink, TanStack, etc.) |
+| Commands | 19 | Slash commands for common workflows |
+| Agents | 20 | Subagent definitions for Task tool |
 | Hooks | 5 | Auto-approve, file protection, pre-commit gates |
 
 ## Skills
@@ -61,7 +61,6 @@ This gives you direct access to all features without namespacing.
 - `quickbooks` - QuickBooks Online integration
 - `quill` - Quill rich text editor
 - `react-19` - React 19 patterns
-- `river` - River job queue
 - `run-plan` - Execute implementation plans
 - `skill-builder` - Create new skills
 - `tailwindcss-development` - Tailwind CSS v4 styling
@@ -82,12 +81,13 @@ Common workflows accessible via `/budtags:command-name`:
 - `verify-alignment` - Verify code follows BudTags patterns
 - `testing-help` - Testing assistance
 - `pre-commit` - Pre-commit checks
-- `whats-next` - Create handoff documents
-- And more...
+- `build-skill` - Create new skills
+- `refactor-code` - Code refactoring assistance
+- `zpl-help`, `labelary-help` - ZPL label generation
 
 ## Agents
 
-40 specialized agents for various development tasks. Key agents include:
+20 specialized agents for various development tasks. Key agents include:
 
 - `metrc-specialist` - Metrc API integration expert
 - `leaflink-specialist` - LeafLink integration expert
@@ -95,7 +95,7 @@ Common workflows accessible via `/budtags:command-name`:
 - `tanstack-specialist` - TanStack ecosystem expert
 - `react-specialist` - React/Inertia frontend development
 - `php-developer` - PHP/Laravel backend development
-- `test-engineer` - Testing strategies
+- `fullstack-developer` - Full-stack development
 - `security-auditor` - Security reviews
 - `code-reviewer` - Code quality reviews
 
