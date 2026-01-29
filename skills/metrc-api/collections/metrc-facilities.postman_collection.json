@@ -1,0 +1,25 @@
+{
+  "info": {
+    "name": "Metrc Facilities API v2",
+    "description": "Metrc API v2 endpoints for Facilities",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/facilities/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": []
+        }
+      }
+    }
+  ]
+}

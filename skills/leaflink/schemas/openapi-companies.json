@@ -1,0 +1,936 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Companies",
+    "description": "Company, staff, brands, and licensing\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/brands/": {
+      "get": {
+        "operationId": "brands_list",
+        "summary": "List brands",
+        "description": "List all brands. <br /> <br /> Retrieved per company with the company query parameter or with the following path parameter, /companies/{company_id}/brands/",
+        "parameters": [
+          {
+            "name": "company__in",
+            "in": "query",
+            "description": "Filter by a list of company ids.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by company id.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by a company slug.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BrandResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "brands"
+        ]
+      },
+      "parameters": []
+    },
+    "/brands/{id}/": {
+      "get": {
+        "operationId": "brands_read",
+        "summary": "Retrieve a brand",
+        "description": "Retrieve an individual brand.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "brands"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the brand.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/companies/": {
+      "get": {
+        "operationId": "companies_list",
+        "summary": "List companies",
+        "description": "List companies the requesting user is a staff member of.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "companies"
+        ]
+      },
+      "parameters": []
+    },
+    "/companies/{id}/": {
+      "get": {
+        "operationId": "companies_read",
+        "summary": "Retrieve a company",
+        "description": "Retrieve an individual company.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "companies"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the company.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/company-staff/": {
+      "get": {
+        "operationId": "company-staff_list",
+        "summary": "List staff members",
+        "description": "List all staff members.",
+        "parameters": [
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by company id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_admin",
+            "in": "query",
+            "description": "Filter by admin status, `true` or `false`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "description": "Filter by active status, `true` or `false`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by company slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyStaffResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "company-staff"
+        ]
+      },
+      "parameters": []
+    },
+    "/company-staff/{id}/": {
+      "get": {
+        "operationId": "company-staff_read",
+        "summary": "Retrieve a staff member",
+        "description": "Retrieve an individual staff member.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyStaffResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "company-staff"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The staff member id.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/license-types/": {
+      "get": {
+        "operationId": "license-types_list",
+        "summary": "List",
+        "description": "List all licenses types available on LeafLink.\n<br />You can list the license types associated with\na company's products at <b>/companies/{company_id}/license-types</b>",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LicenseType"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "license-types"
+        ]
+      },
+      "parameters": []
+    },
+    "/license-types/{id}/": {
+      "get": {
+        "operationId": "license-types_read",
+        "summary": "Read",
+        "description": "Retrieve an individual license type by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LicenseType"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "license-types"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this license type.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/licenses/": {
+      "get": {
+        "operationId": "licenses_list",
+        "summary": "List",
+        "description": "List all licenses for a user's companies.\n<br />You can list the licenses associated with\na company's products at <b>/companies/{company_id}/licenses</b>",
+        "parameters": [
+          {
+            "name": "number__in",
+            "in": "query",
+            "description": "Filter by number__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "number",
+            "in": "query",
+            "description": "Filter by number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by company_slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ComplianceLicense"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "licenses"
+        ]
+      },
+      "parameters": []
+    },
+    "/licenses/{id}/": {
+      "get": {
+        "operationId": "licenses_read",
+        "summary": "Read",
+        "description": "Retrieve an individual license by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ComplianceLicense"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "licenses"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this license.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "BrandResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "company": {
+            "description": "Id for the company",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "description": "Logo for the brand",
+            "type": "string",
+            "format": "uri"
+          },
+          "banner": {
+            "description": "Banner image for the brand",
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "CompanyResponse": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "announcement": {
+            "type": "string"
+          },
+          "apply_ancillary_tax": {
+            "type": "boolean"
+          },
+          "apply_arms_length_tax": {
+            "type": "boolean"
+          },
+          "batch_enabled": {
+            "title": "Batch enabled",
+            "type": "boolean",
+            "description": "Is the batches feature enabled?"
+          },
+          "business_identifier": {
+            "description": "Business identifier (Only applicable to WA)",
+            "type": "string"
+          },
+          "business_license_name": {
+            "type": "string"
+          },
+          "buyer": {
+            "description": "Does the company buy on the LeafLink marketplace?",
+            "type": "boolean"
+          },
+          "seller": {
+            "description": "Does the company sell on the LeafLink marketplace?",
+            "type": "boolean"
+          },
+          "city": {
+            "type": "string"
+          },
+          "dba": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "has_accting": {
+            "description": "Is the QuickBooks Online integration enabled?",
+            "type": "boolean"
+          },
+          "hide_attached_packages": {
+            "description": "Metrc integration setting",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Unique id generated by LeafLink.",
+            "type": "integer"
+          },
+          "image": {
+            "type": "string",
+            "format": "uri"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "format": "slug"
+          },
+          "state": {
+            "type": "string"
+          },
+          "sts_enabled": {
+            "description": "Is the Metrc integration enabled?",
+            "type": "boolean"
+          },
+          "zipcode": {
+            "type": "string"
+          }
+        }
+      },
+      "CompanyStaffResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "user": {
+            "description": "Id for the staff member's LeafLink user account.",
+            "type": "integer"
+          },
+          "company": {
+            "description": "Id for the company",
+            "type": "integer"
+          },
+          "is_admin": {
+            "description": "Is the staff member an admin?",
+            "type": "boolean"
+          },
+          "is_active": {
+            "description": "Is this an active staff member account?",
+            "type": "boolean"
+          },
+          "is_poc": {
+            "description": "Is the staff member the point of contact for the company?",
+            "type": "boolean"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "identification_number": {
+            "description": "Identification number for the staff member.",
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "First and last name registered with the staff member's LeafLink user account."
+          },
+          "username": {
+            "type": "string",
+            "description": "Username registered with the staff member's LeafLink user account."
+          }
+        }
+      },
+      "LicenseType": {
+        "required": [
+          "type",
+          "display_type",
+          "classification",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "type": {
+            "title": "Type",
+            "description": "License Type",
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "display_type": {
+            "title": "Display Type",
+            "description": "Type for display in the LeafLink frontend",
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "classification": {
+            "title": "License Classification Type",
+            "description": "License Classification Type",
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "state": {
+            "title": "State",
+            "description": "id for the state [1: \"AL\", 2: \"AK\", 3: \"AZ\", 4: \"AR\", 5: \"CA\", 6: \"CO\", 7: \"CT\", 8: \"DE\", 9: \"FL\", 10: \"GA\", 11: \"HI\", 12: \"ID\", 13: \"IL\", 14: \"IN\", 15: \"IA\", 16: \"KS\", 17: \"KY\", 18: \"LA\", 19: \"ME\", 20: \"MD\", 21: \"MA\", 22: \"MI\", 23: \"MN\", 24: \"MS\", 25: \"MO\", 26: \"MT\", 27: \"NE\", 28: \"NV\", 29: \"NH\", 30: \"NJ\", 31: \"NM\", 32: \"NY\", 33: \"NC\", 34: \"ND\", 35: \"OH\", 36: \"OK\", 37: \"OR\", 38: \"PA\", 39: \"RI\", 40: \"SC\", 41: \"SD\", 42: \"TN\", 43: \"TX\", 44: \"UT\", 45: \"VT\", 46: \"VA\", 47: \"WA\", 48: \"WV\", 49: \"WI\", 50: \"WY\", 51: \"PR\", 52: \"DC\", 53: \"SK\", 54: \"ON\", 55: \"QC\", 56: \"BC\", 57: \"AB\", 58: \"MB\", 59: \"NS\", 60: \"NB\", 61: \"NL\", 62: \"PE\", 63: \"NT\", 64: \"NU\", 65: \"YT\"]",
+            "type": "integer"
+          },
+          "require_ein": {
+            "title": "Require ein",
+            "description": "EIN is required to register under this license type.",
+            "type": "boolean"
+          },
+          "has_medical_line_items": {
+            "title": "Has medical line items",
+            "description": "This license type can sell medical line items.",
+            "type": "boolean"
+          },
+          "active_for_registration": {
+            "title": "Active for registration",
+            "description": "This license type is available for current registrations.",
+            "type": "boolean"
+          },
+          "description": {
+            "title": "Description",
+            "description": "Description or Notes",
+            "type": "string",
+            "maxLength": 5000,
+            "nullable": true
+          },
+          "pre_2018_CA": {
+            "title": "Pre 2018 CA",
+            "description": "pre-2018 CA license.",
+            "type": "boolean"
+          },
+          "post_2018_CA": {
+            "title": "Post 2018 CA",
+            "description": "post-2018 CA license.",
+            "type": "boolean"
+          },
+          "created_on": {
+            "title": "Created on",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "state_abbr": {
+            "type": "string",
+            "description": "Two letter abbreviation for the state associated with this license type."
+          }
+        }
+      },
+      "ComplianceLicense": {
+        "required": [
+          "number"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for license",
+            "type": "integer",
+            "readOnly": true
+          },
+          "number": {
+            "title": "License Number",
+            "description": "License Number",
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "type": {
+            "title": "Type",
+            "description": "Type",
+            "type": "string",
+            "readOnly": true
+          },
+          "display_type": {
+            "title": "Display type",
+            "description": "Display type",
+            "type": "string",
+            "readOnly": true
+          },
+          "classification": {
+            "title": "Classification",
+            "description": "Classification",
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,25 @@
+{
+  "info": {
+    "name": "Metrc WasteMethods API v2",
+    "description": "Metrc API v2 endpoints for WasteMethods",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetWasteMethods",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/wastemethods/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": []
+        }
+      }
+    }
+  ]
+}

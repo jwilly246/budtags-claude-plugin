@@ -1,0 +1,1280 @@
+# LeafLink Operations Catalog
+
+Complete reference for all LeafLink Marketplace V2 API operations, organized by category.
+
+## Table of Contents
+
+1. [Core HTTP Operations](#core-http-operations)
+2. [Order Operations](#order-operations)
+3. [Product & Catalog Operations](#product--catalog-operations)
+4. [Customer & CRM Operations](#customer--crm-operations)
+5. [Inventory Operations](#inventory-operations)
+6. [Company & Organization Operations](#company--organization-operations)
+7. [Promotion Operations](#promotion-operations)
+8. [Reporting Operations](#reporting-operations)
+9. [Utility Operations](#utility-operations)
+
+---
+
+## Core HTTP Operations
+
+Base methods for making API requests to LeafLink.
+
+### `set_key(string $api_key): self`
+
+Set the API key for authentication.
+
+**Parameters:**
+- `$api_key` (string) - LeafLink Application API key
+
+**Returns:** LeafLinkApi instance (for method chaining)
+
+**Example:**
+```php
+$api = new LeafLinkApi();
+$api->set_key('your-api-key-here');
+```
+
+---
+
+### `headers(): array`
+
+Get authentication headers for API requests.
+
+**Returns:** Array of headers
+
+**Example:**
+```php
+$headers = $api->headers();
+// [
+//     'Authorization' => 'App YOUR_API_KEY',
+//     'Accept' => 'application/json'
+// ]
+```
+
+---
+
+### `url(string $path): string`
+
+Construct full API URL from path.
+
+**Parameters:**
+- `$path` (string) - API endpoint path (e.g., `/orders-received/`)
+
+**Returns:** Full URL string
+
+**Example:**
+```php
+$fullUrl = $api->url('/orders-received/');
+// https://app.leaflink.com/api/v2/orders-received/
+```
+
+---
+
+### `get(string $url, array $params = []): Response`
+
+Make GET request to LeafLink API.
+
+**Parameters:**
+- `$url` (string) - Endpoint path
+- `$params` (array) - Query parameters (optional)
+
+**Returns:** Illuminate\Http\Client\Response
+
+**Example:**
+```php
+$response = $api->get('/orders-received/', [
+    'status' => 'confirmed',
+    'limit' => 50,
+    'offset' => 0
+]);
+```
+
+---
+
+### `post(string $url, array $params = []): Response`
+
+Make POST request to LeafLink API.
+
+**Parameters:**
+- `$url` (string) - Endpoint path
+- `$params` (array) - Request body data
+
+**Returns:** Illuminate\Http\Client\Response
+
+**Example:**
+```php
+$response = $api->post('/products/', [
+    'name' => 'Blue Dream',
+    'price' => 25.00,
+    'category' => 3
+]);
+```
+
+---
+
+### `patch(string $url, array $params = []): Response`
+
+Make PATCH request to LeafLink API.
+
+**Parameters:**
+- `$url` (string) - Endpoint path
+- `$params` (array) - Update data
+
+**Returns:** Illuminate\Http\Client\Response
+
+**Example:**
+```php
+$response = $api->patch('/products/123/', [
+    'price' => 30.00
+]);
+```
+
+---
+
+### `delete(string $url): Response`
+
+Make DELETE request to LeafLink API.
+
+**Parameters:**
+- `$url` (string) - Endpoint path
+
+**Returns:** Illuminate\Http\Client\Response
+
+**Example:**
+```php
+$response = $api->delete('/products/123/');
+```
+
+---
+
+## Order Operations
+
+Operations for managing orders and order lifecycle.
+
+### `get_orders(int $page, string $status, string $path, array $extraParams): LengthAwarePaginator`
+
+Fetch paginated list of orders received.
+
+**Parameters:**
+- `$page` (int) - Page number (default: 1)
+- `$status` (string) - Order status filter: 'draft', 'confirmed', 'shipped', 'delivered', or 'all' (default: 'draft')
+- `$path` (string) - URL path for pagination links (default: '')
+- `$extraParams` (array) - Additional filter parameters (default: [])
+
+**Returns:** LengthAwarePaginator with order data
+
+**Example:**
+```php
+$orders = $api->get_orders(
+    page: 1,
+    status: 'confirmed',
+    path: '/leaflink/orders',
+    extraParams: [
+        'created_date__gte' => '2025-01-01',
+        'created_date__lte' => '2025-01-31'
+    ]
+);
+
+foreach ($orders as $order) {
+    echo "Order #{$order['number']}: {$order['total']}\n";
+}
+```
+
+**Available Extra Filters:**
+- `created_date__gte`, `created_date__lte` - Date range
+- `customer` - Filter by customer ID
+- `delivery_date__gte`, `delivery_date__lte` - Delivery date range
+- `modified__gte`, `modified__lte` - Last modified range
+- And many more...
+
+---
+
+### `get_order(string $id): Response`
+
+Get single order by ID.
+
+**Parameters:**
+- `$id` (string) - Order ID
+
+**Returns:** Response with order details
+
+**Example:**
+```php
+$response = $api->get_order('12345');
+
+if ($response->successful()) {
+    $order = $response->json();
+    echo "Order #{$order['number']}\n";
+    echo "Customer: {$order['customer']['name']}\n";
+    echo "Status: {$order['status']}\n";
+    echo "Total: \${$order['total']}\n";
+}
+```
+
+---
+
+### `get_order_line_items(string $id, int $page, string $path): array`
+
+Get line items for a specific order.
+
+**Parameters:**
+- `$id` (string) - Order ID
+- `$page` (int) - Page number (default: 1)
+- `$path` (string) - Pagination path (default: '')
+
+**Returns:** Array of line items
+
+**Example:**
+```php
+$lineItems = $api->get_order_line_items('12345');
+
+foreach ($lineItems as $item) {
+    echo "{$item['product_name']} x {$item['quantity']} = \${$item['total']}\n";
+}
+```
+
+---
+
+### `transition_order(string $orderNumber, string $action): Response`
+
+Transition order to next status in lifecycle.
+
+**Parameters:**
+- `$orderNumber` (string) - Order number
+- `$action` (string) - Transition action: 'accept', 'confirm', 'ship', 'deliver', 'cancel'
+
+**Returns:** Response with updated order
+
+**Example:**
+```php
+$response = $api->transition_order('12345', 'accept');
+
+if ($response->successful()) {
+    LogService::store(
+        'LeafLink Order Transitioned',
+        "Order #12345 transitioned to: accept"
+    );
+}
+```
+
+**Order Lifecycle:**
+```
+draft → accept → confirm → ship → deliver
+          ↓
+       cancel (can cancel from any status)
+```
+
+---
+
+### Additional Order Endpoints (Direct API Calls)
+
+#### Create Order
+```php
+POST /orders-received/
+
+$response = $api->post('/orders-received/', [
+    'customer' => 123,
+    'delivery_date' => '2025-02-01',
+    'notes' => 'Please deliver in the morning'
+]);
+```
+
+#### Update Order
+```php
+PATCH /orders-received/{id}/
+
+$response = $api->patch('/orders-received/12345/', [
+    'notes' => 'Updated delivery instructions'
+]);
+```
+
+#### Delete Order
+```php
+DELETE /orders-received/{id}/
+
+$response = $api->delete('/orders-received/12345/');
+```
+
+#### List Buyer Orders (Buyer Perspective)
+```php
+GET /buyer/orders/
+
+$response = $api->get('/buyer/orders/', [
+    'status' => 'confirmed',
+    'limit' => 50
+]);
+```
+
+#### Manage Line Items
+```php
+// List line items
+GET /line-items/
+$items = $api->get('/line-items/', ['order' => 12345])->json('results');
+
+// Create line item
+POST /line-items/
+$api->post('/line-items/', [
+    'order' => 12345,
+    'product' => 456,
+    'quantity' => 10,
+    'unit_price' => 25.00
+]);
+
+// Update line item
+PATCH /line-items/{id}/
+$api->patch('/line-items/789/', ['quantity' => 15]);
+
+// Delete line item
+DELETE /line-items/{id}/
+$api->delete('/line-items/789/');
+```
+
+#### Manage Order Payments
+```php
+// List payments
+GET /order-payments/
+$payments = $api->get('/order-payments/', ['order' => 12345])->json('results');
+
+// Create payment
+POST /order-payments/
+$api->post('/order-payments/', [
+    'order' => 12345,
+    'amount' => 500.00,
+    'payment_method' => 'ach',
+    'payment_date' => '2025-01-15'
+]);
+
+// Get payment details
+GET /order-payments/{id}/
+$payment = $api->get('/order-payments/999/')->json();
+```
+
+#### Manage Sales Rep Assignments
+```php
+// List sales reps for orders
+GET /order-sales-reps/
+$salesReps = $api->get('/order-sales-reps/', ['order' => 12345])->json('results');
+
+// Assign sales rep
+POST /order-sales-reps/
+$api->post('/order-sales-reps/', [
+    'order' => 12345,
+    'sales_rep' => 789
+]);
+
+// Get assignment
+GET /order-sales-reps/{id}/
+$assignment = $api->get('/order-sales-reps/999/')->json();
+
+// Remove sales rep
+DELETE /order-sales-reps/{id}/
+$api->delete('/order-sales-reps/999/');
+```
+
+#### View Order Event Logs
+```php
+// List all order events
+GET /order-event-logs/
+$events = $api->get('/order-event-logs/', [
+    'order' => 12345,
+    'limit' => 100
+])->json('results');
+
+// Get specific event
+GET /order-event-logs/{id}/
+$event = $api->get('/order-event-logs/999/')->json();
+```
+
+---
+
+## Product & Catalog Operations
+
+Operations for managing products, categories, images, and metadata.
+
+### `get_inventory_items(): array`
+
+Get all inventory/product items with intelligent fallback.
+
+**Returns:** Array of product items
+
+**Algorithm:**
+1. Try `/products/` endpoint first (primary)
+2. Fallback to `/batches/` if products unavailable
+3. Auto-paginates through all results (up to 1000 items)
+
+**Example:**
+```php
+$items = $api->get_inventory_items();
+
+foreach ($items as $item) {
+    echo "{$item['display_name']} - {$item['sku']}\n";
+    echo "Price: \${$item['unit_price']}\n";
+    echo "Stock: {$item['inventory_quantity']}\n";
+}
+```
+
+---
+
+### `get_brands(?int $companyId): array`
+
+Get brands list, optionally filtered by company.
+
+**Parameters:**
+- `$companyId` (int|null) - Company ID to filter brands (optional)
+
+**Returns:** Array of brands
+
+**Example:**
+```php
+// All brands
+$brands = $api->get_brands();
+
+// Company-specific brands
+$brands = $api->get_brands($companyId);
+
+foreach ($brands as $brand) {
+    echo "{$brand['name']}\n";
+}
+```
+
+---
+
+### `get_categories(): array`
+
+Get all product categories.
+
+**Returns:** Array of categories
+
+**Example:**
+```php
+$categories = $api->get_categories();
+
+foreach ($categories as $category) {
+    echo "{$category['id']}: {$category['name']}\n";
+}
+```
+
+---
+
+### `get_subcategories(): array`
+
+Get all product subcategories.
+
+**Returns:** Array of subcategories
+
+**Example:**
+```php
+$subcategories = $api->get_subcategories();
+
+foreach ($subcategory as $subcategory) {
+    echo "{$subcategory['name']} (Category: {$subcategory['category']})\n";
+}
+```
+
+---
+
+### `get_product_lines(?int $companyId): array`
+
+Get product lines, optionally filtered by company.
+
+**Parameters:**
+- `$companyId` (int|null) - Company ID to filter product lines (optional)
+
+**Returns:** Array of product lines
+
+**Example:**
+```php
+// All product lines
+$lines = $api->get_product_lines();
+
+// Company-specific lines
+$lines = $api->get_product_lines($companyId);
+
+foreach ($lines as $line) {
+    echo "{$line['name']}\n";
+}
+```
+
+---
+
+### `get_inventory_items_enriched(string $orgId): array`
+
+Get inventory items with enriched metadata (brands, categories, subcategories, product lines).
+
+**Parameters:**
+- `$orgId` (string) - Organization ID for cache key
+
+**Returns:** Array of enriched inventory items
+
+**Caching:** Cached for 5 minutes (300 seconds)
+
+**Example:**
+```php
+$inventory = $api->get_inventory_items_enriched($user->active_org->id);
+
+foreach ($inventory as $item) {
+    echo "{$item['display_name']}\n";
+    echo "Brand: {$item['brand_name']}\n";
+    echo "Category: {$item['category_name']}\n";
+    echo "Subcategory: {$item['subcategory_name']}\n";
+    echo "Line: {$item['product_line_name']}\n";
+}
+```
+
+**Enriched Fields Added:**
+- `brand_name` - Brand display name
+- `category_name` - Category display name
+- `subcategory_name` - Subcategory display name
+- `product_line_name` - Product line display name
+
+---
+
+### Additional Product Endpoints (Direct API Calls)
+
+#### Manage Products
+```php
+// List products
+GET /products/
+$products = $api->get('/products/', [
+    'category' => 3,
+    'active' => true,
+    'limit' => 100
+])->json('results');
+
+// Create product
+POST /products/
+$api->post('/products/', [
+    'name' => 'Blue Dream',
+    'sku' => 'BD-001',
+    'category' => 3,
+    'sub_category' => 12,
+    'brand' => 5,
+    'unit_price' => 25.00,
+    'inventory_quantity' => 100
+]);
+
+// Get product details
+GET /products/{id}/
+$product = $api->get('/products/123/')->json();
+
+// Update product
+PATCH /products/{id}/
+$api->patch('/products/123/', [
+    'unit_price' => 30.00,
+    'inventory_quantity' => 75
+]);
+
+// Archive product
+DELETE /products/{id}/
+$api->delete('/products/123/');
+```
+
+#### Manage Product Batches
+```php
+// List batches
+GET /product-batches/
+$batches = $api->get('/product-batches/', [
+    'product' => 123,
+    'limit' => 50
+])->json('results');
+
+// Create batch
+POST /product-batches/
+$api->post('/product-batches/', [
+    'product' => 123,
+    'batch_number' => 'BATCH-2025-001',
+    'quantity' => 100,
+    'test_results' => [
+        'thc_percent' => 22.5,
+        'cbd_percent' => 0.8
+    ]
+]);
+
+// Get batch details
+GET /product-batches/{id}/
+$batch = $api->get('/product-batches/456/')->json();
+```
+
+#### Manage Product Images
+```php
+// List images
+GET /product-images/
+$images = $api->get('/product-images/', [
+    'product' => 123
+])->json('results');
+
+// Upload image
+POST /product-images/
+$api->post('/product-images/', [
+    'product' => 123,
+    'image_url' => 'https://example.com/image.jpg',
+    'is_primary' => true
+]);
+
+// Get image
+GET /product-images/{id}/
+$image = $api->get('/product-images/789/')->json();
+
+// Delete image
+DELETE /product-images/{id}/
+$api->delete('/product-images/789/');
+```
+
+#### Manage Product Lines
+```php
+// List product lines
+GET /product-lines/
+$lines = $api->get('/product-lines/', [
+    'company' => 123,
+    'limit' => 100
+])->json('results');
+
+// Create product line
+POST /product-lines/
+$api->post('/product-lines/', [
+    'name' => 'Premium Reserve',
+    'company' => 123,
+    'description' => 'Top-shelf cannabis products'
+]);
+
+// Get product line
+GET /product-lines/{id}/
+$line = $api->get('/product-lines/456/')->json();
+
+// Update product line
+PATCH /product-lines/{id}/
+$api->patch('/product-lines/456/', [
+    'description' => 'Updated description'
+]);
+```
+
+#### Manage Strains
+```php
+// List strains
+GET /strains/
+$strains = $api->get('/strains/', [
+    'name__icontains' => 'dream',
+    'limit' => 50
+])->json('results');
+
+// Create strain
+POST /strains/
+$api->post('/strains/', [
+    'name' => 'Blue Dream',
+    'strain_type' => 'hybrid',
+    'description' => 'Popular hybrid strain'
+]);
+
+// Get strain
+GET /strains/{id}/
+$strain = $api->get('/strains/789/')->json();
+
+// Update strain
+PATCH /strains/{id}/
+$api->patch('/strains/789/', [
+    'description' => 'Updated strain info'
+]);
+```
+
+---
+
+## Customer & CRM Operations
+
+Operations for managing customers, contacts, and relationships.
+
+### `get_customer_by_id(int $id): Response`
+
+Get single customer by ID.
+
+**Parameters:**
+- `$id` (int) - Customer ID
+
+**Returns:** Response with customer details
+
+**Example:**
+```php
+$response = $api->get_customer_by_id(123);
+
+if ($response->successful()) {
+    $customer = $response->json();
+    echo "{$customer['name']}\n";
+    echo "{$customer['email']}\n";
+    echo "Licenses: " . count($customer['licenses']) . "\n";
+}
+```
+
+---
+
+### `get_customers(array $ids, array $fields): Response`
+
+Get multiple customers by IDs with optional field filtering.
+
+**Parameters:**
+- `$ids` (array) - Array of customer IDs (default: [])
+- `$fields` (array) - Fields to include in response (default: [])
+
+**Returns:** Response with customers array
+
+**Example:**
+```php
+$response = $api->get_customers(
+    ids: [123, 456, 789],
+    fields: ['id', 'name', 'email', 'licenses', 'status']
+);
+
+$customers = $response->json('results');
+
+foreach ($customers as $customer) {
+    echo "{$customer['name']} - {$customer['email']}\n";
+}
+```
+
+---
+
+### Additional Customer Endpoints (Direct API Calls)
+
+#### Manage Customers (87 Filter Parameters!)
+```php
+// List customers with extensive filtering
+GET /customers/
+$customers = $api->get('/customers/', [
+    // Basic filters
+    'name__icontains' => 'green',
+    'status' => 'active',
+    'email__icontains' => '@dispensary.com',
+
+    // Date filters
+    'created_date__gte' => '2024-01-01',
+    'created_date__lte' => '2025-01-31',
+
+    // Location filters
+    'city' => 'Denver',
+    'state' => 'CO',
+    'zip_code' => '80202',
+
+    // License filters
+    'license_types__in' => 'retail,cultivation',
+    'license_number__icontains' => 'C11',
+
+    // Relationship filters
+    'customer_tier' => 3,
+    'customer_status' => 5,
+
+    // Pagination
+    'limit' => 100,
+    'offset' => 0
+])->json('results');
+
+// Create customer
+POST /customers/
+$api->post('/customers/', [
+    'name' => 'Green Valley Dispensary',
+    'email' => 'orders@greenvalley.com',
+    'phone' => '555-123-4567',
+    'address' => '123 Main St',
+    'city' => 'Denver',
+    'state' => 'CO',
+    'zip_code' => '80202'
+]);
+
+// Get customer
+GET /customers/{id}/
+$customer = $api->get('/customers/123/')->json();
+
+// Update customer
+PATCH /customers/{id}/
+$api->patch('/customers/123/', [
+    'email' => 'newemail@greenvalley.com',
+    'phone' => '555-999-8888'
+]);
+
+// Delete customer
+DELETE /customers/{id}/
+$api->delete('/customers/123/');
+```
+
+#### Manage Customer Statuses
+```php
+// List statuses
+GET /customer-statuses/
+$statuses = $api->get('/customer-statuses/')->json('results');
+
+// Create status
+POST /customer-statuses/
+$api->post('/customer-statuses/', [
+    'name' => 'VIP',
+    'description' => 'VIP customers'
+]);
+
+// Get status
+GET /customer-statuses/{id}/
+$status = $api->get('/customer-statuses/3/')->json();
+
+// Update status
+PATCH /customer-statuses/{id}/
+$api->patch('/customer-statuses/3/', ['name' => 'Premium VIP']);
+
+// Delete status
+DELETE /customer-statuses/{id}/
+$api->delete('/customer-statuses/3/');
+```
+
+#### Manage Customer Tiers
+```php
+// List tiers
+GET /customer-tiers/
+$tiers = $api->get('/customer-tiers/')->json('results');
+
+// Create tier
+POST /customer-tiers/
+$api->post('/customer-tiers/', [
+    'name' => 'Gold',
+    'description' => 'Gold tier customers',
+    'discount_percent' => 10.0
+]);
+
+// Get tier
+GET /customer-tiers/{id}/
+$tier = $api->get('/customer-tiers/2/')->json();
+
+// Update tier
+PATCH /customer-tiers/{id}/
+$api->patch('/customer-tiers/2/', ['discount_percent' => 15.0]);
+
+// Delete tier
+DELETE /customer-tiers/{id}/
+$api->delete('/customer-tiers/2/');
+```
+
+#### Manage Contacts
+```php
+// List contacts
+GET /contacts/
+$contacts = $api->get('/contacts/', [
+    'customer' => 123,
+    'limit' => 50
+])->json('results');
+
+// Create contact
+POST /contacts/
+$api->post('/contacts/', [
+    'customer' => 123,
+    'first_name' => 'John',
+    'last_name' => 'Doe',
+    'email' => 'john@example.com',
+    'phone' => '555-123-4567',
+    'title' => 'Purchasing Manager'
+]);
+
+// Get contact
+GET /contacts/{id}/
+$contact = $api->get('/contacts/456/')->json();
+
+// Update contact
+PATCH /contacts/{id}/
+$api->patch('/contacts/456/', [
+    'email' => 'newemail@example.com'
+]);
+
+// Delete contact
+DELETE /contacts/{id}/
+$api->delete('/contacts/456/');
+```
+
+#### Track Activity Entries
+```php
+// List activities
+GET /activity-entries/
+$activities = $api->get('/activity-entries/', [
+    'customer' => 123,
+    'date__gte' => '2025-01-01',
+    'limit' => 100
+])->json('results');
+
+// Get activity
+GET /activity-entries/{id}/
+$activity = $api->get('/activity-entries/789/')->json();
+```
+
+---
+
+## Inventory Operations
+
+Operations for managing inventory, facilities, and batch tracking.
+
+### Additional Inventory Endpoints (Direct API Calls)
+
+#### Manage Inventory Items
+```php
+// List inventory items
+GET /inventory-items/
+$items = $api->get('/inventory-items/', [
+    'product' => 123,
+    'facility' => 456,
+    'limit' => 100
+])->json('results');
+
+// Create inventory item
+POST /inventory-items/
+$api->post('/inventory-items/', [
+    'product' => 123,
+    'facility' => 456,
+    'quantity' => 100,
+    'unit' => 'grams'
+]);
+
+// Get inventory item
+GET /inventory-items/{id}/
+$item = $api->get('/inventory-items/789/')->json();
+
+// Update inventory quantity
+PATCH /inventory-items/{id}/
+$api->patch('/inventory-items/789/', [
+    'quantity' => 75
+]);
+```
+
+#### Manage Facilities
+```php
+// List facilities
+GET /facilities/
+$facilities = $api->get('/facilities/', [
+    'company' => 123
+])->json('results');
+
+// Get facility
+GET /facilities/{id}/
+$facility = $api->get('/facilities/456/')->json();
+```
+
+#### Manage Retailer Inventory (POS Integration)
+```php
+// List retailer inventory
+GET /retailer-inventory/
+$inventory = $api->get('/retailer-inventory/', [
+    'company' => 123,
+    'is_low' => true,  // Only low stock items
+    'limit' => 100
+])->json('results');
+
+// Create retailer inventory
+POST /retailer-inventory/
+$api->post('/retailer-inventory/', [
+    'company' => 123,
+    'source' => 'BioTrack',
+    'name' => 'Blue Dream 1g',
+    'sku' => 'BD-1G',
+    'brand' => 'Acme Cannabis',
+    'quantity' => 50,
+    'unit_of_measure' => 'grams',
+    'is_low' => false
+]);
+
+// Get retailer inventory
+GET /retailer-inventory/{id}/
+$item = $api->get('/retailer-inventory/789/')->json();
+
+// Update retailer inventory
+PATCH /retailer-inventory/{id}/
+$api->patch('/retailer-inventory/789/', [
+    'quantity' => 25,
+    'is_low' => true
+]);
+```
+
+#### Manage Batches
+```php
+// List batches
+GET /batches/
+$batches = $api->get('/batches/', [
+    'product' => 123,
+    'limit' => 50
+])->json('results');
+
+// Create batch
+POST /batches/
+$api->post('/batches/', [
+    'product' => 123,
+    'batch_number' => 'BATCH-2025-001',
+    'quantity' => 1000,
+    'harvest_date' => '2025-01-01',
+    'test_date' => '2025-01-10'
+]);
+
+// Get batch
+GET /batches/{id}/
+$batch = $api->get('/batches/456/')->json();
+
+// Update batch
+PATCH /batches/{id}/
+$api->patch('/batches/456/', [
+    'quantity' => 800
+]);
+```
+
+#### Manage Batch Documents
+```php
+// List batch documents
+GET /batch-documents/
+$documents = $api->get('/batch-documents/', [
+    'batch' => 456
+])->json('results');
+
+// Upload batch document
+POST /batch-documents/
+$api->post('/batch-documents/', [
+    'batch' => 456,
+    'document_type' => 'coa',  // Certificate of Analysis
+    'document_url' => 'https://example.com/coa.pdf'
+]);
+
+// Get document
+GET /batch-documents/{id}/
+$document = $api->get('/batch-documents/789/')->json();
+
+// Delete document
+DELETE /batch-documents/{id}/
+$api->delete('/batch-documents/789/');
+```
+
+---
+
+## Company & Organization Operations
+
+Operations for managing company profiles, staff, brands, and licenses.
+
+### `get_company_by_id(int $id): Response`
+
+Get company information by ID.
+
+**Parameters:**
+- `$id` (int) - Company ID
+
+**Returns:** Response with company details
+
+**Example:**
+```php
+$response = $api->get_company_by_id(123);
+
+if ($response->successful()) {
+    $company = $response->json();
+    echo "{$company['name']}\n";
+    echo "Type: {$company['company_type']}\n";  // 'seller' or 'buyer'
+}
+```
+
+---
+
+### Additional Company Endpoints (Direct API Calls)
+
+```php
+// List companies
+GET /companies/
+$companies = $api->get('/companies/')->json('results');
+
+// Get current authenticated company
+GET /companies/me/
+$myCompany = $api->get('/companies/me/')->json();
+
+// Get company staff
+GET /company-staff/
+$staff = $api->get('/company-staff/', [
+    'company' => 123
+])->json('results');
+
+// Get staff member
+GET /company-staff/{id}/
+$staffMember = $api->get('/company-staff/456/')->json();
+
+// List brands
+GET /brands/
+$brands = $api->get('/brands/', [
+    'company' => 123
+])->json('results');
+
+// Get brand
+GET /brands/{id}/
+$brand = $api->get('/brands/789/')->json();
+
+// List licenses
+GET /licenses/
+$licenses = $api->get('/licenses/', [
+    'company' => 123,
+    'status' => 'active'
+])->json('results');
+
+// Get license
+GET /licenses/{id}/
+$license = $api->get('/licenses/456/')->json();
+
+// List license types
+GET /license-types/
+$licenseTypes = $api->get('/license-types/')->json('results');
+
+// Get license type
+GET /license-types/{id}/
+$licenseType = $api->get('/license-types/3/')->json();
+```
+
+---
+
+## Promotion Operations
+
+Operations for managing promotional codes and discounts.
+
+```php
+// List promo codes
+GET /promocodes/
+$promoCodes = $api->get('/promocodes/', [
+    'active' => true,
+    'limit' => 50
+])->json('results');
+
+// Create promo code
+POST /promocodes/
+$api->post('/promocodes/', [
+    'code' => 'SAVE10',
+    'discount_type' => 'percentage',
+    'discount_value' => 10.0,
+    'start_date' => '2025-01-01',
+    'end_date' => '2025-12-31',
+    'max_uses' => 100
+]);
+
+// Get promo code
+GET /promocodes/{id}/
+$promoCode = $api->get('/promocodes/123/')->json();
+
+// Update promo code
+PATCH /promocodes/{id}/
+$api->patch('/promocodes/123/', [
+    'max_uses' => 200
+]);
+
+// Delete promo code
+DELETE /promocodes/{id}/
+$api->delete('/promocodes/123/');
+```
+
+---
+
+## Reporting Operations
+
+Operations for generating and downloading reports.
+
+```php
+// List available reports
+GET /reports/
+$reports = $api->get('/reports/')->json('results');
+
+// Generate report
+POST /reports/
+$api->post('/reports/', [
+    'report_type' => 'sales_summary',
+    'start_date' => '2025-01-01',
+    'end_date' => '2025-01-31',
+    'format' => 'csv'  // or 'pdf', 'xlsx'
+]);
+
+// Download report
+GET /reports/{id}/download/
+$reportContent = $api->get('/reports/123/download/')->body();
+
+// Save to file
+file_put_contents('report.csv', $reportContent);
+```
+
+---
+
+## Utility Operations
+
+Helper methods for caching, pagination, and optimization.
+
+### `fetch_from_cache_or_api(string $key, callable $call, ?callable $each, bool $force_fetch, int $seconds_to_cache): array`
+
+Fetch data from cache or API with automatic caching.
+
+**Parameters:**
+- `$key` (string) - Cache key
+- `$call` (callable) - Function to fetch data from API
+- `$each` (callable|null) - Optional callback to cache individual items (default: null)
+- `$force_fetch` (bool) - Force API fetch, bypassing cache (default: false)
+- `$seconds_to_cache` (int) - Cache TTL in seconds (default: 300)
+
+**Returns:** Array of data
+
+**Example:**
+```php
+$brands = $api->fetch_from_cache_or_api(
+    key: "leaflink:brands:{$orgId}",
+    call: fn() => $api->get('/brands/')->json('results'),
+    each: null,
+    force_fetch: false,
+    seconds_to_cache: 600  // 10 minutes
+);
+```
+
+---
+
+### `paginate_get(string $url, int $page, string $path, array $values): LengthAwarePaginator`
+
+Internal method for paginated GET requests.
+
+**Parameters:**
+- `$url` (string) - API endpoint
+- `$page` (int) - Page number
+- `$path` (string) - URL path for pagination links
+- `$values` (array) - Additional query parameters (default: [])
+
+**Returns:** LengthAwarePaginator
+
+**Used internally by:** `get_orders()` and other paginated methods
+
+---
+
+### `clearCache(string $orgId): void`
+
+Clear all LeafLink caches for an organization.
+
+**Parameters:**
+- `$orgId` (string) - Organization ID
+
+**Returns:** void
+
+**Example:**
+```php
+// After bulk product updates
+$api->clearCache($user->active_org->id);
+
+// Fresh data will be fetched on next request
+$inventory = $api->get_inventory_items_enriched($user->active_org->id);
+```
+
+---
+
+## Summary
+
+**Total Operations Documented:** 75+
+
+**Categories:**
+- Core HTTP: 7 methods
+- Orders: 21 endpoints
+- Products & Catalog: 24 endpoints
+- Customers & CRM: 22 endpoints
+- Inventory: 20 endpoints
+- Companies & Organization: 10 endpoints
+- Promotions: 5 endpoints
+- Reporting: 3 endpoints
+- Utilities: 3 methods
+
+**Most Complex Endpoints:**
+- `GET /customers/` - 87 filter parameters
+- `GET /products/` - 43 filter parameters
+- `GET /orders-received/` - 35 filter parameters
+
+**See Also:**
+- `LEAFLINK_API_RULES.md` - API patterns and conventions
+- `WORKFLOWS/` - Step-by-step workflow guides
+- `ERROR_HANDLING.md` - Error troubleshooting
+- `CODE_EXAMPLES.md` - Real code snippets

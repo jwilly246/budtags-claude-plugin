@@ -1,0 +1,203 @@
+{
+  "info": {
+    "name": "Metrc RetailId API v2",
+    "description": "Metrc API v2 endpoints for RetailId",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AssociateQrCodes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/retailid/v2"
+          ],
+          "path": [
+            "associate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010041\",\r\n    \"QrUrls\": [\r\n      \"https://id.14a.com/3W5E11264SGPN\",\r\n      \"https://id.14a.com/3W5E11264SGPO\",\r\n      \"https://id.14a.com/3W5E11264SGPP\"\r\n    ]\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010042\",\r\n    \"QrUrls\": [\r\n      \"https://id.14a.com/3W5E11264SGPR\",\r\n      \"https://id.14a.com/3W5E11264SGPS\",\r\n      \"https://id.14a.com/3W5E11264SGPT\"\r\n    ]\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010043\",\r\n    \"QrUrls\": [\r\n      \"https://id.14a.com/3W5E11264SGPU\",\r\n      \"https://id.14a.com/3W5E11264SGPv\",\r\n      \"https://id.14a.com/3W5E11264SGPW\"\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GenerateQrCodeFromPackage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/retailid/v2"
+          ],
+          "path": [
+            "generate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"PackageLabel\": \"ABCDEF012345670000010041\",\r\n  \"Quantity\": 10\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "MergePackages",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/retailid/v2"
+          ],
+          "path": [
+            "merge"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"packageLabels\": [\r\n    \"ABCDEF012345670000010051\",\r\n    \"ABCDEF012345670000010052\"\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "PackagesInfo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/retailid/v2"
+          ],
+          "path": [
+            "packages",
+            "info"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"packageLabels\": [\r\n    \"ABCDEF012345670000010041\",\r\n    \"ABCDEF012345670000010042\",\r\n    \"ABCDEF012345670000010043\"\r\n  ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ReceiveQrCodesPackageLabel",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/retailid/v2"
+          ],
+          "path": [
+            "receive",
+            "{{label}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ReceiveQrCodesShortCode",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/retailid/v2"
+          ],
+          "path": [
+            "receive",
+            "qr",
+            "{{shortCode}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

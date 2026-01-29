@@ -1,0 +1,82 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__chrome-devtools__*"
+    ],
+    "deny": [
+      "Read(./node_modules/**)",
+      "Read(./vendor/**)",
+      "Read(./docling-env/**)",
+      "Read(./public/build/**)",
+      "Read(./public/storage/**)",
+      "Read(./storage/app/**)",
+      "Read(./storage/logs/**)",
+      "Read(./.phpunit.result.cache)",
+      "Read(./public/label-generator/imgs/**)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-approve-reads.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-commit-gate.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/file-protection.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-tests.py\"",
+            "timeout": 120000
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Evaluate if this subagent completed its assigned task.\n\nSubagent transcript: $ARGUMENTS\n\nCheck:\n1. Did the subagent find what it was looking for?\n2. Did it explore enough files/patterns?\n3. Did it give up too early?\n4. Is the response comprehensive enough?\n\nReturn {\"ok\": true} if complete, or {\"ok\": false, \"reason\": \"explanation\"} if the subagent should continue.",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/skill-forced-eval-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,463 @@
+{
+  "info": {
+    "name": "Metrc Items API v2",
+    "description": "Metrc API v2 endpoints for Items",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetItemById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetCategories",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "categories"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetItemBrands",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "brands"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetImageById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "photo",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetFileById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "file",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"ItemCategory\": \"Buds\",\r\n    \"Name\": \"Buds Item\",\r\n    \"GlobalProductName\": null,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"Strain\": \"Spring Hill Kush\",\r\n    \"ItemBrand\": null,\r\n    \"AdministrationMethod\": null,\r\n    \"UnitCbdPercent\": null,\r\n    \"UnitCbdContent\": null,\r\n    \"UnitCbdContentUnitOfMeasure\": null,\r\n    \"UnitCbdContentDose\": null,\r\n    \"UnitCbdContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcPercent\": null,\r\n    \"UnitThcContent\": null,\r\n    \"UnitThcContentUnitOfMeasure\": null,\r\n    \"UnitThcContentDose\": null,\r\n    \"UnitThcContentDoseUnitOfMeasure\": null,\r\n    \"UnitCbdAPercent\": null,\r\n    \"UnitCbdAContent\": null,\r\n    \"UnitCbdAContentUnitOfMeasure\": null,\r\n    \"UnitCbdAContentDose\": null,\r\n    \"UnitCbdAContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcAPercent\": null,\r\n    \"UnitThcAContent\": null,\r\n    \"UnitThcAContentUnitOfMeasure\": null,\r\n    \"UnitThcAContentDose\": null,\r\n    \"UnitThcAContentDoseUnitOfMeasure\": null,\r\n    \"UnitVolume\": null,\r\n    \"UnitVolumeUnitOfMeasure\": null,\r\n    \"UnitWeight\": null,\r\n    \"UnitWeightUnitOfMeasure\": null,\r\n    \"ServingSize\": null,\r\n    \"SupplyDurationDays\": null,\r\n    \"NumberOfDoses\": null,\r\n    \"PublicIngredients\": null,\r\n    \"ItemIngredients\": null,\r\n    \"Description\": null,\r\n    \"Allergens\": null,\r\n    \"ProductImageFileSystemIds\": null,\r\n    \"ProductPhotoDescription\": null,\r\n    \"LabelImageFileSystemIds\": null,\r\n    \"LabelPhotoDescription\": null,\r\n    \"PackagingImageFileSystemIds\": null,\r\n    \"PackagingPhotoDescription\": null,\r\n    \"ProductPDFFileSystemIds\": null,\r\n    \"ProcessingJobCategoryName\": null,\r\n    \"ProcessingJobTypeName\": \"PJT-1\"\r\n  },\r\n  {\r\n    \"ItemCategory\": \"Infused (edible)\",\r\n    \"Name\": \"Infused Item\",\r\n    \"GlobalProductName\": null,\r\n    \"UnitOfMeasure\": \"Each\",\r\n    \"Strain\": null,\r\n    \"ItemBrand\": null,\r\n    \"AdministrationMethod\": null,\r\n    \"UnitCbdPercent\": null,\r\n    \"UnitCbdContent\": null,\r\n    \"UnitCbdContentUnitOfMeasure\": null,\r\n    \"UnitCbdContentDose\": null,\r\n    \"UnitCbdContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcPercent\": null,\r\n    \"UnitThcContent\": 10.0,\r\n    \"UnitThcContentUnitOfMeasure\": \"Milligrams\",\r\n    \"UnitThcContentDose\": null,\r\n    \"UnitThcContentDoseUnitOfMeasure\": null,\r\n    \"UnitCbdAPercent\": null,\r\n    \"UnitCbdAContent\": null,\r\n    \"UnitCbdAContentUnitOfMeasure\": null,\r\n    \"UnitCbdAContentDose\": null,\r\n    \"UnitCbdAContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcAPercent\": null,\r\n    \"UnitThcAContent\": null,\r\n    \"UnitThcAContentUnitOfMeasure\": null,\r\n    \"UnitThcAContentDose\": null,\r\n    \"UnitThcAContentDoseUnitOfMeasure\": null,\r\n    \"UnitVolume\": null,\r\n    \"UnitVolumeUnitOfMeasure\": null,\r\n    \"UnitWeight\": 150.0,\r\n    \"UnitWeightUnitOfMeasure\": \"Milligrams\",\r\n    \"ServingSize\": null,\r\n    \"SupplyDurationDays\": null,\r\n    \"NumberOfDoses\": null,\r\n    \"PublicIngredients\": null,\r\n    \"ItemIngredients\": null,\r\n    \"Description\": null,\r\n    \"Allergens\": \"Allergens\",\r\n    \"ProductImageFileSystemIds\": [\r\n      5\r\n    ],\r\n    \"ProductPhotoDescription\": \"Product Photo Description\",\r\n    \"LabelImageFileSystemIds\": [\r\n      3\r\n    ],\r\n    \"LabelPhotoDescription\": \"Label Photo Description\",\r\n    \"PackagingImageFileSystemIds\": [\r\n      22\r\n    ],\r\n    \"PackagingPhotoDescription\": \"Packaging Photo Description\",\r\n    \"ProductPDFFileSystemIds\": [\r\n      22\r\n    ],\r\n    \"ProcessingJobCategoryName\": null,\r\n    \"ProcessingJobTypeName\": \"PJT-1\"\r\n  },\r\n  {\r\n    \"ItemCategory\": \"Infused (edible)\",\r\n    \"Name\": \"Infused Juice\",\r\n    \"GlobalProductName\": null,\r\n    \"UnitOfMeasure\": \"Each\",\r\n    \"Strain\": null,\r\n    \"ItemBrand\": null,\r\n    \"AdministrationMethod\": null,\r\n    \"UnitCbdPercent\": null,\r\n    \"UnitCbdContent\": null,\r\n    \"UnitCbdContentUnitOfMeasure\": null,\r\n    \"UnitCbdContentDose\": null,\r\n    \"UnitCbdContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcPercent\": null,\r\n    \"UnitThcContent\": 10.0,\r\n    \"UnitThcContentUnitOfMeasure\": \"Milligrams\",\r\n    \"UnitThcContentDose\": 5.0,\r\n    \"UnitThcContentDoseUnitOfMeasure\": \"Milligrams\",\r\n    \"UnitCbdAPercent\": null,\r\n    \"UnitCbdAContent\": null,\r\n    \"UnitCbdAContentUnitOfMeasure\": null,\r\n    \"UnitCbdAContentDose\": null,\r\n    \"UnitCbdAContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcAPercent\": null,\r\n    \"UnitThcAContent\": null,\r\n    \"UnitThcAContentUnitOfMeasure\": null,\r\n    \"UnitThcAContentDose\": null,\r\n    \"UnitThcAContentDoseUnitOfMeasure\": null,\r\n    \"UnitVolume\": 150.0,\r\n    \"UnitVolumeUnitOfMeasure\": \"Milliliters\",\r\n    \"UnitWeight\": null,\r\n    \"UnitWeightUnitOfMeasure\": null,\r\n    \"ServingSize\": null,\r\n    \"SupplyDurationDays\": null,\r\n    \"NumberOfDoses\": 2.0,\r\n    \"PublicIngredients\": null,\r\n    \"ItemIngredients\": null,\r\n    \"Description\": null,\r\n    \"Allergens\": null,\r\n    \"ProductImageFileSystemIds\": null,\r\n    \"ProductPhotoDescription\": null,\r\n    \"LabelImageFileSystemIds\": null,\r\n    \"LabelPhotoDescription\": null,\r\n    \"PackagingImageFileSystemIds\": null,\r\n    \"PackagingPhotoDescription\": null,\r\n    \"ProductPDFFileSystemIds\": null,\r\n    \"ProcessingJobCategoryName\": \"Category 1\",\r\n    \"ProcessingJobTypeName\": \"PJT-1\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"Name\": \"Buds Item\",\r\n    \"GlobalProductName\": null,\r\n    \"ItemCategory\": \"Buds\",\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"Strain\": \"String Hill Kush\",\r\n    \"ItemBrand\": null,\r\n    \"AdministrationMethod\": null,\r\n    \"UnitCbdPercent\": null,\r\n    \"UnitCbdContent\": null,\r\n    \"UnitCbdContentUnitOfMeasure\": null,\r\n    \"UnitCbdContentDose\": null,\r\n    \"UnitCbdContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcPercent\": null,\r\n    \"UnitThcContent\": null,\r\n    \"UnitThcContentUnitOfMeasure\": null,\r\n    \"UnitThcContentDose\": null,\r\n    \"UnitThcContentDoseUnitOfMeasure\": null,\r\n    \"UnitCbdAPercent\": null,\r\n    \"UnitCbdAContent\": null,\r\n    \"UnitCbdAContentUnitOfMeasure\": null,\r\n    \"UnitCbdAContentDose\": null,\r\n    \"UnitCbdAContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcAPercent\": null,\r\n    \"UnitThcAContent\": null,\r\n    \"UnitThcAContentUnitOfMeasure\": null,\r\n    \"UnitThcAContentDose\": null,\r\n    \"UnitThcAContentDoseUnitOfMeasure\": null,\r\n    \"UnitVolume\": null,\r\n    \"UnitVolumeUnitOfMeasure\": null,\r\n    \"UnitWeight\": null,\r\n    \"UnitWeightUnitOfMeasure\": null,\r\n    \"ServingSize\": null,\r\n    \"SupplyDurationDays\": null,\r\n    \"NumberOfDoses\": null,\r\n    \"PublicIngredients\": null,\r\n    \"ItemIngredients\": null,\r\n    \"Description\": null,\r\n    \"Allergens\": null,\r\n    \"ProductImageFileSystemIds\": null,\r\n    \"ProductPDFFileSystemIds\": null,\r\n    \"ProductPhotoDescription\": null,\r\n    \"LabelImageFileSystemIds\": null,\r\n    \"LabelPhotoDescription\": null,\r\n    \"PackagingImageFileSystemIds\": null,\r\n    \"PackagingPhotoDescription\": null,\r\n    \"ProcessingJobCategoryName\": null,\r\n    \"ProcessingJobTypeName\": \"PJT-1\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Name\": \"Extract Spray Paint\",\r\n    \"GlobalProductName\": null,\r\n    \"ItemCategory\": \"Concentrate (Each)\",\r\n    \"UnitOfMeasure\": \"Each\",\r\n    \"Strain\": null,\r\n    \"ItemBrand\": null,\r\n    \"AdministrationMethod\": null,\r\n    \"UnitCbdPercent\": null,\r\n    \"UnitCbdContent\": null,\r\n    \"UnitCbdContentUnitOfMeasure\": null,\r\n    \"UnitCbdContentDose\": null,\r\n    \"UnitCbdContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcPercent\": null,\r\n    \"UnitThcContent\": null,\r\n    \"UnitThcContentUnitOfMeasure\": null,\r\n    \"UnitThcContentDose\": null,\r\n    \"UnitThcContentDoseUnitOfMeasure\": null,\r\n    \"UnitCbdAPercent\": null,\r\n    \"UnitCbdAContent\": null,\r\n    \"UnitCbdAContentUnitOfMeasure\": null,\r\n    \"UnitCbdAContentDose\": null,\r\n    \"UnitCbdAContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcAPercent\": null,\r\n    \"UnitThcAContent\": null,\r\n    \"UnitThcAContentUnitOfMeasure\": null,\r\n    \"UnitThcAContentDose\": null,\r\n    \"UnitThcAContentDoseUnitOfMeasure\": null,\r\n    \"UnitVolume\": 100.0,\r\n    \"UnitVolumeUnitOfMeasure\": \"Milliliters\",\r\n    \"UnitWeight\": null,\r\n    \"UnitWeightUnitOfMeasure\": null,\r\n    \"ServingSize\": null,\r\n    \"SupplyDurationDays\": null,\r\n    \"NumberOfDoses\": null,\r\n    \"PublicIngredients\": null,\r\n    \"ItemIngredients\": null,\r\n    \"Description\": null,\r\n    \"Allergens\": \"Allergens\",\r\n    \"ProductImageFileSystemIds\": null,\r\n    \"ProductPDFFileSystemIds\": null,\r\n    \"ProductPhotoDescription\": \"Product Photo Description\",\r\n    \"LabelImageFileSystemIds\": null,\r\n    \"LabelPhotoDescription\": \"Label Photo Description\",\r\n    \"PackagingImageFileSystemIds\": null,\r\n    \"PackagingPhotoDescription\": \"Packaging Photo Description\",\r\n    \"ProcessingJobCategoryName\": null,\r\n    \"ProcessingJobTypeName\": \"PJT-1\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Name\": \"Concentrate Extract\",\r\n    \"GlobalProductName\": null,\r\n    \"ItemCategory\": \"Concentrate (Each)\",\r\n    \"UnitOfMeasure\": \"Each\",\r\n    \"Strain\": null,\r\n    \"ItemBrand\": null,\r\n    \"AdministrationMethod\": null,\r\n    \"UnitCbdPercent\": null,\r\n    \"UnitCbdContent\": null,\r\n    \"UnitCbdContentUnitOfMeasure\": null,\r\n    \"UnitCbdContentDose\": null,\r\n    \"UnitCbdContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcPercent\": null,\r\n    \"UnitThcContent\": 10.0,\r\n    \"UnitThcContentUnitOfMeasure\": \"Milligrams\",\r\n    \"UnitThcContentDose\": 5.0,\r\n    \"UnitThcContentDoseUnitOfMeasure\": \"Milligrams\",\r\n    \"UnitCbdAPercent\": null,\r\n    \"UnitCbdAContent\": null,\r\n    \"UnitCbdAContentUnitOfMeasure\": null,\r\n    \"UnitCbdAContentDose\": null,\r\n    \"UnitCbdAContentDoseUnitOfMeasure\": null,\r\n    \"UnitThcAPercent\": null,\r\n    \"UnitThcAContent\": null,\r\n    \"UnitThcAContentUnitOfMeasure\": null,\r\n    \"UnitThcAContentDose\": null,\r\n    \"UnitThcAContentDoseUnitOfMeasure\": null,\r\n    \"UnitVolume\": null,\r\n    \"UnitVolumeUnitOfMeasure\": null,\r\n    \"UnitWeight\": 100.0,\r\n    \"UnitWeightUnitOfMeasure\": \"Milligrams\",\r\n    \"ServingSize\": null,\r\n    \"SupplyDurationDays\": null,\r\n    \"NumberOfDoses\": 2.0,\r\n    \"PublicIngredients\": null,\r\n    \"ItemIngredients\": null,\r\n    \"Description\": null,\r\n    \"Allergens\": null,\r\n    \"ProductImageFileSystemIds\": null,\r\n    \"ProductPDFFileSystemIds\": null,\r\n    \"ProductPhotoDescription\": null,\r\n    \"LabelImageFileSystemIds\": null,\r\n    \"LabelPhotoDescription\": null,\r\n    \"PackagingImageFileSystemIds\": null,\r\n    \"PackagingPhotoDescription\": null,\r\n    \"ProcessingJobCategoryName\": \"Category 1\",\r\n    \"ProcessingJobTypeName\": \"PJT-1\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UploadImage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "photo"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"FileName\": \"Image.png\",\r\n    \"EncodedImageBase64\": \"File encoded in Base64==\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UploadFile",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "file"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"FileName\": \"Image.png\",\r\n    \"EncodedImageBase64\": \"File encoded in Base64==\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Archive",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ArchiveItemBrand",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "brand",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "CreateItemBrand",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "brand"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"Premium\"\r\n  },\r\n  {\r\n    \"Name\": \"Consumer\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateItemBrand",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/items/v2"
+          ],
+          "path": [
+            "brand"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"Name\": \"Premium\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Name\": \"Consumer\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

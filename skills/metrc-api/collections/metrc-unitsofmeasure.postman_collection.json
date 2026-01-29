@@ -1,0 +1,41 @@
+{
+  "info": {
+    "name": "Metrc UnitsOfMeasure API v2",
+    "description": "Metrc API v2 endpoints for UnitsOfMeasure",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/unitsofmeasure/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/unitsofmeasure/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": []
+        }
+      }
+    }
+  ]
+}

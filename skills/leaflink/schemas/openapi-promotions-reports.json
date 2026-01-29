@@ -1,0 +1,521 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Promotions & Reports",
+    "description": "Promotional codes and reporting\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/promocodes/": {
+      "get": {
+        "operationId": "promocodes_list",
+        "summary": "List",
+        "description": "View all promotional codes associated with brands under the company access scope.",
+        "parameters": [
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by company_slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by brand",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "description": "Filter by code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/PromoCode"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "promocodes"
+        ]
+      },
+      "post": {
+        "operationId": "promocodes_create",
+        "summary": "Create",
+        "description": "Create a new promotional code, unique to brand and code.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PromoCode"
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromoCode"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "promocodes"
+        ]
+      },
+      "parameters": []
+    },
+    "/promocodes/{id}/": {
+      "get": {
+        "operationId": "promocodes__read",
+        "summary": "Read",
+        "description": "View a specific promotional code to which the current user\n    has access.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromoCode"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "promocodes"
+        ]
+      },
+      "patch": {
+        "operationId": "promocodes__partial_update",
+        "summary": "Update",
+        "description": "Update a promotional code's start date and end date fields.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/PromoCode"
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromoCode"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "promocodes"
+        ]
+      },
+      "delete": {
+        "operationId": "promocodes__delete",
+        "summary": "Delete",
+        "description": "Remove a promotional code entirely.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "promocodes"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/reports/": {
+      "get": {
+        "operationId": "reports_list",
+        "summary": "List",
+        "description": "List all reports generated under the company access scope.\nFor legacy auth, only reports of types to which the user has permissions will be shown in the list.",
+        "parameters": [
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by company slug.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ReportDownload"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      },
+      "post": {
+        "operationId": "reports_create",
+        "summary": "Create",
+        "description": "Report download viewset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportDownload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDownload"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      },
+      "parameters": []
+    },
+    "/reports/{number}/": {
+      "get": {
+        "operationId": "reports__read",
+        "summary": "Read",
+        "description": "Retrieve an individual report by ID",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDownload"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "number",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "PromoCode": {
+        "required": [
+          "brand",
+          "code",
+          "start_date",
+          "end_date"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "brand": {
+            "title": "Brand",
+            "type": "integer"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "discount_type": {
+            "title": "Discount Type",
+            "type": "string",
+            "enum": [
+              "%"
+            ]
+          },
+          "discount_amount": {
+            "title": "Percent discount",
+            "description": "Percent discount for Order",
+            "type": "string",
+            "format": "decimal"
+          },
+          "start_date": {
+            "title": "Start date",
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_date": {
+            "title": "End date",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ReportDownload": {
+        "required": [
+          "report_type",
+          "company"
+        ],
+        "type": "object",
+        "properties": {
+          "number": {
+            "title": "Number",
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "user": {
+            "title": "User",
+            "description": "User (staff) who exported orders",
+            "type": "integer",
+            "readOnly": true
+          },
+          "status": {
+            "title": "Status of orders export download",
+            "description": "Status of orders export download",
+            "type": "string",
+            "enum": [
+              "running",
+              "failed",
+              "completed"
+            ],
+            "readOnly": true
+          },
+          "report_type": {
+            "title": "Report type",
+            "type": "string",
+            "enum": [
+              "orders-assigned",
+              "orders-received",
+              "orders-sent",
+              "orders-report",
+              "ordered-products",
+              "accounts-receivable",
+              "customer-value",
+              "sales-rep-activity-feed",
+              "brand-performance",
+              "brand-owner-brand-performance",
+              "brand-owner-inventory-overview"
+            ]
+          },
+          "request_time": {
+            "title": "Orders export request date",
+            "description": "Date of requesting orders export",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "complete_time": {
+            "title": "Orders export completed date",
+            "description": "Date of sending email with exported orders",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "company": {
+            "title": "Company",
+            "description": "Company orders export refers to",
+            "type": "integer"
+          },
+          "export": {
+            "title": "Report Export",
+            "description": "The Document that was exported",
+            "type": "string",
+            "readOnly": true,
+            "format": "uri"
+          },
+          "query": {
+            "title": "Query",
+            "type": "object"
+          },
+          "to_email": {
+            "title": "User's email",
+            "description": "Email orders export has been send to",
+            "type": "string",
+            "readOnly": true,
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

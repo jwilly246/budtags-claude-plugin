@@ -1,0 +1,10 @@
+# User-specific settings (not shared with partners)
+settings.local.json
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db

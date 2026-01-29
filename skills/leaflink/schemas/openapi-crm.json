@@ -1,0 +1,963 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - CRM",
+    "description": "Contacts and activity tracking\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/activity-entries/": {
+      "get": {
+        "operationId": "activity-entries_list",
+        "summary": "List",
+        "description": "List all `CompanyActivityEntry` objects of companies the requester has\n    CRM management access for.",
+        "parameters": [
+          {
+            "name": "date__lt",
+            "in": "query",
+            "description": "Filter by entered activity datetime, less than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date__lte",
+            "in": "query",
+            "description": "Filter by entered activity datetime, less than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date__gt",
+            "in": "query",
+            "description": "Filter by entered activity datetime, greater than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date__gte",
+            "in": "query",
+            "description": "Filter by entered activity datetime, greater than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entry",
+            "in": "query",
+            "description": "Filter by activity entry descriptions.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entry__in",
+            "in": "query",
+            "description": "Filter by entry__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entry__startswith",
+            "in": "query",
+            "description": "Filter by entry__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lt",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, less than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lte",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, less than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gt",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, greater than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gte",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, greater than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "created_on__lt",
+            "in": "query",
+            "description": "Filter by created_on datetime, less than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lte",
+            "in": "query",
+            "description": "Filter by created_on datetime, less than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gt",
+            "in": "query",
+            "description": "Filter by created_on datetime, greater than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gte",
+            "in": "query",
+            "description": "Filter by created_on datetime, greater than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Filter by owner ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "description": "Filter by author ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by associated company ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "description": "Filter by associated customer ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "staff",
+            "in": "query",
+            "description": "Filter by associated staff ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by activity type.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by associated brand ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "contact",
+            "in": "query",
+            "description": "Filter by associated contact ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by Company slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "delete",
+            "in": "query",
+            "description": "Filter by deleted or non-deleted entries.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyActivityEntry"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activity-entries"
+        ]
+      },
+      "post": {
+        "operationId": "activity-entries_create",
+        "summary": "Create",
+        "description": "Create a new `CompanyActivityEntry` object for a company you have CRM\n    management access for.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CompanyActivityEntry"
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyActivityEntry"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activity-entries"
+        ]
+      },
+      "parameters": []
+    },
+    "/activity-entries/{id}/": {
+      "get": {
+        "operationId": "activity-entries_read",
+        "summary": "Read",
+        "description": "Get a `CompanyActivityEntry` by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyActivityEntry"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activity-entries"
+        ]
+      },
+      "patch": {
+        "operationId": "activity-entries_partial_update",
+        "summary": "Update",
+        "description": "Update an individual `CompanyActivityEntry` by ID.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CompanyActivityEntry"
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyActivityEntry"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "activity-entries"
+        ]
+      },
+      "delete": {
+        "operationId": "activity-entries_delete",
+        "summary": "Delete",
+        "description": "Set the `delete` flag on a `CompanyActivityEntry` to true. These can\n    be filtered out in list requests.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "activity-entries"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this company activity entry.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/contacts/": {
+      "get": {
+        "operationId": "contacts_list",
+        "summary": "List",
+        "description": "List all contacts for all active companies where the user has the MANAGE_CRM permission.\nCan be filtered by id, creation date, last modified date, first name, and last name.\nThe contact's associated `CompanyCustomer`s can be retrieved at `/api/v2/contacts/{id}/customers/?`",
+        "parameters": [
+          {
+            "name": "modified__lt",
+            "in": "query",
+            "description": "Filter by modified__lt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lte",
+            "in": "query",
+            "description": "Filter by modified__lte",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gt",
+            "in": "query",
+            "description": "Filter by modified__gt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gte",
+            "in": "query",
+            "description": "Filter by modified__gte",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by the exact id of the contact",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "last_name",
+            "in": "query",
+            "description": "Filter by the last name of a contact.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_name__in",
+            "in": "query",
+            "description": "Filter by last_name__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_name__startswith",
+            "in": "query",
+            "description": "Filter by last_name__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lt",
+            "in": "query",
+            "description": "Filter by created_on datetime, less than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lte",
+            "in": "query",
+            "description": "Filter by created_on datetime, less than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gt",
+            "in": "query",
+            "description": "Filter by created_on datetime, greater than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gte",
+            "in": "query",
+            "description": "Filter by created_on datetime, greater than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by owner Company slug.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "first_name",
+            "in": "query",
+            "description": "Filter by the first name of a contact.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "first_name__in",
+            "in": "query",
+            "description": "Filter by first_name__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "first_name__startswith",
+            "in": "query",
+            "description": "Filter by first_name__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Filter by one or multiple company ids, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "delete",
+            "in": "query",
+            "description": "Filter by contact deletion status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Contact"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      },
+      "post": {
+        "operationId": "contacts_create",
+        "summary": "Create",
+        "description": "Create a new contact.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Contact"
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      },
+      "parameters": []
+    },
+    "/contacts/{id}/": {
+      "get": {
+        "operationId": "contacts_read",
+        "summary": "Read",
+        "description": "Retrieve an individual contact by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      },
+      "patch": {
+        "operationId": "contacts_partial_update",
+        "summary": "Update",
+        "description": "Update an existing contact by ID.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Contact"
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      },
+      "delete": {
+        "operationId": "contacts_delete",
+        "summary": "Delete",
+        "description": "Set the `delete` flag to True on a contact by ID. Deleted objects can be filtered out in lists with query parameters.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contacts"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this contact.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "CompanyActivityEntry": {
+        "required": [
+          "type",
+          "entry",
+          "owner",
+          "author"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "created_on": {
+            "title": "Created on",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "date": {
+            "title": "Date",
+            "type": "string",
+            "format": "date-time"
+          },
+          "entry": {
+            "title": "Message",
+            "description": "Message",
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "delete": {
+            "title": "Activity deleted",
+            "description": "Is this Activity marked as deleted?",
+            "type": "boolean"
+          },
+          "owner": {
+            "title": "Company that owns Entry",
+            "description": "Company that owns activity entry",
+            "type": "integer"
+          },
+          "author": {
+            "title": "Activity Entry Author",
+            "description": "Author who entered Activity",
+            "type": "integer"
+          },
+          "company": {
+            "title": "Company entry is about",
+            "description": "Company entry is about",
+            "type": "integer",
+            "nullable": true
+          },
+          "customer": {
+            "title": "Customer Company entry is about",
+            "description": "Company entry is about",
+            "type": "integer",
+            "nullable": true
+          },
+          "staff": {
+            "title": "Staff entry is focused on",
+            "description": "Staff entry is focused on",
+            "type": "integer",
+            "nullable": true
+          },
+          "brand": {
+            "title": "Brand",
+            "type": "integer",
+            "nullable": true
+          },
+          "contact": {
+            "title": "Contact",
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "Contact": {
+        "required": [
+          "owner",
+          "first_name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "created_on": {
+            "title": "Created on",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "integer"
+          },
+          "first_name": {
+            "title": "First name",
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 1
+          },
+          "last_name": {
+            "title": "Last name",
+            "type": "string",
+            "maxLength": 30
+          },
+          "email": {
+            "title": "Email address",
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "secondary_email": {
+            "title": "Secondary email address",
+            "type": "string",
+            "format": "email",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "role": {
+            "title": "Position",
+            "description": "Position or role at company",
+            "type": "string",
+            "maxLength": 400,
+            "nullable": true
+          },
+          "description": {
+            "title": "Description",
+            "description": "An overview of the contact",
+            "type": "string",
+            "maxLength": 1500,
+            "nullable": true
+          },
+          "phone": {
+            "title": "Phone",
+            "description": "Phone Number of Brand",
+            "type": "string",
+            "maxLength": 400,
+            "nullable": true
+          },
+          "phone_extension": {
+            "title": "Phone Extension",
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "secondary_phone": {
+            "title": "Secondary Phone",
+            "description": "Secondary Phone Number of Brand",
+            "type": "string",
+            "maxLength": 400,
+            "nullable": true
+          },
+          "secondary_phone_extension": {
+            "title": "Secondary Phone Extension",
+            "type": "string",
+            "maxLength": 20,
+            "nullable": true
+          },
+          "delete": {
+            "title": "Contact deleted",
+            "description": "Is this Contact marked as deleted?",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,526 @@
+---
+name: metrc-api
+description: Use this skill when working with Metrc cannabis tracking API integration, finding specific endpoints, understanding request/response formats, or implementing Metrc workflows.
+---
+
+# Metrc API Reference Skill
+
+You are now equipped with comprehensive knowledge of the complete Metrc API v2. This skill provides instant access to all 258 Metrc endpoints across 26 categories, plus integration patterns and best practices.
+
+## Your Capabilities
+
+When the user asks about Metrc API integration, you can:
+
+1. **Find Endpoints**: Search for specific endpoints by name, category, HTTP method, or purpose
+2. **Provide Details**: Read from 26 collection JSON files in `collections/` to get exact request/response formats
+3. **Explain Patterns**: Reference `METRC_API_RULES.md` for authentication, pagination, license restrictions
+4. **Generate Code**: Help implement Metrc API calls in Laravel/PHP with proper formatting
+5. **Check Compatibility**: Advise on license type restrictions (cultivation vs processing vs retail)
+6. **Debug Issues**: Help troubleshoot common API integration problems
+
+## Available Resources
+
+- **26 Postman Collection Files**: `collections/metrc-*.postman_collection.json` - Full endpoint details
+- **API Rules Document**: `METRC_API_RULES.md` - Patterns, conventions, best practices
+- **This Skill Index**: Complete endpoint catalog below
+
+## Critical Information to Remember
+
+### License Type Restrictions (MOST IMPORTANT!)
+
+**ALWAYS check license type before recommending plant endpoints:**
+
+- **Cultivation** (`AU-C-######`): Full access to Plants, PlantBatches, Harvests
+- **Processing** (`AU-P-######`): Packages, Items, LabTests - **NO plant endpoints**
+- **Retail** (`AU-R-######`): Sales, Packages, Transfers - **NO plant endpoints**
+- **Testing Lab** (`AU-L-######`): LabTests only
+
+**Plant endpoints (`/plants/v2/*`, `/plantbatches/v2/*`) will return 401/403 for non-cultivation licenses.**
+
+### Universal Requirements
+
+- **ALL endpoints** require `licenseNumber` query parameter
+- **Date format**: ISO 8601 (`2025-01-15` or `2025-01-15T13:30:00Z`)
+- **Batch operations**: Most POST/PUT accept arrays of objects
+- **Pagination**: Use `pageNumber` and `pageSize` query params
+- **Content-Type**: `application/json` for POST/PUT requests
+
+---
+
+## Complete Endpoint Index (258 Total)
+
+### 📦 Packages (31 endpoints) - `collections/metrc-packages.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/packages/v2/{id}` - Get package by ID
+- GET `/packages/v2/{label}` - Get package by label
+- GET `/packages/v2/active` - Get all active packages
+- GET `/packages/v2/inactive` - Get inactive packages
+- GET `/packages/v2/onhold` - Get packages on hold
+- GET `/packages/v2/intransit` - Get packages in transit
+- GET `/packages/v2/types` - Get package types
+- GET `/packages/v2/{id}/labtestresults` - Get lab test results for package
+
+**POST Endpoints:**
+- POST `/packages/v2/adjust` - Adjust package quantities/weights
+- POST `/packages/v2/finish` - Finish packages
+- POST `/packages/v2/unfinish` - Unfinish packages
+- POST `/packages/v2/remediate` - Remediate packages
+- POST `/packages/v2/create` - Create new packages
+- POST `/packages/v2/create/testing` - Create packages for testing
+- POST `/packages/v2/create/plantings` - Create plantings from packages
+
+**PUT Endpoints:**
+- PUT `/packages/v2/location` - Move packages to new location
+- PUT `/packages/v2/item` - Change package item
+- PUT `/packages/v2/note` - Update package notes
+
+---
+
+### 🌿 Plants (33 endpoints) - `collections/metrc-plants.postman_collection.json`
+
+**⚠️ CULTIVATION LICENSES ONLY**
+
+**GET Endpoints:**
+- GET `/plants/v2/{id}` - Get plant by ID
+- GET `/plants/v2/{label}` - Get plant by label
+- GET `/plants/v2/vegetative` - Get vegetative plants (clones/seedlings)
+- GET `/plants/v2/flowering` - Get flowering plants
+- GET `/plants/v2/mother` - Get mother plants
+- GET `/plants/v2/mother/inactive` - Get inactive mother plants
+- GET `/plants/v2/mother/onhold` - Get on-hold mother plants
+- GET `/plants/v2/waste` - Get plant waste records
+- GET `/plants/v2/waste/{id}/plants` - Get plants from waste record
+- GET `/plants/v2/growthphases` - Get available growth phases
+- GET `/plants/v2/additives/types` - Get additive types
+
+**POST Endpoints:**
+- POST `/plants/v2/plantings` - Create plant batches from plants
+- POST `/plants/v2/moveplants` - Move plants to new location
+- POST `/plants/v2/changegrowthphases` - Change plant growth phases
+- POST `/plants/v2/destroyplants` - Destroy plants
+- POST `/plants/v2/manicureplants` - Record plant manicuring
+- POST `/plants/v2/harvestplants` - Harvest plants
+- POST `/plants/v2/additives` - Record additive applications
+- POST `/plants/v2/additives/byplants` - Record additives by plant tags
+
+**PUT Endpoints:**
+- PUT `/plants/v2/tag` - Replace plant tags
+- PUT `/plants/v2/split` - Split plant groups
+
+---
+
+### 🌱 PlantBatches (20 endpoints) - `collections/metrc-plantbatches.postman_collection.json`
+
+**⚠️ CULTIVATION LICENSES ONLY**
+
+**GET Endpoints:**
+- GET `/plantbatches/v2/{id}` - Get plant batch by ID
+- GET `/plantbatches/v2/active` - Get active plant batches
+- GET `/plantbatches/v2/inactive` - Get inactive plant batches
+- GET `/plantbatches/v2/types` - Get plant batch types
+- GET `/plantbatches/v2/waste` - Get plant batch waste
+
+**POST Endpoints:**
+- POST `/plantbatches/v2/createplantings` - Create plantings
+- POST `/plantbatches/v2/createpackages` - Create packages from plant batch
+- POST `/plantbatches/v2/packages/frommotherplant` - Create packages from mother plants
+- POST `/plantbatches/v2/split` - Split plant batches
+- POST `/plantbatches/v2/additives` - Record additives on plant batches
+
+**PUT Endpoints:**
+- PUT `/plantbatches/v2/moveplantbatches` - Move plant batches
+- PUT `/plantbatches/v2/changegrowthphase` - Change growth phase
+- PUT `/plantbatches/v2/destroy` - Destroy plant batches
+- PUT `/plantbatches/v2/tag` - Replace plant batch tags
+
+---
+
+### 🌾 Harvests (15 endpoints) - `collections/metrc-harvests.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/harvests/v2/{id}` - Get harvest by ID
+- GET `/harvests/v2/active` - Get active harvests
+- GET `/harvests/v2/onhold` - Get harvests on hold
+- GET `/harvests/v2/inactive` - Get inactive harvests
+- GET `/harvests/v2/waste` - Get harvest waste
+- GET `/harvests/v2/waste/types` - Get harvest waste types
+
+**POST Endpoints:**
+- POST `/harvests/v2/packages` - Create packages from harvest
+- POST `/harvests/v2/packages/testing` - Create testing packages from harvest
+- POST `/harvests/v2/waste` - Record harvest waste
+- POST `/harvests/v2/removewaste` - Remove waste from harvest
+
+**PUT Endpoints:**
+- PUT `/harvests/v2/rename` - Rename harvest
+- PUT `/harvests/v2/finish` - Finish harvest
+- PUT `/harvests/v2/unfinish` - Unfinish harvest
+- PUT `/harvests/v2/move` - Move harvest location
+
+---
+
+### 💰 Sales (35 endpoints) - `collections/metrc-sales.postman_collection.json`
+
+**⚠️ RETAIL LICENSES ONLY**
+
+**GET Endpoints:**
+- GET `/sales/v2/receipts` - Get sales receipts
+- GET `/sales/v2/receipts/{id}` - Get receipt by ID
+- GET `/sales/v2/receipts/active` - Get active receipts
+- GET `/sales/v2/receipts/inactive` - Get inactive receipts
+- GET `/sales/v2/transactions` - Get sales transactions
+- GET `/sales/v2/transactions/{date}` - Get transactions by date
+- GET `/sales/v2/deliveries` - Get delivery sales
+- GET `/sales/v2/customertypes` - Get customer types
+- GET `/sales/v2/paymenttypes` - Get payment types
+
+**POST Endpoints:**
+- POST `/sales/v2/receipts` - Create sales receipts
+- POST `/sales/v2/transactions` - Record sales transactions
+
+**PUT Endpoints:**
+- PUT `/sales/v2/receipts` - Update sales receipts
+- PUT `/sales/v2/transactions/{date}` - Update transactions
+
+**DELETE Endpoints:**
+- DELETE `/sales/v2/receipts/{id}` - Void sales receipt
+
+---
+
+### 🚚 Transfers (23 endpoints) - `collections/metrc-transfers.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/transfers/v2/incoming` - Get incoming transfers
+- GET `/transfers/v2/outgoing` - Get outgoing transfers
+- GET `/transfers/v2/rejected` - Get rejected transfers
+- GET `/transfers/v2/{id}/deliveries` - Get deliveries for transfer
+- GET `/transfers/v2/deliveries/{id}/packages` - Get packages in delivery
+- GET `/transfers/v2/deliveries/{id}/packages/wholesale` - Get wholesale packages
+- GET `/transfers/v2/deliveries/{id}/transporters` - Get transporters
+- GET `/transfers/v2/templates` - Get transfer templates
+- GET `/transfers/v2/types` - Get transfer types
+
+**POST Endpoints:**
+- POST `/transfers/v2/external/incoming` - Create external incoming transfer
+- POST `/transfers/v2/templates` - Create transfer template
+
+**PUT Endpoints:**
+- PUT `/transfers/v2/external/incoming` - Update external incoming transfer
+- PUT `/transfers/v2/templates` - Update transfer template
+
+**DELETE Endpoints:**
+- DELETE `/transfers/v2/external/incoming/{id}` - Void incoming transfer
+- DELETE `/transfers/v2/templates/{id}` - Delete transfer template
+
+---
+
+### 🧪 LabTests (8 endpoints) - `collections/metrc-labtests.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/labtests/v2/states` - Get lab test states
+- GET `/labtests/v2/types` - Get lab test types
+- GET `/labtests/v2/results` - Get lab test results
+
+**POST Endpoints:**
+- POST `/labtests/v2/record` - Record lab test results
+- POST `/labtests/v2/labtestdocument` - Upload lab test document (COA)
+
+**PUT Endpoints:**
+- PUT `/labtests/v2/labtestdocument` - Update lab test document
+
+**DELETE Endpoints:**
+- DELETE `/labtests/v2/results/{id}` - Delete lab test result
+
+---
+
+### 📋 Items (15 endpoints) - `collections/metrc-items.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/items/v2/{id}` - Get item by ID
+- GET `/items/v2/active` - Get active items
+- GET `/items/v2/inactive` - Get inactive items
+- GET `/items/v2/categories` - Get item categories
+- GET `/items/v2/brands` - Get item brands
+- GET `/items/v2/photo/{id}` - Get item photo
+
+**POST Endpoints:**
+- POST `/items/v2/create` - Create new items
+- POST `/items/v2/photo` - Upload item photo
+
+**PUT Endpoints:**
+- PUT `/items/v2/update` - Update items
+
+**DELETE Endpoints:**
+- DELETE `/items/v2/{id}` - Delete item
+
+---
+
+### 🏭 ProcessingJob (16 endpoints) - `collections/metrc-processingjob.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/processingjobs/v2/active` - Get active processing jobs
+- GET `/processingjobs/v2/inactive` - Get inactive processing jobs
+- GET `/processingjobs/v2/types` - Get processing job types
+- GET `/processingjobs/v2/categories` - Get processing job categories
+
+**POST Endpoints:**
+- POST `/processingjobs/v2/create` - Create processing job
+- POST `/processingjobs/v2/create/packages` - Create packages from processing job
+
+**PUT Endpoints:**
+- PUT `/processingjobs/v2/update` - Update processing job
+- PUT `/processingjobs/v2/close` - Close processing job
+
+---
+
+### 📍 Locations (7 endpoints) - `collections/metrc-locations.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/locations/v2/active` - Get active locations
+- GET `/locations/v2/types` - Get location types
+
+**POST Endpoints:**
+- POST `/locations/v2/create` - Create new locations
+
+**PUT Endpoints:**
+- PUT `/locations/v2/update` - Update locations
+
+**DELETE Endpoints:**
+- DELETE `/locations/v2/{id}` - Delete location
+
+---
+
+### 📍 Sublocations (6 endpoints) - `collections/metrc-sublocations.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/sublocations/v2/active` - Get active sublocations
+
+**POST Endpoints:**
+- POST `/sublocations/v2/create` - Create sublocations
+
+**PUT Endpoints:**
+- PUT `/sublocations/v2/update` - Update sublocations
+
+**DELETE Endpoints:**
+- DELETE `/sublocations/v2/{id}` - Delete sublocation
+
+---
+
+### 🏷️ Tags (3 endpoints) - `collections/metrc-tags.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/tags/v2/package/available` - Get available package tags
+- GET `/tags/v2/plant/available` - Get available plant tags (cultivation only)
+- GET `/tags/v2/location/available` - Get available location tags
+
+---
+
+### 🏷️ Strains (6 endpoints) - `collections/metrc-strains.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/strains/v2/active` - Get active strains
+- GET `/strains/v2/{id}` - Get strain by ID
+
+**POST Endpoints:**
+- POST `/strains/v2/create` - Create strains
+
+**PUT Endpoints:**
+- PUT `/strains/v2/update` - Update strains
+
+**DELETE Endpoints:**
+- DELETE `/strains/v2/{id}` - Delete strain
+
+---
+
+### 🚛 Transporters (10 endpoints) - `collections/metrc-transporters.postman_collection.json`
+
+**GET Endpoints:**
+- GET `/transporters/v2/` - Get transporters
+- GET `/transporters/v2/{id}` - Get transporter by ID
+
+**POST Endpoints:**
+- POST `/transporters/v2/create` - Create transporters
+
+**PUT Endpoints:**
+- PUT `/transporters/v2/update` - Update transporters
+
+**DELETE Endpoints:**
+- DELETE `/transporters/v2/{id}` - Delete transporter
+
+---
+
+### 🏥 Medical/Patient Endpoints
+
+**Patients (5 endpoints)** - `collections/metrc-patients.postman_collection.json`
+- GET `/patients/v2/active` - Get active patients
+- POST `/patients/v2/add` - Add patients
+- PUT `/patients/v2/update` - Update patients
+- DELETE `/patients/v2/{id}` - Delete patient
+
+**PatientsStatus (1 endpoint)** - `collections/metrc-patientsstatus.postman_collection.json`
+- GET `/patients/v2/status/{license}` - Get patient status
+
+**PatientCheckIns (5 endpoints)** - `collections/metrc-patientcheckins.postman_collection.json`
+- GET `/patients/v2/checkins` - Get patient check-ins
+- POST `/patients/v2/checkins` - Record patient check-in
+
+**CaregiversStatus (1 endpoint)** - `collections/metrc-caregiversstatus.postman_collection.json`
+- GET `/caregivers/v2/status/{license}` - Get caregiver status
+
+---
+
+### 🧪 Reference Data Endpoints
+
+**AdditivesTemplates (5 endpoints)** - `collections/metrc-additivestemplates.postman_collection.json`
+- GET `/additivestemplates/v2/active` - Get active templates
+- POST `/additivestemplates/v2/create` - Create templates
+
+**UnitsOfMeasure (2 endpoints)** - `collections/metrc-unitsofmeasure.postman_collection.json`
+- GET `/unitsofmeasure/v2/active` - Get active units of measure
+- GET `/unitsofmeasure/v2/types` - Get UOM types
+
+**WasteMethods (1 endpoint)** - `collections/metrc-wastemethods.postman_collection.json`
+- GET `/wastemethods/v2/all` - Get all waste methods
+
+**RetailId (6 endpoints)** - `collections/metrc-retailid.postman_collection.json`
+- GET `/retailids/v2/` - Get retail IDs
+- POST `/retailids/v2/create` - Create retail IDs
+
+---
+
+### 🏢 Organization Endpoints
+
+**Facilities (1 endpoint)** - `collections/metrc-facilities.postman_collection.json`
+- GET `/facilities/v2/` - Get all facilities for your account
+
+**Employees (2 endpoints)** - `collections/metrc-employees.postman_collection.json`
+- GET `/employees/v2/` - Get employees for facility
+- GET `/employees/v2/{id}/permissions` - Get employee permissions
+
+---
+
+### 🔧 Developer/Testing Endpoints
+
+**Sandbox (1 endpoint)** - `collections/metrc-sandbox.postman_collection.json`
+- POST `/sandbox/v2/clear` - Clear sandbox data (testing environment only)
+
+**Webhooks (5 endpoints)** - `collections/metrc-webhooks.postman_collection.json`
+- GET `/webhooks/v2/subscriptions` - Get webhook subscriptions
+- POST `/webhooks/v2/subscriptions` - Create webhook subscription
+- PUT `/webhooks/v2/subscriptions` - Update webhook subscription
+- DELETE `/webhooks/v2/subscriptions/{id}` - Delete webhook subscription
+
+---
+
+## How to Use This Skill
+
+### Example Usage Patterns
+
+**User asks: "How do I get all active packages?"**
+You respond:
+```
+Use GET /packages/v2/active with required query parameter licenseNumber.
+
+Example:
+GET https://api-ca.metrc.com/packages/v2/active?licenseNumber=AU-R-000001&pageNumber=1&pageSize=50
+
+For detailed request/response format, I can read from collections/metrc-packages.postman_collection.json
+```
+
+**User asks: "Show me how to create packages from a harvest"**
+You respond:
+```
+Use POST /harvests/v2/packages
+
+License compatibility: Works with all license types
+Required: licenseNumber query parameter
+Request body: Array of package objects
+
+Let me read the exact format from collections/metrc-harvests.postman_collection.json...
+[Read file and show structure]
+```
+
+**User asks: "Can retail licenses access plant endpoints?"**
+You respond:
+```
+NO. Plant endpoints (/plants/v2/*, /plantbatches/v2/*) are ONLY available to Cultivation licenses (AU-C-######).
+
+Retail licenses (AU-R-######) will receive 401/403 errors when attempting to access:
+- /plants/v2/*
+- /plantbatches/v2/*
+- Plant-specific waste endpoints
+
+Retail licenses CAN access:
+- /packages/v2/*
+- /sales/v2/*
+- /transfers/v2/*
+- /items/v2/*
+
+See METRC_API_RULES.md section "License Type Restrictions" for complete details.
+```
+
+**User asks: "What's the request format for recording lab test results?"**
+You respond:
+```
+Let me read the exact endpoint details from collections/metrc-labtests.postman_collection.json...
+[Read file, extract POST /labtests/v2/record endpoint, show full request body structure]
+```
+
+---
+
+## Key Files to Reference
+
+When helping users, you can:
+
+1. **Read collection files** for exact endpoint details:
+   ```
+   Read file: collections/metrc-{category}.postman_collection.json
+   Extract: Request URL, method, query params, request body structure
+   ```
+
+2. **Reference METRC_API_RULES.md** for:
+   - Authentication requirements
+   - Pagination patterns
+   - Batch operation examples
+   - License type restrictions
+   - Date format requirements
+   - Error handling patterns
+
+3. **Use this index** for:
+   - Quick endpoint lookup
+   - Category browsing
+   - HTTP method reference
+
+---
+
+## Important Reminders
+
+### Always Consider:
+1. ✅ **License Type**: Is this endpoint compatible with the user's license type?
+2. ✅ **Query Parameters**: Include `licenseNumber` (always required)
+3. ✅ **Date Format**: Use ISO 8601 format
+4. ✅ **Batch Operations**: Most POST/PUT accept arrays
+5. ✅ **Pagination**: Include `pageNumber` and `pageSize` for large result sets
+6. ✅ **Content-Type**: Set `application/json` for POST/PUT
+
+### Common Pitfalls to Avoid:
+- ❌ Recommending plant endpoints for non-cultivation licenses
+- ❌ Forgetting `licenseNumber` query parameter
+- ❌ Using wrong date format (must be ISO 8601)
+- ❌ Not handling pagination for large datasets
+- ❌ Missing Content-Type header on POST/PUT requests
+
+---
+
+## Your Mission
+
+Help users successfully integrate with Metrc API by:
+- Providing accurate endpoint information from the collection files
+- Explaining license type restrictions clearly
+- Generating correct request formats
+- Referencing best practices from METRC_API_RULES.md
+- Troubleshooting integration issues
+- Writing code examples that follow Laravel/PHP conventions
+
+**You have complete knowledge of all 258 Metrc API v2 endpoints. Use it wisely!**

@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "Metrc LabTests API v2",
+    "description": "Metrc API v2 endpoints for LabTests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetStates",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "states"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetBatches",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "batches"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "types"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetPackagesLabResults",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "results"
+          ],
+          "query": [
+            {
+              "key": "packageId",
+              "value": "{{packageId}}"
+            },
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Record",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "record"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000000001\",\r\n    \"ResultDate\": \"2015-12-15T00:00:00Z\",\r\n    \"DocumentFileName\": \"Sparkly Ventures Lab Results 20151215.pdf\",\r\n    \"DocumentFileBase64\": \"File encoded in Base64==\",\r\n    \"Results\": [\r\n      {\r\n        \"LabTestTypeName\": \"THC\",\r\n        \"Quantity\": 100.2345,\r\n        \"Passed\": true,\r\n        \"Notes\": \"\"\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000000002\",\r\n    \"ResultDate\": \"2015-12-15T00:00:00Z\",\r\n    \"DocumentFileName\": null,\r\n    \"DocumentFileBase64\": null,\r\n    \"Results\": [\r\n      {\r\n        \"LabTestTypeName\": \"THC\",\r\n        \"Quantity\": 100.2345,\r\n        \"Passed\": true,\r\n        \"Notes\": \"\"\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateLabTestDocument",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "labtestdocument"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"LabTestResultId\": 1,\r\n    \"DocumentFileName\": \"Medigrazers Lab Results 20181215.pdf\",\r\n    \"DocumentFileBase64\": \"File encoded in Base64==\"\r\n  },\r\n  {\r\n    \"LabTestResultId\": 2,\r\n    \"DocumentFileName\": \"Medigrazers Lab Results 20190215.pdf\",\r\n    \"DocumentFileBase64\": \"File encoded in Base64==\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ReleaseResults",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "results",
+            "release"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010041\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010042\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetLabTestDocumentById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/labtests/v2"
+          ],
+          "path": [
+            "labtestdocument",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

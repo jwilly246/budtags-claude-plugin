@@ -1,0 +1,526 @@
+{
+  "info": {
+    "name": "Metrc ProcessingJob API v2",
+    "description": "Metrc API v2 endpoints for ProcessingJob",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetProcessingJobById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActiveJobTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes",
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactiveJobTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes",
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetAttributes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes",
+            "attributes"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetCategories",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes",
+            "categories"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "CreatePackages",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "createpackages"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"JobName\": \"Job 1\",\r\n    \"Tag\": \"ABCDEFG11232131\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": null,\r\n    \"Quantity\": 12.0,\r\n    \"UnitOfMeasure\": \"Grams\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"Note\": null,\r\n    \"ProductionBatchNumber\": null,\r\n    \"FinishProcessingJob\": false,\r\n    \"FinishDate\": null,\r\n    \"WasteCountQuantity\": null,\r\n    \"WasteCountUnitOfMeasureName\": null,\r\n    \"WasteVolumeQuantity\": null,\r\n    \"WasteVolumeUnitOfMeasureName\": null,\r\n    \"WasteWeightQuantity\": null,\r\n    \"WasteWeightUnitOfMeasureName\": null,\r\n    \"FinishNote\": null,\r\n    \"PackageDate\": null,\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Start",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "start"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"JobName\": \"Job 1\",\r\n    \"JobType\": \"Infusing\",\r\n    \"CountUnitOfMeasure\": \"Each\",\r\n    \"VolumeUnitOfMeasure\": \"Fluid Ounces\",\r\n    \"WeightUnitOfMeasure\": \"Ounces\",\r\n    \"Packages\": [\r\n      {\r\n        \"Label\": \"ABCDEF012345670000010042\",\r\n        \"Quantity\": 10.0,\r\n        \"UnitOfMeasure\": \"Grams\"\r\n      },\r\n      {\r\n        \"Label\": \"ABCDEF012345670000010043\",\r\n        \"Quantity\": 5.0,\r\n        \"UnitOfMeasure\": \"Grams\"\r\n      }\r\n    ],\r\n    \"StartDate\": \"0001-01-01T00:00:00Z\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Adjust",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "adjust"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 0,\r\n    \"AdjustmentReason\": \"Data Entry\",\r\n    \"AdjustmentDate\": \"2021-11-01T00:00:00Z\",\r\n    \"AdjustmentNote\": null,\r\n    \"CountUnitOfMeasureName\": null,\r\n    \"VolumeUnitOfMeasureName\": \"Fluid Ounces\",\r\n    \"WeightUnitOfMeasureName\": \"Ounces\",\r\n    \"Packages\": [\r\n      {\r\n        \"Label\": \"ABCDEF012345670000010042\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Grams\"\r\n      },\r\n      {\r\n        \"Label\": \"ABCDEF012345670000010043\",\r\n        \"Quantity\": 3.0,\r\n        \"UnitOfMeasure\": \"Liters\"\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    \"Id\": 0,\r\n    \"AdjustmentReason\": \"Data Entry\",\r\n    \"AdjustmentDate\": \"2021-11-01T00:00:00Z\",\r\n    \"AdjustmentNote\": null,\r\n    \"CountUnitOfMeasureName\": \"Each\",\r\n    \"VolumeUnitOfMeasureName\": \"Fluid Ounces\",\r\n    \"WeightUnitOfMeasureName\": null,\r\n    \"Packages\": [\r\n      {\r\n        \"Label\": \"ABCDEF012345670000010042\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Each\"\r\n      },\r\n      {\r\n        \"Label\": \"ABCDEF012345670000010043\",\r\n        \"Quantity\": 3.0,\r\n        \"UnitOfMeasure\": \"Liters\"\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreateJobTypes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"Infuse Brownies\",\r\n    \"Description\": \"Turn Buds into Brownies\",\r\n    \"Category\": \"Processing\",\r\n    \"ProcessingSteps\": \"Extract THC and Bake\",\r\n    \"Attributes\": [\r\n      \"Infuse\",\r\n      \"Cooking\",\r\n      \"Food\"\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Finish",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "finish"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"FinishDate\": \"2021-11-23T00:00:00Z\",\r\n    \"FinishNote\": \"Infusing\",\r\n    \"TotalCountWaste\": null,\r\n    \"WasteCountUnitOfMeasureName\": null,\r\n    \"TotalVolumeWaste\": null,\r\n    \"WasteVolumeUnitOfMeasureName\": null,\r\n    \"TotalWeightWaste\": 10.0,\r\n    \"WasteWeightUnitOfMeasureName\": \"Ounces\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Unfinish",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "unfinish"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateJobTypes",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"Name\": \"Vape Pen\",\r\n    \"Description\": \"Create extract for vape pen\",\r\n    \"CategoryName\": \"Vape\",\r\n    \"ProcessingSteps\": \"Extract THC and infuse into pen\",\r\n    \"Attributes\": [\r\n      \"Vape\",\r\n      \"Infuse\"\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ArchiveJobTypes",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "jobtypes",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ArchiveJobs",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/processing/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

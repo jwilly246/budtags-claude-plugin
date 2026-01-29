@@ -1,0 +1,1132 @@
+{
+  "info": {
+    "name": "Metrc Plants API v2",
+    "description": "Metrc API v2 endpoints for Plants",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetAdditiveTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "additives",
+            "types"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetPlantById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetPlantByLabel",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "{{label}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetVegetativePlants",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "vegetative"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetFloweringPlants",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "flowering"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetOnHold",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "onhold"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetMotherPlants",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "mother"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactiveMotherPlants",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "mother",
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetOnHoldMotherPlants",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "mother",
+            "onhold"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetAdditives",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "additives"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetGrowthPhases",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "growthphases"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetWasteReasons",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "waste",
+            "reasons"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "RecordAdditivesByPlants",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "additives"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"AdditiveType\": \"Fertilizer\",\r\n    \"ProductTradeName\": \"Wonder Sprout\",\r\n    \"EpaRegistrationNumber\": null,\r\n    \"ProductSupplier\": \"G Labs\",\r\n    \"ApplicationDevice\": \"GreatDistributor 210lb\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Phosphorous\",\r\n        \"Percentage\": 30.0\r\n      },\r\n      {\r\n        \"Name\": \"Nitrogen\",\r\n        \"Percentage\": 15.0\r\n      },\r\n      {\r\n        \"Name\": \"Potassium\",\r\n        \"Percentage\": 15.0\r\n      }\r\n    ],\r\n    \"PlantLabels\": [\r\n      \"ABCDEF012345670000010011\",\r\n      \"ABCDEF012345670000010012\"\r\n    ],\r\n    \"ActualDate\": \"2019-12-15\"\r\n  },\r\n  {\r\n    \"AdditiveType\": \"Pesticide\",\r\n    \"ProductTradeName\": \"Pure Triazine\",\r\n    \"EpaRegistrationNumber\": null,\r\n    \"ProductSupplier\": \"G Labs\",\r\n    \"ApplicationDevice\": \"GreatDistributor 210lb\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Phosphorous\",\r\n        \"Percentage\": 30.0\r\n      },\r\n      {\r\n        \"Name\": \"Nitrogen\",\r\n        \"Percentage\": 15.0\r\n      },\r\n      {\r\n        \"Name\": \"Potassium\",\r\n        \"Percentage\": 15.0\r\n      }\r\n    ],\r\n    \"PlantLabels\": [\r\n      \"ABCDEF012345670000010013\",\r\n      \"ABCDEF012345670000010014\"\r\n    ],\r\n    \"ActualDate\": \"2019-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordAdditivesByPlantsUsingAdditivesTemplate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "additives",
+            "usingtemplate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"AdditivesTemplateName\": \"Additive Template 1\",\r\n    \"Rate\": \"5 Pounds\",\r\n    \"Volume\": \"1000 Sq. ft.\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"PlantLabels\": [\r\n      \"ABCDEF012345670000010011\",\r\n      \"ABCDEF012345670000010012\"\r\n    ],\r\n    \"ActualDate\": \"2025-01-24\"\r\n  },\r\n  {\r\n    \"AdditivesTemplateName\": \"Additive Template 2\",\r\n    \"Rate\": \"4 Grams\",\r\n    \"Volume\": \"2000 Yards\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"PlantLabels\": [\r\n      \"ABCDEF012345670000010013\",\r\n      \"ABCDEF012345670000010014\"\r\n    ],\r\n    \"ActualDate\": \"2025-01-24\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordAdditivesByLocation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "additives",
+            "bylocation"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"AdditiveType\": \"Fertilizer\",\r\n    \"ProductTradeName\": \"Wonder Sprout\",\r\n    \"EpaRegistrationNumber\": null,\r\n    \"ProductSupplier\": \"G Labs\",\r\n    \"ApplicationDevice\": \"GreatDistributor 210lb\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Phosphorous\",\r\n        \"Percentage\": 30.0\r\n      },\r\n      {\r\n        \"Name\": \"Nitrogen\",\r\n        \"Percentage\": 15.0\r\n      },\r\n      {\r\n        \"Name\": \"Potassium\",\r\n        \"Percentage\": 15.0\r\n      }\r\n    ],\r\n    \"LocationName\": \"Plants Location\",\r\n    \"SublocationName\": null,\r\n    \"ActualDate\": \"2019-12-15\"\r\n  },\r\n  {\r\n    \"AdditiveType\": \"Pesticide\",\r\n    \"ProductTradeName\": \"Pure Triazine\",\r\n    \"EpaRegistrationNumber\": null,\r\n    \"ProductSupplier\": \"G Labs\",\r\n    \"ApplicationDevice\": \"GreatDistributor 210lb\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Phosphorous\",\r\n        \"Percentage\": 30.0\r\n      },\r\n      {\r\n        \"Name\": \"Nitrogen\",\r\n        \"Percentage\": 15.0\r\n      },\r\n      {\r\n        \"Name\": \"Potassium\",\r\n        \"Percentage\": 15.0\r\n      }\r\n    ],\r\n    \"LocationName\": \"Plants Location\",\r\n    \"SublocationName\": null,\r\n    \"ActualDate\": \"2019-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordAdditivesByLocationUsingAdditivesTemplate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "additives",
+            "bylocation",
+            "usingtemplate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"AdditivesTemplateName\": \"Additive Template 1\",\r\n    \"Rate\": \"5 Pounds\",\r\n    \"Volume\": \"1000 Sq. ft.\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"LocationName\": \"Plants Location\",\r\n    \"SublocationName\": null,\r\n    \"ActualDate\": \"2025-01-15\"\r\n  },\r\n  {\r\n    \"AdditivesTemplateName\": \"Additive Template 2\",\r\n    \"Rate\": \"4 Grams\",\r\n    \"Volume\": \"200 Yards\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"LocationName\": \"Plants Location\",\r\n    \"SublocationName\": null,\r\n    \"ActualDate\": \"2025-01-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePlantBatches",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "plantings"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PlantLabel\": \"ABCDEF012345670000010011\",\r\n    \"PlantBatchName\": \"Demo Plant Batch 1\",\r\n    \"PlantBatchType\": \"Clone\",\r\n    \"PlantCount\": 3,\r\n    \"LocationName\": \"Plant Location\",\r\n    \"SublocationName\": \"Plant Sublocation\",\r\n    \"StrainName\": \"Spring Hill Kush\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"ActualDate\": \"2016-10-18T13:11:03Z\"\r\n  },\r\n  {\r\n    \"PlantLabel\": \"ABCDEF012345670000010012\",\r\n    \"PlantBatchName\": \"Demo Plant Batch 2\",\r\n    \"PlantBatchType\": \"Seed\",\r\n    \"PlantCount\": 2,\r\n    \"LocationName\": \"Plant Location\",\r\n    \"SublocationName\": \"Plant Sublocation\",\r\n    \"StrainName\": \"Spring Hill Kush\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"ActualDate\": \"2016-10-18T13:11:03Z\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePlantBatchPackage",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "plantbatch",
+            "packages"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PlantLabel\": \"ABCDEF012345670000000011\",\r\n    \"PackageTag\": \"ABCDEF012345670000010011\",\r\n    \"PlantBatchType\": \"Clone\",\r\n    \"Item\": \"Blue Dream Clones\",\r\n    \"Location\": \"Package Room 1\",\r\n    \"Sublocation\": null,\r\n    \"Note\": null,\r\n    \"IsTradeSample\": false,\r\n    \"PatientLicenseNumber\": null,\r\n    \"IsDonation\": false,\r\n    \"Count\": 25,\r\n    \"ActualDate\": \"2020-01-15T12:25:43Z\"\r\n  },\r\n  {\r\n    \"PlantLabel\": \"ABCDEF012345670000000012\",\r\n    \"PackageTag\": \"ABCDEF012345670000010013\",\r\n    \"PlantBatchType\": \"Seed\",\r\n    \"Item\": \"Blue Dream Seeds\",\r\n    \"Location\": \"Package Room 2\",\r\n    \"Sublocation\": \"Package Sublocation 1\",\r\n    \"Note\": null,\r\n    \"IsTradeSample\": false,\r\n    \"PatientLicenseNumber\": null,\r\n    \"IsDonation\": false,\r\n    \"Count\": 25,\r\n    \"ActualDate\": \"2020-01-15T12:36:32Z\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Manicure",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "manicure"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Plant\": \"ABCDEF012345670000000001\",\r\n    \"Weight\": 100.23,\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"DryingLocation\": \"Plants Location\",\r\n    \"DryingSublocation\": \"Plants Sublocation\",\r\n    \"HarvestName\": null,\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"PlantCount\": 3\r\n  },\r\n  {\r\n    \"Plant\": \"ABCDEF012345670000000001\",\r\n    \"Weight\": 50.10,\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"DryingLocation\": \"Plants Location\",\r\n    \"DryingSublocation\": \"Plants Sublocation\",\r\n    \"HarvestName\": \"2015-12-15-Harvest Location-M\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"PlantCount\": 3\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Move",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "location"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"Label\": \"ABCDEF012345670000000001\",\r\n    \"Location\": \"Plants Location\",\r\n    \"Sublocation\": \"Plants Sublocation\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Label\": null,\r\n    \"Location\": \"Plants Location\",\r\n    \"Sublocation\": \"Plants Sublocation\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeGrowthPhases",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "growthphase"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"Label\": \"ABCDEF012345670000000001\",\r\n    \"NewTag\": \"ABCDEF012345670000020001\",\r\n    \"GrowthPhase\": \"Flowering\",\r\n    \"NewLocation\": \"Plants Location\",\r\n    \"NewSublocation\": null,\r\n    \"GrowthDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Label\": null,\r\n    \"NewTag\": \"ABCDEF012345670000020002\",\r\n    \"GrowthPhase\": \"Vegetative\",\r\n    \"NewLocation\": \"Harvest Location\",\r\n    \"NewSublocation\": null,\r\n    \"GrowthDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ReplacePlantTags",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "tag"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"Label\": \"ABCDEF012345670000000001\",\r\n    \"TagId\": null,\r\n    \"NewTag\": \"ABCDEF012345670000000002\",\r\n    \"ReplaceDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Label\": null,\r\n    \"TagId\": 3,\r\n    \"NewTag\": null,\r\n    \"ReplaceDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeStrain",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "strain"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"Label\": null,\r\n    \"StrainId\": 1,\r\n    \"StrainName\": null\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Label\": null,\r\n    \"StrainId\": 2,\r\n    \"StrainName\": null\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Harvest",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "harvest"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Plant\": \"ABCDEF012345670000010011\",\r\n    \"Weight\": 100.23,\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"DryingLocation\": \"Harvest Location\",\r\n    \"DryingSublocation\": \"Harvest Sublocation1\",\r\n    \"HarvestName\": \"2015-12-15-Harvest Location-H\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Plant\": \"ABCDEF012345670000010012\",\r\n    \"Weight\": 10.15,\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"DryingLocation\": \"Harvest Location\",\r\n    \"DryingSublocation\": \"Harvest Sublocation2\",\r\n    \"HarvestName\": null,\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Merge",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "merge"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"TargetPlantGroupLabel\": \"ABCDEF012345670000000001\",\r\n    \"SourcePlantGroupLabel\": \"ABCDEF012345670000000002\",\r\n    \"MergeDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"TargetPlantGroupLabel\": \"ABCDEF012345670000000003\",\r\n    \"SourcePlantGroupLabel\": \"ABCDEF012345670000000004\",\r\n    \"MergeDate\": \"2015-12-16\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Destroy",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"Label\": \"ABCDEF012345670000000001\",\r\n    \"WasteMethodName\": \"Compost\",\r\n    \"WasteMaterialMixed\": \"Soil\",\r\n    \"WasteWeight\": 15.69,\r\n    \"WasteUnitOfMeasureName\": \"grams\",\r\n    \"WasteReasonName\": \"Destroy\",\r\n    \"Count\": 0,\r\n    \"ReasonNote\": \"Had to go.\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Label\": null,\r\n    \"WasteMethodName\": \"Grinder\",\r\n    \"WasteMaterialMixed\": \"Soil\",\r\n    \"WasteWeight\": 15.69,\r\n    \"WasteUnitOfMeasureName\": \"grams\",\r\n    \"WasteReasonName\": \"Destroy\",\r\n    \"Count\": 0,\r\n    \"ReasonNote\": \"Had to go.\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordWaste",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "waste"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"WasteMethodName\": \"Clipping\",\r\n    \"MixedMaterial\": \"Soil\",\r\n    \"WasteWeight\": 15.69,\r\n    \"UnitOfMeasureName\": \"grams\",\r\n    \"ReasonName\": \"Trim\",\r\n    \"Note\": \"\",\r\n    \"LocationName\": \"Veg Room A\",\r\n    \"SublocationName\": \"Sublocation A\",\r\n    \"WasteDate\": \"2017-01-31\",\r\n    \"PlantLabels\": []\r\n  },\r\n  {\r\n    \"WasteMethodName\": \"Clipping\",\r\n    \"MixedMaterial\": \"Soil\",\r\n    \"WasteWeight\": 12.82,\r\n    \"UnitOfMeasureName\": \"grams\",\r\n    \"ReasonName\": \"Trim\",\r\n    \"Note\": \"\",\r\n    \"LocationName\": null,\r\n    \"SublocationName\": \"Sublocation B\",\r\n    \"WasteDate\": \"2017-01-31\",\r\n    \"PlantLabels\": [\r\n      \"ABCDEF012345670000000100\",\r\n      \"ABCDEF012345670000000101\"\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetWasteMethodsAll",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "waste",
+            "methods",
+            "all"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SplitPlantGroup",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "split"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"SplitDate\": \"2022-12-15\",\r\n    \"SourcePlantLabel\": \"ABCDEF012345670000000001\",\r\n    \"PlantCount\": 5,\r\n    \"TagLabel\": \"ABCDEF012345670000000005\",\r\n    \"StrainLabel\": \"efg\"\r\n  },\r\n  {\r\n    \"SplitDate\": \"2022-12-15\",\r\n    \"SourcePlantLabel\": \"ABCDEF012345670000000002\",\r\n    \"PlantCount\": 10,\r\n    \"TagLabel\": \"ABCDEF012345670000000006\",\r\n    \"StrainLabel\": \"efg\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetPlantWaste",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "waste"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetWastePlants",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "waste",
+            "{{id}}",
+            "plant"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetWastePackages",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plants/v2"
+          ],
+          "path": [
+            "waste",
+            "{{id}}",
+            "package"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

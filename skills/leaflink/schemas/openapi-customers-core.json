@@ -1,0 +1,2205 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Customers Core",
+    "description": "Customer management operations\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/customer-status/": {
+      "get": {
+        "operationId": "customer-status_list",
+        "summary": "List",
+        "description": "List all `CompanyCustomerStatus` objects available for use.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyCustomerStatus"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer-statuses"
+        ]
+      },
+      "post": {
+        "operationId": "customer-statuses_create",
+        "summary": "Create",
+        "description": "Create a new customer status.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CompanyCustomerStatus"
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCustomerStatus"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer-statuses"
+        ]
+      },
+      "parameters": []
+    },
+    "/customer-statuses/{id}/": {
+      "get": {
+        "operationId": "customer-statuses__read",
+        "summary": "Read",
+        "description": "Retrieve a `CompanyCustomerStatus` by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCustomerStatus"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer-statuses"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this company customer status.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ],
+      "patch": {
+        "operationId": "customer-statuses_partial_update",
+        "summary": "Update",
+        "description": "Update an existing customer status by ID.",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CompanyCustomerStatus"
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCustomerStatus"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer-statuses"
+        ]
+      },
+      "delete": {
+        "operationId": "customer-statuses_delete",
+        "summary": "Delete",
+        "description": "Delete a customer status by ID.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "customer-statuses"
+        ]
+      }
+    },
+    "/customer-tiers/": {
+      "get": {
+        "operationId": "customer-tiers_list",
+        "summary": "List",
+        "description": "List all `CompanyCustomerTier` objects available for use.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CompanyCustomerTier"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer-tiers"
+        ]
+      },
+      "parameters": []
+    },
+    "/customer-tiers/{id}/": {
+      "get": {
+        "operationId": "customer-tiers__read",
+        "summary": "Read",
+        "description": "Retrieve a `CompanyCustomerTier` by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyCustomerTier"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customer-tiers"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this company customer tier.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/customers/": {
+      "get": {
+        "operationId": "customers_list",
+        "summary": "List customers",
+        "description": "List customers for all active companies where the user is a member of.",
+        "parameters": [
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `tags`, `service_zone`, `managers`, `contacts`, and `license_type`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nickname",
+            "in": "query",
+            "description": "Filter by the customer's nickname.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nickname__in",
+            "in": "query",
+            "description": "Filter by nickname__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nickname__startswith",
+            "in": "query",
+            "description": "Filter by nickname__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phone",
+            "in": "query",
+            "description": "Filter by the customer's business phone number.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phone__in",
+            "in": "query",
+            "description": "Filter by phone__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "phone__startswith",
+            "in": "query",
+            "description": "Filter by phone__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dba",
+            "in": "query",
+            "description": "Filter by the customer's dba.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dba__in",
+            "in": "query",
+            "description": "Filter by dba__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "dba__startswith",
+            "in": "query",
+            "description": "Filter by dba__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner__slug",
+            "in": "query",
+            "description": "Filter by the slug of the Company that owns this Customer record.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id__in",
+            "in": "query",
+            "description": "Filter by id__in",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "next_contact_date__lt",
+            "in": "query",
+            "description": "Filter by next_contact_date__lt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "next_contact_date__lte",
+            "in": "query",
+            "description": "Filter by next_contact_date__lte",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "next_contact_date__gt",
+            "in": "query",
+            "description": "Filter by next_contact_date__gt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "next_contact_date__gte",
+            "in": "query",
+            "description": "Filter by next_contact_date__gte",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by the slug of the Company that owns this Customer record.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id",
+            "in": "query",
+            "description": "Filter by the customer's external id.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id__in",
+            "in": "query",
+            "description": "Filter by external_id__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id__startswith",
+            "in": "query",
+            "description": "Filter by external_id__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ein",
+            "in": "query",
+            "description": "Filter by the customer's EIN.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ein__in",
+            "in": "query",
+            "description": "Filter by ein__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ein__startswith",
+            "in": "query",
+            "description": "Filter by ein__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "discount_percent__lt",
+            "in": "query",
+            "description": "Filter by discount_percent__lt",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "discount_percent__lte",
+            "in": "query",
+            "description": "Filter by discount_percent__lte",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "discount_percent__gt",
+            "in": "query",
+            "description": "Filter by discount_percent__gt",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "discount_percent__gte",
+            "in": "query",
+            "description": "Filter by discount_percent__gte",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "old_license_number",
+            "in": "query",
+            "description": "Filter by the customer's previous license number.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "old_license_number__in",
+            "in": "query",
+            "description": "Filter by old_license_number__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "old_license_number__startswith",
+            "in": "query",
+            "description": "Filter by old_license_number__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lt",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, less than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lte",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, less than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gt",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, greater than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gte",
+            "in": "query",
+            "description": "Filter by the datetime the object was last modified, greater than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by the customer's associated brand.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand__in",
+            "in": "query",
+            "description": "Filter by brand__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand__startswith",
+            "in": "query",
+            "description": "Filter by brand__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lt",
+            "in": "query",
+            "description": "Filter by created_on datetime, less than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lte",
+            "in": "query",
+            "description": "Filter by created_on datetime, less than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gt",
+            "in": "query",
+            "description": "Filter by created_on datetime, greater than.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gte",
+            "in": "query",
+            "description": "Filter by created_on datetime, greater than or equal to.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "description": "Filter by the customer's address.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address__in",
+            "in": "query",
+            "description": "Filter by address__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "address__startswith",
+            "in": "query",
+            "description": "Filter by address__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_license_name",
+            "in": "query",
+            "description": "Filter by the customer's business license name.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_license_name__in",
+            "in": "query",
+            "description": "Filter by business_license_name__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_license_name__startswith",
+            "in": "query",
+            "description": "Filter by business_license_name__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by the customer's name.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name__in",
+            "in": "query",
+            "description": "Filter by name__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name__startswith",
+            "in": "query",
+            "description": "Filter by name__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_identifier",
+            "in": "query",
+            "description": "Filter by the customer's business identifier.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_identifier__in",
+            "in": "query",
+            "description": "Filter by business_identifier__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "business_identifier__startswith",
+            "in": "query",
+            "description": "Filter by business_identifier__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "license_number",
+            "in": "query",
+            "description": "Filter by the customer's license number.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "license_number__in",
+            "in": "query",
+            "description": "Filter by license_number__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "license_number__startswith",
+            "in": "query",
+            "description": "Filter by license_number__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ext_acct_id",
+            "in": "query",
+            "description": "Filter by the customer's external account id.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ext_acct_id__in",
+            "in": "query",
+            "description": "Filter by ext_acct_id__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ext_acct_id__startswith",
+            "in": "query",
+            "description": "Filter by ext_acct_id__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ext_acct_id__isnull",
+            "in": "query",
+            "description": "Filter by ext_acct_id__isnull",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filter by the customer's email.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email__in",
+            "in": "query",
+            "description": "Filter by email__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "email__startswith",
+            "in": "query",
+            "description": "Filter by email__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "website",
+            "in": "query",
+            "description": "Filter by the customer's website.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "website__in",
+            "in": "query",
+            "description": "Filter by website__in",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "website__startswith",
+            "in": "query",
+            "description": "Filter by website__startswith",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Filter by owner ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "partner",
+            "in": "query",
+            "description": "Filter by partner ID.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "tier",
+            "in": "query",
+            "description": "Filter by the ID of a customer's tier.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "price_schedule",
+            "in": "query",
+            "description": "Filter by the ID of a customer's price schedule.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "service_zone",
+            "in": "query",
+            "description": "Filter by the ID of a customer's service zone.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "license_type",
+            "in": "query",
+            "description": "Filter by the ID of a customer's license type.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "license_inactive",
+            "in": "query",
+            "description": "Filter by the whether a customer's license is active.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/PaymentTermFilter"
+          },
+          {
+            "$ref": "#/components/parameters/PaymentMethodFilter"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by the ID of a customer's status.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filter by the ID of a customer's state.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "leaflink_source",
+            "in": "query",
+            "description": "Filter by whether the customer was added by LeafLink.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Filter by whether the customer has been archived.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "delinquent",
+            "in": "query",
+            "description": "Filter by whether the customer is delinquent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "external_id_key",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Must be used with external_id_values.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_values",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Multiple values separated by a comma.  Must be used with external_id_key.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CustomerResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "customers_create",
+        "summary": "Create a customer",
+        "description": "Create a new customer.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customers"
+        ]
+      },
+      "parameters": []
+    },
+    "/customers/{id}/": {
+      "get": {
+        "operationId": "customers_read",
+        "summary": "Retrieve a customer",
+        "description": "Retrieve a customer by ID.",
+        "parameters": [
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `tags`, `service_zone`, `managers`, `contacts`, and `license_type`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customers"
+        ]
+      },
+      "patch": {
+        "operationId": "customers_partial_update",
+        "summary": "Update a customer",
+        "description": "Update a customer by ID.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customers"
+        ]
+      },
+      "delete": {
+        "operationId": "customers_delete",
+        "summary": "Archive a customer",
+        "description": "Archive a customer by ID.",
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "customers"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this company customer.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "CompanyCustomerStatus": {
+        "required": [
+          "state",
+          "owner"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "state": {
+            "title": "Customer Status",
+            "description": "Customer Status State",
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1
+          },
+          "order": {
+            "title": "Sort Order",
+            "description": "Sort order, lower is first.",
+            "type": "integer",
+            "maximum": 2147483647,
+            "minimum": 1
+          },
+          "description": {
+            "title": "Description",
+            "description": "Description of status",
+            "type": "string",
+            "maxLength": 1500,
+            "nullable": true
+          },
+          "owner": {
+            "title": "Company",
+            "description": "The Company that created the custom status.",
+            "type": "integer"
+          },
+          "is_stock": {
+            "title": "Is a LeafLink Stock Status",
+            "description": "Is this a stock LeafLink status?",
+            "type": "boolean"
+          },
+          "hex_color": {
+            "title": "Hex Color",
+            "description": "Hex color for customer status",
+            "type": "string",
+            "maxLength": 40,
+            "nullable": true
+          }
+        }
+      },
+      "CompanyCustomerTier": {
+        "required": [
+          "rank",
+          "sort"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "created_on": {
+            "title": "Created on",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "rank": {
+            "title": "Classification",
+            "description": "Company Classification",
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1
+          },
+          "sort": {
+            "title": "Sort Order",
+            "description": "Sort order, lower is first.",
+            "type": "integer",
+            "maximum": 2147483647,
+            "minimum": 0
+          }
+        }
+      },
+      "CustomerResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true,
+            "description": "Unique id generated by LeafLink."
+          },
+          "state": {
+            "type": "string",
+            "description": "State abbreviation"
+          },
+          "managers": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "uniqueItems": true,
+            "description": "Ids for the sales reps assigned to this customer."
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Date and time the customer was created."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Date and time the customer was last modified."
+          },
+          "next_contact_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date for the next contact, YYYY-MM-DD"
+          },
+          "nickname": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Alternate name for the customer"
+          },
+          "external_id": {
+            "description": "Id of the customer in a 3rd party system",
+            "type": "string",
+            "maxLength": 100
+          },
+          "ext_acct_id": {
+            "description": "Id of the customer in QuickBooks Online.",
+            "type": "string"
+          },
+          "license_number": {
+            "description": "License Number",
+            "type": "string",
+            "maxLength": 100
+          },
+          "old_license_number": {
+            "description": "Old license number for the customer",
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "license_inactive": {
+            "description": "Is the license inactive for this customer?",
+            "type": "boolean"
+          },
+          "business_identifier": {
+            "description": "Company identifier distinct from license numbers",
+            "type": "string",
+            "maxLength": 100
+          },
+          "ein": {
+            "description": "Company's federal EIN number. For Customers linked to LeafLink Buyers (partner_id=Company.id), this field is read-only and inherited directly from the linked LeafLink Buyer Company. For Customers not linked to LeafLink Buyer Companies (partner_id=null), this field will return null.",
+            "type": "string",
+            "maxLength": 100
+          },
+          "directions": {
+            "description": "Directions to the customer's location",
+            "type": "string",
+            "maxLength": 3000
+          },
+          "delivery_preferences": {
+            "description": "Customer delivery preferences. These will show up as footnotes on orders placed by the customer.",
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "readOnly": true,
+            "minLength": 1,
+            "description": "Currency used by the customer."
+          },
+          "shipping_charge": {
+            "description": "Additional shipping charge",
+            "type": "string",
+            "format": "decimal"
+          },
+          "brand": {
+            "description": "Brand name associated with the customer",
+            "type": "string",
+            "maxLength": 400
+          },
+          "name": {
+            "description": "Customer name",
+            "type": "string",
+            "maxLength": 400
+          },
+          "dba": {
+            "description": "DBA of customer",
+            "type": "string",
+            "maxLength": 400
+          },
+          "business_license_name": {
+            "description": "Business License Name",
+            "type": "string",
+            "maxLength": 400
+          },
+          "description": {
+            "description": "Additional information about the customer",
+            "type": "string",
+            "maxLength": 4000
+          },
+          "website": {
+            "description": "Customer's website",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 400
+          },
+          "address": {
+            "description": "Customer's address",
+            "type": "string",
+            "maxLength": 400
+          },
+          "unit_number": {
+            "description": "Unit # for the address",
+            "type": "string"
+          },
+          "zipcode": {
+            "description": "Zipcode",
+            "type": "string",
+            "maxLength": 6
+          },
+          "city": {
+            "description": "City",
+            "type": "string",
+            "maxLength": 400
+          },
+          "county": {
+            "description": "County",
+            "type": "string",
+            "maxLength": 400
+          },
+          "country": {
+            "description": "Country",
+            "type": "string",
+            "maxLength": 400
+          },
+          "lat": {
+            "description": "Location latitude",
+            "type": "string",
+            "format": "decimal"
+          },
+          "long": {
+            "description": "Location longitude",
+            "type": "string",
+            "format": "decimal"
+          },
+          "phone": {
+            "description": "Phone Number",
+            "type": "string",
+            "maxLength": 400
+          },
+          "phone_extension": {
+            "description": "Phone Extension",
+            "type": "string",
+            "maxLength": 400
+          },
+          "email": {
+            "description": "Email address",
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "notes": {
+            "description": "Other information about the customer",
+            "type": "string",
+            "maxLength": 3000
+          },
+          "leaflink_last_views": {
+            "description": "The last time this customer viewed your products.",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "leaflink_source": {
+            "description": "Was this customer added to your CRM by LeafLink?",
+            "type": "boolean",
+            "readOnly": true
+          },
+          "archived": {
+            "description": "Is the customer record archived?",
+            "type": "boolean"
+          },
+          "delinquent": {
+            "description": "Is this customer delinquent on billing?",
+            "type": "boolean"
+          },
+          "discount_percent": {
+            "description": "Discount percent for orders from this customer.",
+            "type": "string",
+            "format": "decimal"
+          },
+          "owner": {
+            "type": "integer",
+            "description": "Id for the company that this customer record is for."
+          },
+          "partner": {
+            "type": "integer",
+            "description": "Id for the buyer company that this customer record represents.",
+            "readOnly": true
+          },
+          "tier": {
+            "type": "integer",
+            "description": "Id for the customer's tier"
+          },
+          "price_schedule": {
+            "description": "Id for the price schedule assigned to the customer",
+            "type": "integer"
+          },
+          "service_zone": {
+            "description": "Customer's service zone",
+            "type": "integer"
+          },
+          "license_type": {
+            "title": "Business License Type",
+            "description": "Customer's business license type",
+            "type": "integer"
+          },
+          "payment_term": {
+            "description": "Customer's payment terms Deprecated field, please use payment_option instead",
+            "type": "integer"
+          },
+          "payment_methods": {
+            "description": "Customer's payment methods Deprecated field, please use payment_option instead",
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "available_payment_options": {
+            "title": "Available payment options",
+            "description": "Available payment options for a customer",
+            "type": "array",
+            "required": [
+              "payment_term_id",
+              "payment_method_id"
+            ],
+            "properties": {
+              "id": {
+                "title": "Id",
+                "description": "id for payment option",
+                "type": "integer",
+                "readOnly": true
+              },
+              "payment_method_id": {
+                "title": "Payment method id for payment option",
+                "type": "integer"
+              },
+              "payment_term_id": {
+                "title": "Payment term id for payment option",
+                "type": "integer"
+              },
+              "payment_program": {
+                "title": "Payment program for payment option",
+                "type": "string"
+              },
+              "payment_strategy": {
+                "title": "Payment strategy for payment option",
+                "type": "string"
+              }
+            },
+            "items": {}
+          },
+          "status": {
+            "description": "Id for the customer's status",
+            "type": "integer"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "corporate_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "delivery_address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "ExternalIds": {
+        "$ref": "./openapi-shared.json#/components/schemas/ExternalIds"
+      },
+      "Address": {
+        "$ref": "./openapi-shared.json#/components/schemas/Address"
+      },
+      "CustomerCreate": {
+        "required": [
+          "owner",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "title": "State",
+            "type": "string",
+            "description": "State abbreviation"
+          },
+          "managers": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "uniqueItems": true,
+            "description": "Ids for the sales reps assigned to this customer."
+          },
+          "next_contact_date": {
+            "title": "Next contact date",
+            "type": "string",
+            "format": "date",
+            "description": "Date for the next contact, YYYY-MM-DD"
+          },
+          "nickname": {
+            "title": "Nickname",
+            "type": "string",
+            "maxLength": 200,
+            "description": "Alternate name for the customer"
+          },
+          "external_id": {
+            "title": "External ID",
+            "description": "Id of the customer in a 3rd party system",
+            "type": "string",
+            "maxLength": 100
+          },
+          "ext_acct_id": {
+            "title": "Accounting Service External ID",
+            "description": "Id of the customer in QuickBooks Online.",
+            "type": "string"
+          },
+          "license_number": {
+            "title": "License Number",
+            "description": "License Number",
+            "type": "string",
+            "maxLength": 100
+          },
+          "old_license_number": {
+            "description": "Old license number for the customer",
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "license_inactive": {
+            "title": "License Inactive",
+            "description": "Is the license inactive for this customer?",
+            "type": "boolean"
+          },
+          "business_identifier": {
+            "title": "Business Identifier / UBI",
+            "description": "Company identifier distinct from license numbers",
+            "type": "string",
+            "maxLength": 100
+          },
+          "ein": {
+            "title": "EIN Number",
+            "description": "Company's federal EIN number. DEPRECATED for writes. For Customers linked to LeafLink Buyers (partner_id=Company.id), this field is read-only and inherited directly from the linked LeafLink Buyer Company. For Customers not linked to LeafLink Buyer Companies (partner_id=null), this field will return null.",
+            "type": "string",
+            "maxLength": 100
+          },
+          "directions": {
+            "title": "Directions",
+            "description": "Directions to the customer's location",
+            "type": "string",
+            "maxLength": 3000
+          },
+          "delivery_preferences": {
+            "title": "Delivery Preferences",
+            "description": "Customer delivery preferences. These will show up as footnotes on orders placed by the customer.",
+            "type": "string"
+          },
+          "shipping_charge": {
+            "title": "Shipping charge",
+            "description": "Additional shipping charge",
+            "type": "string",
+            "format": "decimal"
+          },
+          "brand": {
+            "title": "Brand Name",
+            "description": "Brand name associated with the customer",
+            "type": "string",
+            "maxLength": 400
+          },
+          "name": {
+            "title": "Name",
+            "description": "Customer name",
+            "type": "string",
+            "maxLength": 400
+          },
+          "dba": {
+            "title": "DBA",
+            "description": "DBA of customer",
+            "type": "string",
+            "maxLength": 400
+          },
+          "business_license_name": {
+            "title": "Business License Name",
+            "description": "Business License Name",
+            "type": "string",
+            "maxLength": 400
+          },
+          "description": {
+            "title": "Description",
+            "description": "Additional information about the customer",
+            "type": "string",
+            "maxLength": 4000
+          },
+          "website": {
+            "title": "Website",
+            "description": "Customer's website",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 400
+          },
+          "address": {
+            "title": "Address",
+            "description": "Customer's address",
+            "type": "string",
+            "maxLength": 400
+          },
+          "unit_number": {
+            "title": "Unit #",
+            "description": "Unit # for the address",
+            "type": "string"
+          },
+          "zipcode": {
+            "title": "Zipcode",
+            "description": "Zipcode",
+            "type": "string",
+            "maxLength": 6
+          },
+          "city": {
+            "title": "City",
+            "description": "City",
+            "type": "string",
+            "maxLength": 400
+          },
+          "county": {
+            "title": "County",
+            "description": "County",
+            "type": "string",
+            "maxLength": 400
+          },
+          "country": {
+            "title": "Country",
+            "description": "Country",
+            "type": "string",
+            "maxLength": 400
+          },
+          "lat": {
+            "title": "Lat",
+            "description": "Location latitude",
+            "type": "string",
+            "format": "decimal"
+          },
+          "long": {
+            "title": "Long",
+            "description": "Location longitude",
+            "type": "string",
+            "format": "decimal"
+          },
+          "phone": {
+            "title": "Phone",
+            "description": "Phone Number",
+            "type": "string",
+            "maxLength": 400
+          },
+          "phone_extension": {
+            "description": "Phone Extension",
+            "type": "string",
+            "maxLength": 400
+          },
+          "email": {
+            "description": "Email address",
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "notes": {
+            "title": "Notes",
+            "description": "Other information about the customer",
+            "type": "string",
+            "maxLength": 3000
+          },
+          "leaflink_last_views": {
+            "title": "Last shop time",
+            "description": "The last time this customer viewed your products on LeafLink",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "leaflink_source": {
+            "title": "Added by LeafLink",
+            "description": "Was this customer added to your CRM by LeafLink",
+            "type": "boolean",
+            "readOnly": true
+          },
+          "archived": {
+            "title": "Is Archived",
+            "description": "Is the customer record archived?",
+            "type": "boolean"
+          },
+          "delinquent": {
+            "title": "Delinquent Customer",
+            "description": "Is this customer delinquent on billing?",
+            "type": "boolean"
+          },
+          "discount_percent": {
+            "title": "Discount Percent",
+            "description": "Discount percent for orders from this customer.",
+            "type": "string",
+            "format": "decimal"
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "integer",
+            "description": "Id for the company that this customer record is for."
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer",
+            "description": "Id for the customer's tier"
+          },
+          "price_schedule": {
+            "description": "Id for the price schedule assigned to the customer",
+            "type": "integer"
+          },
+          "service_zone": {
+            "title": "Service Zone",
+            "description": "Customer's service zone",
+            "type": "integer"
+          },
+          "license_type": {
+            "title": "Business License Type",
+            "description": "Customer's business license type",
+            "type": "integer"
+          },
+          "payment_term": {
+            "$ref": "#/components/parameters/PaymentTerm"
+          },
+          "payment_methods": {
+            "$ref": "#/components/parameters/PaymentMethods"
+          },
+          "available_payment_options": {
+            "$ref": "#/components/parameters/AvailablePaymentOptionsCustomer"
+          },
+          "status": {
+            "title": "Customer Account Status",
+            "description": "Id for the customer's status",
+            "type": "integer"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "corporate_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "delivery_address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "CustomerUpdate": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "title": "State",
+            "type": "string",
+            "description": "State abbreviation"
+          },
+          "managers": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "uniqueItems": true,
+            "description": "Ids for the sales reps assigned to this customer."
+          },
+          "next_contact_date": {
+            "title": "Next contact date",
+            "type": "string",
+            "format": "date",
+            "description": "Date for the next contact, YYYY-MM-DD"
+          },
+          "nickname": {
+            "title": "Nickname",
+            "type": "string",
+            "maxLength": 200,
+            "description": "Alternate name for the customer"
+          },
+          "external_id": {
+            "title": "External ID",
+            "description": "Id of the customer in a 3rd party system",
+            "type": "string",
+            "maxLength": 100
+          },
+          "ext_acct_id": {
+            "title": "Accounting Service External ID",
+            "description": "Id of the customer in QuickBooks Online.",
+            "type": "string"
+          },
+          "license_number": {
+            "title": "License Number",
+            "description": "License Number",
+            "type": "string",
+            "maxLength": 100
+          },
+          "old_license_number": {
+            "description": "Old license number for the customer",
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "license_inactive": {
+            "title": "License Inactive",
+            "description": "Is the license inactive for this customer?",
+            "type": "boolean"
+          },
+          "business_identifier": {
+            "title": "Business Identifier / UBI",
+            "description": "Company identifier distinct from license numbers",
+            "type": "string",
+            "maxLength": 100
+          },
+          "ein": {
+            "title": "EIN Number",
+            "description": "Company's federal EIN number. DEPRECATED for writes. For Customers linked to LeafLink Buyers (partner_id=Company.id), this field is read-only and inherited directly from the linked LeafLink Buyer Company. For Customers not linked to LeafLink Buyer Companies (partner_id=null), this field will return null.",
+            "type": "string",
+            "maxLength": 100
+          },
+          "directions": {
+            "title": "Directions",
+            "description": "Directions to the customer's location",
+            "type": "string",
+            "maxLength": 3000
+          },
+          "delivery_preferences": {
+            "title": "Delivery Preferences",
+            "description": "Customer delivery preferences. These will show up as footnotes on orders placed by the customer.",
+            "type": "string"
+          },
+          "shipping_charge": {
+            "title": "Shipping charge",
+            "description": "Additional shipping charge",
+            "type": "string",
+            "format": "decimal"
+          },
+          "brand": {
+            "title": "Brand Name",
+            "description": "Brand name associated with the customer",
+            "type": "string",
+            "maxLength": 400
+          },
+          "name": {
+            "title": "Name",
+            "description": "Customer name",
+            "type": "string",
+            "maxLength": 400
+          },
+          "dba": {
+            "title": "DBA",
+            "description": "DBA of customer",
+            "type": "string",
+            "maxLength": 400
+          },
+          "business_license_name": {
+            "title": "Business License Name",
+            "description": "Business License Name",
+            "type": "string",
+            "maxLength": 400
+          },
+          "description": {
+            "title": "Description",
+            "description": "Additional information about the customer",
+            "type": "string",
+            "maxLength": 4000
+          },
+          "website": {
+            "title": "Website",
+            "description": "Customer's website",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 400
+          },
+          "address": {
+            "title": "Address",
+            "description": "Customer's address",
+            "type": "string",
+            "maxLength": 400
+          },
+          "unit_number": {
+            "title": "Unit #",
+            "description": "Unit # for the address",
+            "type": "string"
+          },
+          "zipcode": {
+            "title": "Zipcode",
+            "description": "Zipcode",
+            "type": "string",
+            "maxLength": 6
+          },
+          "city": {
+            "title": "City",
+            "description": "City",
+            "type": "string",
+            "maxLength": 400
+          },
+          "county": {
+            "title": "County",
+            "description": "County",
+            "type": "string",
+            "maxLength": 400
+          },
+          "country": {
+            "title": "Country",
+            "description": "Country",
+            "type": "string",
+            "maxLength": 400
+          },
+          "lat": {
+            "title": "Lat",
+            "description": "Location latitude",
+            "type": "string",
+            "format": "decimal"
+          },
+          "long": {
+            "title": "Long",
+            "description": "Location longitude",
+            "type": "string",
+            "format": "decimal"
+          },
+          "phone": {
+            "title": "Phone",
+            "description": "Phone Number",
+            "type": "string",
+            "maxLength": 400
+          },
+          "phone_extension": {
+            "description": "Phone Extension",
+            "type": "string",
+            "maxLength": 400
+          },
+          "email": {
+            "description": "Email address",
+            "type": "string",
+            "format": "email",
+            "maxLength": 255
+          },
+          "notes": {
+            "title": "Notes",
+            "description": "Other information about the customer",
+            "type": "string",
+            "maxLength": 3000
+          },
+          "leaflink_last_views": {
+            "title": "Last shop time",
+            "description": "The last time this customer viewed your products.",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "archived": {
+            "title": "Is Archived",
+            "description": "Is the customer record archived?",
+            "type": "boolean"
+          },
+          "delinquent": {
+            "title": "Delinquent Customer",
+            "description": "Is this customer delinquent on billing?",
+            "type": "boolean"
+          },
+          "discount_percent": {
+            "title": "Discount Percent",
+            "description": "Discount percent for orders from this customer.",
+            "type": "string",
+            "format": "decimal"
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "integer",
+            "description": "Id for the company that this customer record is for."
+          },
+          "tier": {
+            "title": "Tier",
+            "type": "integer",
+            "description": "Id for the customer's tier"
+          },
+          "price_schedule": {
+            "description": "Id for the price schedule assigned to the customer",
+            "type": "integer"
+          },
+          "service_zone": {
+            "title": "Service Zone",
+            "description": "Customer's service zone",
+            "type": "integer"
+          },
+          "license_type": {
+            "title": "Business License Type",
+            "description": "Customer's business license type",
+            "type": "integer"
+          },
+          "available_payment_options": {
+            "$ref": "#/components/parameters/AvailablePaymentOptionsCustomer"
+          },
+          "payment_term": {
+            "$ref": "#/components/parameters/PaymentTerm"
+          },
+          "payment_methods": {
+            "$ref": "#/components/parameters/PaymentMethods"
+          },
+          "status": {
+            "title": "Customer Account Status",
+            "description": "Id for the customer's status",
+            "type": "integer"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "corporate_address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "delivery_address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

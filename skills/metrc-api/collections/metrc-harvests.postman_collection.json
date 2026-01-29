@@ -1,0 +1,520 @@
+{
+  "info": {
+    "name": "Metrc Harvests API v2",
+    "description": "Metrc API v2 endpoints for Harvests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetHarvestById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetOnHold",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "onhold"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetHarvestWaste",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "waste"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "harvestId",
+              "value": "{{harvestId}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetHarvestWasteTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "waste",
+            "types"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "CreatePackagesForTesting",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "packages",
+            "testing"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020201\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsTradeSample\": false,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": 2,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 100.23,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 25.1,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": 1,\r\n    \"LabTestStageId\": 2,\r\n    \"RequiredLabTestBatches\": []\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsTradeSample\": true,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": 2,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 100.23,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 25.1,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null,\r\n    \"RequiredLabTestBatches\": []\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020203\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Shake\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"\",\r\n    \"Note\": null,\r\n    \"IsProductionBatch\": true,\r\n    \"ProductionBatchNumber\": \"PB-2015-12-15\",\r\n    \"IsTradeSample\": false,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 50.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": 4,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 1.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null,\r\n    \"RequiredLabTestBatches\": []\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020204\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Shake\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"Note\": null,\r\n    \"IsProductionBatch\": true,\r\n    \"ProductionBatchNumber\": \"PB-2015-12-15\",\r\n    \"IsTradeSample\": true,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 50.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": 4,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 1.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null,\r\n    \"RequiredLabTestBatches\": []\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePackages",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "packages"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020201\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsTradeSample\": false,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": 2,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 100.23,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 25.1,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": 1,\r\n    \"LabTestStageId\": 2,\r\n    \"RequiredLabTestBatches\": []\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsTradeSample\": true,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": 2,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 100.23,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 25.1,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null,\r\n    \"RequiredLabTestBatches\": []\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020203\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Shake\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"\",\r\n    \"Note\": null,\r\n    \"IsProductionBatch\": true,\r\n    \"ProductionBatchNumber\": \"PB-2015-12-15\",\r\n    \"IsTradeSample\": false,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 50.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": 4,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 1.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null,\r\n    \"RequiredLabTestBatches\": []\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020204\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Shake\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"Note\": null,\r\n    \"IsProductionBatch\": true,\r\n    \"ProductionBatchNumber\": \"PB-2015-12-15\",\r\n    \"IsTradeSample\": true,\r\n    \"IsDonation\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"RemediateProduct\": false,\r\n    \"RemediationMethodId\": null,\r\n    \"RemediationDate\": null,\r\n    \"RemediationSteps\": null,\r\n    \"ProductRequiresDecontamination\": false,\r\n    \"DecontaminateProduct\": false,\r\n    \"DecontaminationDate\": null,\r\n    \"DecontaminationSteps\": null,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"HarvestId\": null,\r\n        \"HarvestName\": \"2018-04-03-Harvest Location-M\",\r\n        \"Weight\": 50.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      },\r\n      {\r\n        \"HarvestId\": 4,\r\n        \"HarvestName\": null,\r\n        \"Weight\": 1.0,\r\n        \"UnitOfWeight\": \"Grams\"\r\n      }\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null,\r\n    \"RequiredLabTestBatches\": []\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Location",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "location"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"HarvestName\": null,\r\n    \"DryingLocation\": \"Flower Location A\",\r\n    \"DryingSublocation\": \"Table One\",\r\n    \"ActualDate\": \"2019-05-29T00:00:00Z\"\r\n  },\r\n  {\r\n    \"Id\": null,\r\n    \"HarvestName\": \"2019-05-29-Flower Location A-H\",\r\n    \"DryingLocation\": \"Drying Location B\",\r\n    \"DryingSublocation\": null,\r\n    \"ActualDate\": \"2019-05-29T00:00:00Z\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Waste",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "waste"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"WasteType\": \"Plant Material\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"WasteWeight\": 10.05,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"WasteType\": \"Fibrous Material\",\r\n    \"UnitOfWeight\": \"Grams\",\r\n    \"WasteWeight\": 30.6,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Rename",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "rename"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"OldName\": null,\r\n    \"NewName\": \"2019-05-29-Flower Location B-H\"\r\n  },\r\n  {\r\n    \"Id\": null,\r\n    \"OldName\": \"2019-05-29-Flower Location A-H\",\r\n    \"NewName\": \"2019-05-29-Flower Location B-H\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Finish",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "finish"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Unfinish",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "unfinish"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1\r\n  },\r\n  {\r\n    \"Id\": 2\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RestoreHarvestedPlants",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "restore",
+            "harvestedplants"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"HarvestId\": 1,\r\n    \"PlantTags\": [\r\n      \"ABCDEF012345670000010100\",\r\n      \"ABCDEF012345670000010101\",\r\n      \"ABCDEF012345670000010102\"\r\n    ]\r\n  },\r\n  {\r\n    \"HarvestId\": 2,\r\n    \"PlantTags\": [\r\n      \"ABCDEF012345670000010200\",\r\n      \"ABCDEF012345670000010201\",\r\n      \"ABCDEF012345670000010202\"\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "DiscontinueWaste",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/harvests/v2"
+          ],
+          "path": [
+            "waste",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

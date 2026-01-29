@@ -1,0 +1,1485 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Inventory",
+    "description": "Inventory and facility management\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/batch-documents/": {
+      "get": {
+        "operationID": "batch-documents_list",
+        "summary": "List batch documents",
+        "description": "List all batch documents.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BatchDocumentNew"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batch-documents"
+        ]
+      },
+      "post": {
+        "operationID": "batch-documents_create",
+        "summary": "Upload a batch document",
+        "description": "Upload a new batch document.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "document": {
+                    "description": "uri for the file",
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "batch": {
+                    "description": "id for the Batch to attach this document to.",
+                    "type": "integer"
+                  },
+                  "summary": {
+                    "description": "Additional information about the document.",
+                    "type": "string",
+                    "maxLength": 350
+                  }
+                },
+                "required": [
+                  "document",
+                  "batch"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDocumentNew"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batch-documents"
+        ]
+      }
+    },
+    "/batch-documents/{id}/": {
+      "get": {
+        "operationId": "batch-documents_read",
+        "summary": "Retrieve a batch document",
+        "description": "Retrieve an individual batch document.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchDocumentNew"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batch-documents"
+        ]
+      },
+      "delete": {
+        "operationId": "batch-documents_delete",
+        "summary": "Delete a batch document",
+        "description": "Delete a batch document.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "batch-documents"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the batch document.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/batches/": {
+      "get": {
+        "operationId": "batches_list",
+        "summary": "List batches",
+        "description": "List all batches. <br /> <br /> For legacy auth, retrieved per company with the owner query parameter or with the following path parameter, /companies/{company_id}/batches/",
+        "parameters": [
+          {
+            "name": "batch_date__lt",
+            "in": "query",
+            "description": "Filter by batch_date__lt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batch_date__lte",
+            "in": "query",
+            "description": "Filter by batch_date__lte",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batch_date__gt",
+            "in": "query",
+            "description": "Filter by batch_date__gt",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batch_date__gte",
+            "in": "query",
+            "description": "Filter by batch_date__gte",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by one or multiple batch ids, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Filter by one or multiple company ids, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by owner company slug.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "production_batch_number",
+            "in": "query",
+            "description": "Filter by one or multiple production_batch_numbers, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "products",
+            "in": "query",
+            "description": "Filter by one or multiple product ids, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "thc",
+            "in": "query",
+            "description": "Filter by a range of THC percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "thca",
+            "in": "query",
+            "description": "Filter by a range of THCa percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "total_thc",
+            "in": "query",
+            "description": "Filter by a range of total THC percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cbd",
+            "in": "query",
+            "description": "Filter by a range of CBD percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cbda",
+            "in": "query",
+            "description": "Filter by a range of CBDa percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cbg",
+            "in": "query",
+            "description": "Filter by a range of CBG percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cbn",
+            "in": "query",
+            "description": "Filter by a range of CBN percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "total_cannabinoids",
+            "in": "query",
+            "description": "Filter by a range of total cannabinoids percent.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BatchResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batches"
+        ]
+      },
+      "post": {
+        "operationId": "batches_create",
+        "summary": "Create a batch",
+        "description": "Create a new batch.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batches"
+        ]
+      },
+      "parameters": []
+    },
+    "/batches/{id}/": {
+      "get": {
+        "operationId": "batches__read",
+        "summary": "Retrieve a batch",
+        "description": "Retrieve an individual batch.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batches"
+        ]
+      },
+      "patch": {
+        "operationId": "batches__partial_update",
+        "summary": "Update a batch",
+        "description": "Update an existing batch.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "batches"
+        ]
+      },
+      "delete": {
+        "operationId": "batches__delete",
+        "summary": "Delete a batch",
+        "description": "Delete a batch.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "batches"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "description": "The id for the batch.",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/inventory/items/": {
+      "get": {
+        "operationId": "inventory-items_list",
+        "summary": "List",
+        "description": "List all inventory items. By default this returns non-archived items - you can query for archived items by \nincluding the \"include_archived\" query parameter.\n\n__⚠️ WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "parameters": [
+          {
+            "name": "include_archived",
+            "in": "query",
+            "description": "Filter by archived status",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "product",
+            "in": "query",
+            "description": "Filter by product ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventoryItem"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inventory-items"
+        ]
+      },
+      "post": {
+        "operationId": "inventory-items_create",
+        "summary": "Create",
+        "description": "Create an inventory item.\n\n__NOTE__: If a non-archived inventory item is found with the same product and facility but no batch,\nit will be marked as \"archived\" and a new inventory item will be created. As a result, subsequent GET\nrequests will no longer return the old inventory item. As mentioned in the GET method description, you can query\nfor archived items by including the \"include_archived\" query parameter.\n\n__⚠️ WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItem"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inventory-items"
+        ]
+      },
+      "parameters": []
+    },
+    "/inventory/items/{id}/": {
+      "get": {
+        "operationId": "inventory-items_read",
+        "summary": "Read",
+        "description": "Get inventory item by ID.\n\n__⚠️ WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A unique integer value identifying this inventory item.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "include_archived",
+            "in": "query",
+            "description": "Filter by the archived status. (False by default.)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItem"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inventory-items"
+        ]
+      },
+      "patch": {
+        "operationId": "inventory-items_partial_update",
+        "summary": "Update",
+        "description": "Update an existing inventory item by ID.\n\n__⚠️ WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A unique integer value identifying this inventory item.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "include_archived",
+            "in": "query",
+            "description": "Filter by the archived status. (False by default.)",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryItemUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItem"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "inventory-items"
+        ]
+      }
+    },
+    "/inventory/facilities/": {
+      "get": {
+        "operationId": "facilities_list",
+        "summary": "List",
+        "description": "List all facilities.\n\n__⚠️ WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Facility"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "facilities"
+        ]
+      }
+    },
+    "/inventory/facilities/{id}/": {
+      "get": {
+        "operationId": "facilities_read",
+        "summary": "Read",
+        "description": "Get facility by ID.\n\n__⚠️ WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "A unique integer value identifying this facility.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Facility"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "facilities"
+        ]
+      }
+    },
+    "/retailer-inventory/": {
+      "get": {
+        "operationId": "retailer-inventory_list",
+        "summary": "List products",
+        "description": "List all products.",
+        "parameters": [
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by company id.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RetailerInventoryResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "retailer-inventory"
+        ]
+      },
+      "post": {
+        "operationId": "retailer-inventory_create",
+        "summary": "Create a product",
+        "description": "Create a new product.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetailerInventoryCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetailerInventoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "retailer-inventory"
+        ]
+      },
+      "parameters": []
+    },
+    "/retailer-inventory/{id}/": {
+      "get": {
+        "operationId": "retailer-inventory_read",
+        "summary": "Retrieve a product",
+        "description": "Retrieve an individual product.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetailerInventoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "retailer-inventory"
+        ]
+      },
+      "patch": {
+        "operationId": "retailer-inventory_partial_update",
+        "summary": "Update a product",
+        "description": "Update an existing product.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetailerInventoryUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetailerInventoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "retailer-inventory"
+        ]
+      },
+      "delete": {
+        "operationId": "retailer-inventory_delete",
+        "summary": "Delete a product",
+        "description": "Delete a product.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "retailer-inventory"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the product.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "BatchDocumentNew": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "batch": {
+            "type": "integer",
+            "description": "Id for the batch.  See `id` in the batch object."
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Date and time the document was uploaded."
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Date and time the document was last modified."
+          },
+          "summary": {
+            "type": "string"
+          },
+          "document": {
+            "description": "uri for the document",
+            "type": "string",
+            "readOnly": true,
+            "format": "uri"
+          }
+        }
+      },
+      "BatchResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "owner": {
+            "description": "Id for the company",
+            "type": "string"
+          },
+          "production_batch_number": {
+            "type": "string"
+          },
+          "batch_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "thc": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "thca": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "total_thc": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbd": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbda": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbg": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbn": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "total_cannabinoids": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "description": "Unique id generated by LeafLink."
+                },
+                "created_on": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Date and time the document was uploaded."
+                },
+                "modified": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "Date and time the document was last modified."
+                },
+                "summary": {
+                  "type": "string"
+                },
+                "document": {
+                  "description": "uri for the document",
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "cannabinoid_unit": {
+            "type": "string",
+            "description": "Unit for the test results. Acceptable values include `%`, `MG/ML`, `MG/G`"
+          },
+          "testing_source": {
+            "type": "string",
+            "description": "Name of the source system for the test results"
+          },
+          "is_from_api": {
+            "type": "boolean",
+            "description": "Describes whether this batch was created via an external system"
+          }
+        }
+      },
+      "BatchCreate": {
+        "required": [
+          "owner",
+          "production_batch_number",
+          "batch_date",
+          "testing_source"
+        ],
+        "type": "object",
+        "properties": {
+          "owner": {
+            "description": "id for the company",
+            "type": "string"
+          },
+          "production_batch_number": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "batch_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "thc": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "thca": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "total_thc": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbd": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbda": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbg": {
+            "type": "string",
+            "format": "decimal",
+            "nullable": true
+          },
+          "cbn": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "total_cannabinoids": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cannabinoid_unit": {
+            "type": "string",
+            "description": "Unit for the test results. Acceptable values include `%`, `MG/ML`, `MG/G`"
+          },
+          "testing_source": {
+            "type": "string",
+            "description": "Name of the source system for the test results"
+          }
+        }
+      },
+      "BatchUpdate": {
+        "type": "object",
+        "properties": {
+          "production_batch_number": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "batch_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "thc": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "thca": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "total_thc": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbd": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbda": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbg": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cbn": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "total_cannabinoids": {
+            "type": "string",
+            "format": "decimal"
+          },
+          "cannabinoid_unit": {
+            "type": "string",
+            "description": "Unit for the test results. Acceptable values include `%`, `MG/ML`, `MG/G`"
+          }
+        }
+      },
+      "InventoryItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "facility": {
+            "type": "integer",
+            "description": "ID of the associated facility."
+          },
+          "inventory": {
+            "type": "integer",
+            "description": "ID of the associated inventory."
+          },
+          "product": {
+            "type": "integer",
+            "description": "ID of the associated product."
+          },
+          "quantity": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Number of inventory items available."
+          },
+          "quantity_in_product_uom": {
+            "type": "string",
+            "format": "decimal",
+            "description": "Number of inventory items available in unit of measure."
+          },
+          "reserved_qty": {
+            "type": "string",
+            "format": "decimal",
+            "description": "Number of reserved inventory items."
+          },
+          "reserved_qty_in_product_uom": {
+            "type": "string",
+            "format": "decimal",
+            "description": "Number of reserved inventory items in unit of measure."
+          },
+          "batch": {
+            "type": "integer",
+            "description": "ID of the associated batch."
+          },
+          "is_archived": {
+            "type": "boolean",
+            "description": "Indicated whether the inventory item is active."
+          }
+        }
+      },
+      "InventoryItemCreate": {
+        "required": [
+          "batch",
+          "is_archived",
+          "facility",
+          "product",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "batch": {
+            "type": "integer",
+            "description": "ID of the associated batch."
+          },
+          "is_archived": {
+            "type": "boolean",
+            "description": "Indicated whether the inventory item is archived."
+          },
+          "facility": {
+            "type": "integer",
+            "description": "ID of the associated facility."
+          },
+          "product": {
+            "type": "integer",
+            "description": "ID of the associated product."
+          },
+          "quantity": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Number of inventory items available."
+          }
+        }
+      },
+      "InventoryItemUpdate": {
+        "type": "object",
+        "properties": {
+          "is_archived": {
+            "type": "boolean",
+            "description": "Indicated whether the inventory item is active."
+          },
+          "quantity": {
+            "type": "number",
+            "format": "decimal",
+            "description": "Number of inventory items available."
+          }
+        }
+      },
+      "Facility": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the facility."
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the facility."
+          }
+        }
+      },
+      "RetailerInventoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "is_low": {
+            "description": "Indicates if the inventory level is low.",
+            "type": "boolean"
+          },
+          "source": {
+            "description": "Describes the source system providing the data.",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "name": {
+            "description": "Product name",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "sku": {
+            "type": "string",
+            "description": "Product sku",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "brand": {
+            "type": "string",
+            "description": "Product brand",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "quantity": {
+            "description": "Product inventory level",
+            "type": "integer"
+          },
+          "company": {
+            "description": "Company id",
+            "type": "integer"
+          },
+          "unit_of_measure": {
+            "description": "Product unit of measure",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Date and time the product was created."
+          },
+          "modified": {
+            "title": "Modified",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true,
+            "description": "Date and time the product was last modified."
+          }
+        }
+      },
+      "RetailerInventoryCreate": {
+        "required": [
+          "is_low",
+          "source",
+          "name",
+          "sku",
+          "brand",
+          "quantity",
+          "company",
+          "unit_of_measure"
+        ],
+        "type": "object",
+        "properties": {
+          "is_low": {
+            "description": "Indicates if the inventory level is low.",
+            "type": "boolean"
+          },
+          "source": {
+            "description": "Describes the source system providing the data.",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "name": {
+            "description": "Product name",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "sku": {
+            "type": "string",
+            "description": "Product sku",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "brand": {
+            "type": "string",
+            "description": "Product brand",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "quantity": {
+            "description": "Product inventory level",
+            "type": "integer"
+          },
+          "company": {
+            "description": "Company id",
+            "type": "integer"
+          },
+          "unit_of_measure": {
+            "description": "Product unit of measure",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          }
+        }
+      },
+      "RetailerInventoryUpdate": {
+        "type": "object",
+        "properties": {
+          "is_low": {
+            "description": "Indicates if the inventory level is low.",
+            "type": "boolean"
+          },
+          "source": {
+            "description": "Describes the source system providing the data.",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "name": {
+            "description": "Product name",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "sku": {
+            "type": "string",
+            "description": "Product sku",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "brand": {
+            "type": "string",
+            "description": "Product brand",
+            "maxLength": 400,
+            "minLength": 1
+          },
+          "quantity": {
+            "description": "Product inventory level",
+            "type": "integer"
+          },
+          "company": {
+            "description": "Company id",
+            "type": "integer"
+          },
+          "unit_of_measure": {
+            "description": "Product unit of measure",
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

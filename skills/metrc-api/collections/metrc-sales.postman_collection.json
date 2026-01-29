@@ -1,0 +1,1145 @@
+{
+  "info": {
+    "name": "Metrc Sales API v2",
+    "description": "Metrc API v2 endpoints for Sales",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetCustomerTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "customertypes"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetPatientRegistrationLocations",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "patientregistration",
+            "locations"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetDeliveryById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveriesActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveriesInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveryReturnReasons",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "returnreasons"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetCounties",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "counties"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetPaymentTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "paymenttypes"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetReceiptById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetReceiptByExternalNumber",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "external",
+            "{{externalNumber}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetReceiptsActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactiveReceipts",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "RecordDeliveries",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"TransporterFacilityLicenseNumber\": \"1\",\r\n    \"SalesDateTime\": \"2017-04-04T10:10:19.000\",\r\n    \"SalesCustomerType\": \"Consumer\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"ConsumerId\": null,\r\n    \"DriverEmployeeId\": \"1\",\r\n    \"DriverName\": \"John Doe\",\r\n    \"DriversLicenseNumber\": \"1\",\r\n    \"PhoneNumberForQuestions\": \"+1-123-456-7890\",\r\n    \"VehicleMake\": \"Car\",\r\n    \"VehicleModel\": \"Small\",\r\n    \"VehicleLicensePlateNumber\": \"000000\",\r\n    \"RecipientName\": null,\r\n    \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n    \"RecipientAddressStreet2\": \"Ste 9\",\r\n    \"RecipientAddressCity\": \"Denver\",\r\n    \"RecipientAddressCounty\": null,\r\n    \"RecipientAddressState\": \"CO\",\r\n    \"RecipientAddressPostalCode\": \"11111\",\r\n    \"RecipientZoneId\": null,\r\n    \"PlannedRoute\": \"Drive to destination.\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n    \"Transactions\": [\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": null\r\n      },\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": [\r\n          \"https://1a4.com/q83vASNFZwAAAQkQMm\",\r\n          \"https://1a4.com/q83vASNFZwAAAQkQMp\"\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordReceipts",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"SalesDateTime\": \"2016-10-04T16:44:53.000\",\r\n    \"ExternalReceiptNumber\": \"ABC-1234\",\r\n    \"SalesCustomerType\": \"Consumer\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"CaregiverLicenseNumber\": null,\r\n    \"IdentificationMethod\": null,\r\n    \"PatientRegistrationLocationId\": null,\r\n    \"Transactions\": [\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000010331\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": null\r\n      },\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000010332\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": [\r\n          \"https://1a4.com/q83vASNFZwAAAQkQCA\",\r\n          \"https://1a4.com/q83vASNFZwAAAQkQCb\"\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateHubTransporters",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "hub"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 6,\r\n    \"TransporterFacilityId\": \"Facility-1\",\r\n    \"DriverEmployeeId\": \"1\",\r\n    \"DriverName\": \"John Doe\",\r\n    \"DriversLicenseNumber\": \"1\",\r\n    \"PhoneNumberForQuestions\": \"+1-123-456-7890\",\r\n    \"VehicleMake\": \"Car\",\r\n    \"VehicleModel\": \"Small\",\r\n    \"VehicleLicensePlateNumber\": \"000000\",\r\n    \"PlannedRoute\": \"Drive to destination.\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "AcceptHubDelivery",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "hub",
+            "accept"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1\r\n  },\r\n  {\r\n    \"Id\": 2\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CompleteDelivery",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "complete"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 6,\r\n    \"ActualArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n    \"PaymentType\": null,\r\n    \"AcceptedPackages\": [\r\n      \"ABCDEF012345670000000001\"\r\n    ],\r\n    \"ReturnedPackages\": [\r\n      {\r\n        \"Label\": \"ABCDEF012345670000000002\",\r\n        \"ReturnQuantityVerified\": 1.0,\r\n        \"ReturnUnitOfMeasure\": \"Ounces\",\r\n        \"ReturnReason\": \"Spoilage\",\r\n        \"ReturnReasonNote\": \"\"\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "DepartHubDelivery",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "hub",
+            "depart"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1\r\n  },\r\n  {\r\n    \"Id\": 2\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "VerifyIDHubDelivery",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "hub",
+            "verifyID"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"PaymentType\": \"Cash\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"PaymentType\": \"Electronic\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateDeliveries",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 6,\r\n    \"TransporterFacilityLicenseNumber\": \"1\",\r\n    \"SalesDateTime\": \"2017-04-04T10:10:19.000\",\r\n    \"SalesCustomerType\": \"Consumer\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"ConsumerId\": null,\r\n    \"DriverEmployeeId\": \"1\",\r\n    \"DriverName\": \"John Doe\",\r\n    \"DriversLicenseNumber\": \"1\",\r\n    \"PhoneNumberForQuestions\": \"+1-123-456-7890\",\r\n    \"VehicleMake\": \"Car\",\r\n    \"VehicleModel\": \"Small\",\r\n    \"VehicleLicensePlateNumber\": \"000000\",\r\n    \"RecipientName\": null,\r\n    \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n    \"RecipientAddressStreet2\": \"Ste 9\",\r\n    \"RecipientAddressCity\": \"Denver\",\r\n    \"RecipientAddressCounty\": null,\r\n    \"RecipientAddressState\": \"CO\",\r\n    \"RecipientAddressPostalCode\": \"11111\",\r\n    \"RecipientZoneId\": \"0001\",\r\n    \"PlannedRoute\": \"Drive to destination.\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n    \"Transactions\": [\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": null\r\n      },\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": [\r\n          \"https://1a4.com/q83vASNFZwAAAQkQDe\",\r\n          \"https://1a4.com/q83vASNFZwAAAQkQDf\"\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateReceipts",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 51,\r\n    \"SalesDateTime\": \"2016-10-04T16:47:24.000\",\r\n    \"ExternalReceiptNumber\": \"ABC-123\",\r\n    \"SalesCustomerType\": \"Consumer\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"CaregiverLicenseNumber\": null,\r\n    \"IdentificationMethod\": null,\r\n    \"PatientRegistrationLocationId\": null,\r\n    \"Transactions\": [\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000010331\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.98,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": null\r\n      },\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000010332\",\r\n        \"Quantity\": 2.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": [\r\n          \"https://1a4.com/q83vASNFZwAAAQkQRe\",\r\n          \"https://1a4.com/q83vASNFZwAAAQkQRa\"\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "FinalizeReceipts",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "finalize"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1\r\n  },\r\n  {\r\n    \"Id\": 2\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UnfinalizeReceipts",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "unfinalize"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1\r\n  },\r\n  {\r\n    \"Id\": 2\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "VoidDelivery",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ArchiveReceipt",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "receipts",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetRetailerDeliveriesActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetRetailerDeliveriesInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetRetailerDeliveryById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "RecordRetailerDeliveries",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"DateTime\": \"2017-04-04T10:10:19.000\",\r\n    \"DriverEmployeeId\": \"1\",\r\n    \"DriverName\": \"John Doe\",\r\n    \"DriversLicenseNumber\": \"1\",\r\n    \"PhoneNumberForQuestions\": \"+1-123-456-7890\",\r\n    \"VehicleMake\": \"Car\",\r\n    \"VehicleModel\": \"Small\",\r\n    \"VehicleLicensePlateNumber\": \"000000\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"Destinations\": [\r\n      {\r\n        \"SalesCustomerType\": \"Consumer\",\r\n        \"PatientLicenseNumber\": null,\r\n        \"ConsumerId\": \"456DEF\",\r\n        \"RecipientName\": null,\r\n        \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n        \"RecipientAddressStreet2\": \"Ste 9\",\r\n        \"RecipientAddressCity\": \"Denver\",\r\n        \"RecipientAddressCounty\": null,\r\n        \"RecipientAddressState\": \"CO\",\r\n        \"RecipientAddressPostalCode\": \"11111\",\r\n        \"RecipientZoneId\": \"0001\",\r\n        \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n        \"Transactions\": [\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n            \"Quantity\": 1.0,\r\n            \"UnitOfMeasure\": \"Ounces\",\r\n            \"TotalAmount\": 9.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": null\r\n          },\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000003\",\r\n            \"Quantity\": 2.0,\r\n            \"UnitOfMeasure\": \"Grams\",\r\n            \"TotalAmount\": 16.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": [\r\n              \"https://1a4.com/q83vASNFZwAAAQkQXx\",\r\n              \"https://1a4.com/q83vASNFZwAAAQkQXy\"\r\n            ]\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"SalesCustomerType\": \"Consumer\",\r\n        \"PatientLicenseNumber\": null,\r\n        \"ConsumerId\": \"123ABC\",\r\n        \"RecipientName\": null,\r\n        \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n        \"RecipientAddressStreet2\": \"Ste 9\",\r\n        \"RecipientAddressCity\": \"Denver\",\r\n        \"RecipientAddressCounty\": null,\r\n        \"RecipientAddressState\": \"CO\",\r\n        \"RecipientAddressPostalCode\": \"11111\",\r\n        \"RecipientZoneId\": \"0001\",\r\n        \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n        \"Transactions\": [\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n            \"Quantity\": 1.0,\r\n            \"UnitOfMeasure\": \"Ounces\",\r\n            \"TotalAmount\": 9.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": null\r\n          },\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000004\",\r\n            \"Quantity\": 3.0,\r\n            \"UnitOfMeasure\": \"Grams\",\r\n            \"TotalAmount\": 19.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": [\r\n              \"https://1a4.com/q83vASNFZwAAAQkQYr\",\r\n              \"https://1a4.com/q83vASNFZwAAAQkQPq\"\r\n            ]\r\n          }\r\n        ]\r\n      }\r\n    ],\r\n    \"Packages\": [\r\n      {\r\n        \"DateTime\": \"0001-01-01T00:00:00Z\",\r\n        \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalPrice\": 9.99\r\n      },\r\n      {\r\n        \"DateTime\": \"0001-01-01T00:00:00Z\",\r\n        \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalPrice\": 9.99\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateRetailerDeliveries",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 5,\r\n    \"DateTime\": \"2017-04-04T10:10:19.000\",\r\n    \"DriverEmployeeId\": \"1\",\r\n    \"DriverName\": \"John Doe\",\r\n    \"DriversLicenseNumber\": \"1\",\r\n    \"PhoneNumberForQuestions\": \"+1-123-456-7890\",\r\n    \"VehicleMake\": \"Car\",\r\n    \"VehicleModel\": \"Small\",\r\n    \"VehicleLicensePlateNumber\": \"000000\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"Destinations\": [\r\n      {\r\n        \"Id\": 1,\r\n        \"SalesDateTime\": \"0001-01-01T00:00:00.000\",\r\n        \"SalesCustomerType\": \"Consumer\",\r\n        \"PatientLicenseNumber\": null,\r\n        \"ConsumerId\": \"456DEF\",\r\n        \"DriverEmployeeId\": null,\r\n        \"DriverName\": null,\r\n        \"DriversLicenseNumber\": null,\r\n        \"PhoneNumberForQuestions\": null,\r\n        \"VehicleMake\": null,\r\n        \"VehicleModel\": null,\r\n        \"VehicleLicensePlateNumber\": null,\r\n        \"RecipientName\": null,\r\n        \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n        \"RecipientAddressStreet2\": \"Ste 9\",\r\n        \"RecipientAddressCity\": \"Denver\",\r\n        \"RecipientAddressCounty\": null,\r\n        \"RecipientAddressState\": \"CO\",\r\n        \"RecipientAddressPostalCode\": \"11111\",\r\n        \"RecipientZoneId\": \"0001\",\r\n        \"PlannedRoute\": null,\r\n        \"EstimatedDepartureDateTime\": \"0001-01-01T00:00:00.000\",\r\n        \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n        \"Transactions\": [\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n            \"Quantity\": 1.0,\r\n            \"UnitOfMeasure\": \"Ounces\",\r\n            \"TotalAmount\": 9.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": null\r\n          },\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000003\",\r\n            \"Quantity\": 1.0,\r\n            \"UnitOfMeasure\": \"Grams\",\r\n            \"TotalAmount\": 19.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": [\r\n              \"https://1a4.com/q83vASNFZwAAAQkQTy\",\r\n              \"https://1a4.com/q83vASNFZwAAAQkQTo\"\r\n            ]\r\n          }\r\n        ]\r\n      },\r\n      {\r\n        \"Id\": 2,\r\n        \"SalesDateTime\": \"0001-01-01T00:00:00.000\",\r\n        \"SalesCustomerType\": \"Consumer\",\r\n        \"PatientLicenseNumber\": null,\r\n        \"ConsumerId\": \"123ABC\",\r\n        \"DriverEmployeeId\": null,\r\n        \"DriverName\": null,\r\n        \"DriversLicenseNumber\": null,\r\n        \"PhoneNumberForQuestions\": null,\r\n        \"VehicleMake\": null,\r\n        \"VehicleModel\": null,\r\n        \"VehicleLicensePlateNumber\": null,\r\n        \"RecipientName\": null,\r\n        \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n        \"RecipientAddressStreet2\": \"Ste 9\",\r\n        \"RecipientAddressCity\": \"Denver\",\r\n        \"RecipientAddressCounty\": null,\r\n        \"RecipientAddressState\": \"CO\",\r\n        \"RecipientAddressPostalCode\": \"11111\",\r\n        \"RecipientZoneId\": \"0001\",\r\n        \"PlannedRoute\": null,\r\n        \"EstimatedDepartureDateTime\": \"0001-01-01T00:00:00.000\",\r\n        \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n        \"Transactions\": [\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n            \"Quantity\": 1.0,\r\n            \"UnitOfMeasure\": \"Ounces\",\r\n            \"TotalAmount\": 9.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": null\r\n          },\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000000004\",\r\n            \"Quantity\": 1.0,\r\n            \"UnitOfMeasure\": \"Grams\",\r\n            \"TotalAmount\": 19.99,\r\n            \"UnitThcPercent\": null,\r\n            \"UnitThcContent\": null,\r\n            \"UnitThcContentUnitOfMeasure\": null,\r\n            \"UnitWeight\": null,\r\n            \"UnitWeightUnitOfMeasure\": null,\r\n            \"InvoiceNumber\": null,\r\n            \"Price\": null,\r\n            \"ExciseTax\": null,\r\n            \"CityTax\": null,\r\n            \"CountyTax\": null,\r\n            \"MunicipalTax\": null,\r\n            \"DiscountAmount\": null,\r\n            \"SubTotal\": null,\r\n            \"SalesTax\": null,\r\n            \"QrCodes\": [\r\n              \"https://1a4.com/q83vASNFZwAAAQkQUu\",\r\n              \"https://1a4.com/q83vASNFZwAAAQkQUa\"\r\n            ]\r\n          }\r\n        ]\r\n      }\r\n    ],\r\n    \"Packages\": [\r\n      {\r\n        \"DateTime\": \"0001-01-01T00:00:00Z\",\r\n        \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalPrice\": 9.99\r\n      },\r\n      {\r\n        \"DateTime\": \"0001-01-01T00:00:00Z\",\r\n        \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalPrice\": 9.99\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "VoidRetailerDelivery",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "DepartDelivery",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "depart"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"RetailerDeliveryId\": 6\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RestockRetailerDeliveries",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "restock"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"RetailerDeliveryId\": 1,\r\n    \"DateTime\": \"2017-04-04T10:10:19.000\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"Destinations\": null,\r\n    \"Packages\": [\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalPrice\": 9.99,\r\n        \"RemoveCurrentPackage\": false\r\n      },\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalPrice\": 9.99,\r\n        \"RemoveCurrentPackage\": true\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordSaleFromRetailerDelivery",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "sale"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"RetailerDeliveryId\": 1,\r\n    \"SalesDateTime\": \"2017-04-04T10:10:19.000\",\r\n    \"SalesCustomerType\": \"Consumer\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"ConsumerId\": null,\r\n    \"PhoneNumberForQuestions\": \"+1-123-456-7890\",\r\n    \"RecipientName\": null,\r\n    \"RecipientAddressStreet1\": \"1 Someplace Road\",\r\n    \"RecipientAddressStreet2\": \"Ste 9\",\r\n    \"RecipientAddressCity\": \"Denver\",\r\n    \"RecipientZoneId\": null,\r\n    \"RecipientAddressCounty\": null,\r\n    \"RecipientAddressState\": \"CO\",\r\n    \"RecipientAddressPostalCode\": \"11111\",\r\n    \"PlannedRoute\": \"Drive to destination.\",\r\n    \"EstimatedDepartureDateTime\": \"2017-04-04T11:00:00.000\",\r\n    \"EstimatedArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n    \"Transactions\": [\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000001\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": null\r\n      },\r\n      {\r\n        \"PackageLabel\": \"ABCDEF012345670000000002\",\r\n        \"Quantity\": 1.0,\r\n        \"UnitOfMeasure\": \"Ounces\",\r\n        \"TotalAmount\": 9.99,\r\n        \"UnitThcPercent\": null,\r\n        \"UnitThcContent\": null,\r\n        \"UnitThcContentUnitOfMeasure\": null,\r\n        \"UnitWeight\": null,\r\n        \"UnitWeightUnitOfMeasure\": null,\r\n        \"InvoiceNumber\": null,\r\n        \"Price\": null,\r\n        \"ExciseTax\": null,\r\n        \"CityTax\": null,\r\n        \"CountyTax\": null,\r\n        \"MunicipalTax\": null,\r\n        \"DiscountAmount\": null,\r\n        \"SubTotal\": null,\r\n        \"SalesTax\": null,\r\n        \"QrCodes\": [\r\n          \"https://1a4.com/q83vASNFZwAAAQkQAa\",\r\n          \"https://1a4.com/q83vASNFZwAAAQkQBb\"\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "EndRetailerDeliveries",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sales/v2"
+          ],
+          "path": [
+            "deliveries",
+            "retailer",
+            "end"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"RetailerDeliveryId\": 6,\r\n    \"ActualArrivalDateTime\": \"2017-04-04T13:00:00.000\",\r\n    \"Packages\": [\r\n      {\r\n        \"Label\": \"ABCDEF012345670000000002\",\r\n        \"EndQuantity\": 1.0,\r\n        \"EndUnitOfMeasure\": \"Ounces\"\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

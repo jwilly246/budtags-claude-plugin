@@ -1,0 +1,700 @@
+{
+  "info": {
+    "name": "Metrc PlantBatches API v2",
+    "description": "Metrc API v2 endpoints for PlantBatches",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetPlantBatchById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "types"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Destroy",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PlantBatch\": \"AK-47 Clone 1/31/2017\",\r\n    \"Count\": 25,\r\n    \"WasteMethodName\": \"Laser Beam\",\r\n    \"WasteMaterialMixed\": \"Motor Oil\",\r\n    \"WasteReasonName\": \"Mater Theft\",\r\n    \"ReasonNote\": \"Mater stole a couple plants.\",\r\n    \"WasteWeight\": 1.209,\r\n    \"WasteUnitOfMeasure\": \"Grams\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"PlantBatch\": \"AK-47 Clone 1/31/2017\",\r\n    \"Count\": 10,\r\n    \"WasteMethodName\": null,\r\n    \"WasteMaterialMixed\": null,\r\n    \"WasteReasonName\": \"Ran over plants with no waste.\",\r\n    \"ReasonNote\": \"McQueen ran over the plants. Poor little plants. =(\",\r\n    \"WasteWeight\": 0.0,\r\n    \"WasteUnitOfMeasure\": null,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetWasteReasons",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "waste",
+            "reasons"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "RecordWaste",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "waste"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"WasteMethodName\": \"Clipping\",\r\n    \"MixedMaterial\": \"Soil\",\r\n    \"WasteWeight\": 15.69,\r\n    \"UnitOfMeasureName\": \"grams\",\r\n    \"ReasonName\": \"Trim\",\r\n    \"Note\": \"\",\r\n    \"WasteDate\": \"2017-01-31\",\r\n    \"PlantBatchName\": \"Plant Batch A\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Adjust",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "adjust"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PlantBatchName\": \"Testing Plant Batch\",\r\n    \"Quantity\": -2,\r\n    \"AdjustmentReason\": \"Drying\",\r\n    \"AdjustmentDate\": \"2023-01-20\",\r\n    \"ReasonNote\": null\r\n  },\r\n  {\r\n    \"PlantBatchName\": \"Testing Plant Batch\",\r\n    \"Quantity\": 1,\r\n    \"AdjustmentReason\": \"Scale Variance\",\r\n    \"AdjustmentDate\": \"2023-01-20\",\r\n    \"ReasonNote\": \"We are obtaining a new certified scale\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordAdditives",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "additives"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"AdditiveType\": \"Fertilizer\",\r\n    \"ProductTradeName\": \"Wonder Sprout\",\r\n    \"EpaRegistrationNumber\": null,\r\n    \"ProductSupplier\": \"G Labs\",\r\n    \"ApplicationDevice\": \"GreatDistributor 210lb\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Phosphorous\",\r\n        \"Percentage\": 30.0\r\n      },\r\n      {\r\n        \"Name\": \"Nitrogen\",\r\n        \"Percentage\": 15.0\r\n      },\r\n      {\r\n        \"Name\": \"Potassium\",\r\n        \"Percentage\": 15.0\r\n      }\r\n    ],\r\n    \"PlantBatchName\": \"AK-47 Clone 1/31/2017\",\r\n    \"ActualDate\": \"2019-12-15\"\r\n  },\r\n  {\r\n    \"AdditiveType\": \"Pesticide\",\r\n    \"ProductTradeName\": \"Pure Triazine\",\r\n    \"EpaRegistrationNumber\": null,\r\n    \"ProductSupplier\": \"G Labs\",\r\n    \"ApplicationDevice\": \"GreatDistributor 210lb\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Phosphorous\",\r\n        \"Percentage\": 30.0\r\n      },\r\n      {\r\n        \"Name\": \"Nitrogen\",\r\n        \"Percentage\": 15.0\r\n      },\r\n      {\r\n        \"Name\": \"Potassium\",\r\n        \"Percentage\": 15.0\r\n      }\r\n    ],\r\n    \"PlantBatchName\": \"AK-47 Clone 1/31/2017\",\r\n    \"ActualDate\": \"2019-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RecordAdditivesUsingAdditivesTemplate",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "additives",
+            "usingtemplate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"AdditivesTemplateName\": \"Additive Template 1\",\r\n    \"Rate\": \"5 Pounds\",\r\n    \"Volume\": \"1000 Sq. ft.\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"PlantBatchName\": \"AK-47 Clone 1/31/2017\",\r\n    \"ActualDate\": \"2025-01-15\"\r\n  },\r\n  {\r\n    \"AdditivesTemplateName\": \"Additive Template 2\",\r\n    \"Rate\": \"4 Grams\",\r\n    \"Volume\": \"200 Yards\",\r\n    \"TotalAmountApplied\": 5.0,\r\n    \"TotalAmountUnitOfMeasure\": \"Gallons\",\r\n    \"PlantBatchName\": \"AK-47 Clone 1/31/2017\",\r\n    \"ActualDate\": \"2025-01-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePlantings",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "plantings"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"B. Kush 5-30\",\r\n    \"Type\": \"Clone\",\r\n    \"Count\": 25,\r\n    \"Strain\": \"Spring Hill Kush\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"ActualDate\": \"2022-02-15\",\r\n    \"SourcePlantBatches\": null\r\n  },\r\n  {\r\n    \"Name\": \"B. Kush 5-31\",\r\n    \"Type\": \"Seed\",\r\n    \"Count\": 50,\r\n    \"Strain\": \"Spring Hill Kush\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"ActualDate\": \"2022-02-15\",\r\n    \"SourcePlantBatches\": null\r\n  },\r\n  {\r\n    \"Name\": \"B. Kush 5-32\",\r\n    \"Type\": \"Seed\",\r\n    \"Count\": 3,\r\n    \"Strain\": \"Spring Hill Kush\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"ActualDate\": \"2022-02-15\",\r\n    \"SourcePlantBatches\": [\r\n      {\r\n        \"PlantBatchName\": \"Red Crush\"\r\n      },\r\n      {\r\n        \"PlantBatchName\": \"Blue Dream\"\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePackages",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "packages"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"PlantBatch\": \"Demo Plant Batch 1\",\r\n    \"Count\": 10,\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Immature Plants\",\r\n    \"Tag\": \"ABCDEF012345670000020201\",\r\n    \"PatientLicenseNumber\": \"P00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsTradeSample\": false,\r\n    \"IsDonation\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": \"2016-09-15\",\r\n    \"SellByDate\": \"2016-09-15\",\r\n    \"UseByDate\": \"2016-09-15\"\r\n  },\r\n  {\r\n    \"Id\": 5,\r\n    \"PlantBatch\": null,\r\n    \"Count\": 10,\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Immature Plants\",\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"PatientLicenseNumber\": \"P00002\",\r\n    \"Note\": \"\",\r\n    \"IsTradeSample\": true,\r\n    \"IsDonation\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": \"2016-09-15\",\r\n    \"SellByDate\": \"2016-09-15\",\r\n    \"UseByDate\": \"2016-09-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePackagesFromMotherPlant",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "packages",
+            "frommotherplant"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"PlantBatch\": \"Demo Plant Batch 1\",\r\n    \"Count\": 10,\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Immature Plants\",\r\n    \"Tag\": \"ABCDEF012345670000020201\",\r\n    \"PatientLicenseNumber\": \"P00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsTradeSample\": false,\r\n    \"IsDonation\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": \"2016-09-15\",\r\n    \"SellByDate\": \"2016-09-15\",\r\n    \"UseByDate\": \"2016-09-15\"\r\n  },\r\n  {\r\n    \"Id\": 5,\r\n    \"PlantBatch\": null,\r\n    \"Count\": 10,\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Immature Plants\",\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"PatientLicenseNumber\": \"P00002\",\r\n    \"Note\": \"\",\r\n    \"IsTradeSample\": true,\r\n    \"IsDonation\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": \"2016-09-15\",\r\n    \"SellByDate\": \"2016-09-15\",\r\n    \"UseByDate\": \"2016-09-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "SplitPlantBatch",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "split"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PlantBatch\": \"B. Kush 5-30\",\r\n    \"GroupName\": \"New Plant Batch\",\r\n    \"Count\": 25,\r\n    \"Location\": \"Plant Batch Location\",\r\n    \"Sublocation\": \"Plant Batch Sublocation\",\r\n    \"Strain\": \"Spring Hill Kush\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"ActualDate\": \"2015-12-15T00:00:00Z\"\r\n  },\r\n  {\r\n    \"PlantBatch\": \"B. Kush 5-31\",\r\n    \"GroupName\": \"New Plant Batch\",\r\n    \"Count\": 50,\r\n    \"Location\": \"Plant Batch Location\",\r\n    \"Sublocation\": null,\r\n    \"Strain\": \"Spring Hill Kush\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"ActualDate\": \"2015-12-15T00:00:00Z\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeGrowthPhase",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "growthphase"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"AK-47 Clone 1/31/2017\",\r\n    \"Count\": 25,\r\n    \"StartingTag\": \"ABCDEF012345670000020401\",\r\n    \"GrowthPhase\": \"Flowering\",\r\n    \"NewLocation\": \"Plants Location\",\r\n    \"NewSublocation\": \"Plants Sublocation\",\r\n    \"GrowthDate\": \"2015-12-15\",\r\n    \"PatientLicenseNumber\": \"X00001\"\r\n  },\r\n  {\r\n    \"Name\": \"AK-47 Clone 1/31/2017\",\r\n    \"Count\": 25,\r\n    \"StartingTag\": \"ABCDEF012345670000020427\",\r\n    \"GrowthPhase\": \"Vegetative\",\r\n    \"NewLocation\": \"Harvest Location\",\r\n    \"NewSublocation\": \"Harvest Sublocation\",\r\n    \"GrowthDate\": \"2015-12-15\",\r\n    \"PatientLicenseNumber\": \"X00002\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RenamePlantBatch",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "name"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"Group\": \"Plant Batch 1\",\r\n    \"NewGroup\": \"ABCDEF012345670000000002\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Group\": null,\r\n    \"NewGroup\": \"New Group\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ReplacePlantBatchTags",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "tag"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": null,\r\n    \"Group\": \"Plant Batch 1\",\r\n    \"TagId\": null,\r\n    \"NewTag\": \"ABCDEF012345670000000002\",\r\n    \"ReplaceDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Group\": null,\r\n    \"TagId\": 3,\r\n    \"NewTag\": null,\r\n    \"ReplaceDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeStrain",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "strain"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 1,\r\n    \"Name\": null,\r\n    \"StrainId\": 1,\r\n    \"StrainName\": null\r\n  },\r\n  {\r\n    \"Id\": 2,\r\n    \"Name\": null,\r\n    \"StrainId\": 2,\r\n    \"StrainName\": null\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "MovePlantBatch",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "location"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"AK-47 Clone 1/31/2017\",\r\n    \"Location\": \"Plants Location\",\r\n    \"Sublocation\": \"Plants Sublocation\",\r\n    \"MoveDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Name\": \"Metrc Bliss 5/30/2018\",\r\n    \"Location\": \"Plants Location\",\r\n    \"Sublocation\": \"Plants Sublocation\",\r\n    \"MoveDate\": \"2018-01-05\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetPlantBatchWaste",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/plantbatches/v2"
+          ],
+          "path": [
+            "waste"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

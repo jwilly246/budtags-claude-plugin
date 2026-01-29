@@ -1,0 +1,303 @@
+{
+  "info": {
+    "name": "Metrc Transporters API v2",
+    "description": "Metrc API v2 endpoints for Transporters",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetDrivers",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "drivers"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDriverById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "drivers",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "CreateDrivers",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "drivers"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"Joe Smith\",\r\n    \"DriversLicenseNumber\": \"ABC1234\",\r\n    \"EmployeeId\": \"BTS000007\"\r\n  },\r\n  {\r\n    \"Name\": \"Jane Doe\",\r\n    \"DriversLicenseNumber\": \"ABC1235\",\r\n    \"EmployeeId\": \"BTS131206\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateDriver",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "drivers"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": \"Driver-1\",\r\n    \"Name\": \"Michelle Doe\",\r\n    \"DriversLicenseNumber\": \"ABC1234\",\r\n    \"EmployeeId\": \"BTS000007\"\r\n  },\r\n  {\r\n    \"Id\": \"Driver-3\",\r\n    \"Name\": \"John Doe\",\r\n    \"DriversLicenseNumber\": \"ABC4567\",\r\n    \"EmployeeId\": \"BTS131206\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ArchiveDriver",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "drivers",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetVehicles",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "vehicles"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetVehicleById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "vehicles",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "CreateVehicle",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "vehicles"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Make\": \"Mazda\",\r\n    \"Model\": \"3\",\r\n    \"LicensePlateNumber\": \"ABC1234\"\r\n  },\r\n  {\r\n    \"Make\": \"Toyota\",\r\n    \"Model\": \"Supra\",\r\n    \"LicensePlateNumber\": \"ACB4321\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateVehicle",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "vehicles"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": \"Vehicle-201\",\r\n    \"Make\": \"Mazda\",\r\n    \"Model\": \"Miata\",\r\n    \"LicensePlateNumber\": \"DEF5678\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ArchiveVehicle",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transporters/v2"
+          ],
+          "path": [
+            "vehicles",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "info": {
+    "name": "Metrc PatientCheckIns API v2",
+    "description": "Metrc API v2 endpoints for PatientCheckIns",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetPatientCheckInLocations",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patient-checkins/v2"
+          ],
+          "path": [
+            "locations"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetPatientCheckIn",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patient-checkins/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "checkinDateStart",
+              "value": "{{checkinDateStart}}"
+            },
+            {
+              "key": "checkinDateEnd",
+              "value": "{{checkinDateEnd}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "RecordPatientCheckIn",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patient-checkins/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PatientLicenseNumber\": \"X100420\",\r\n    \"CheckInLocationId\": 4,\r\n    \"RegistrationStartDate\": \"2022-11-01\",\r\n    \"RegistrationExpiryDate\": \"2024-10-31\",\r\n    \"CheckInDate\": \"2022-11-06\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdatePatientCheckIn",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patient-checkins/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 4,\r\n    \"PatientLicenseNumber\": \"X100420\",\r\n    \"CheckInLocationId\": 4,\r\n    \"RegistrationStartDate\": \"2022-11-01\",\r\n    \"RegistrationExpiryDate\": \"2024-10-31\",\r\n    \"CheckInDate\": \"2022-11-06\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ArchivePatientCheckIn",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patient-checkins/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

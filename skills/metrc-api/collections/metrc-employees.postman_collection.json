@@ -1,0 +1,63 @@
+{
+  "info": {
+    "name": "Metrc Employees API v2",
+    "description": "Metrc API v2 endpoints for Employees",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetByFacilityId",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/employees/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetPermissions",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/employees/v2"
+          ],
+          "path": [
+            "permissions"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "employeeLicenseNumber",
+              "value": "{{employeeLicenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,3095 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Products Core",
+    "description": "Core product management operations\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/product-lines/": {
+      "get": {
+        "operationId": "product-lines_list",
+        "summary": "List product lines",
+        "description": "List all product lines.\n\n<br />\nRetrieved per company with the company query parameter or with the following path parameter, /companies/{company_id}/product-lines/",
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by brand",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by company",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by owner company slug.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductLineResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-lines"
+        ]
+      },
+      "post": {
+        "operationId": "product-lines_create",
+        "summary": "Create a product line",
+        "description": "Create a new product line.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductLineCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductLineResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-lines"
+        ]
+      },
+      "parameters": []
+    },
+    "/product-lines/{id}/": {
+      "get": {
+        "operationId": "product-lines_read",
+        "summary": "Retrieve a product line",
+        "description": "Retrieve an individual product line.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductLineResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-lines"
+        ]
+      },
+      "patch": {
+        "operationId": "product-lines_partial_update",
+        "summary": "Update a product line",
+        "description": "Update an existing product line.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductLineUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductLineResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-lines"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the product line.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/products/": {
+      "get": {
+        "operationId": "products_list",
+        "summary": "List products",
+        "description": "List products for all active companies where the user has the Manage Inventory permission. <br /> <br />Products can also be retrieved by company via <b>/companies/{company_id}/products/</b> <br />or by parent product via <b>/products/{parent_product_id}/products/</b>",
+        "parameters": [
+          {
+            "name": "sku",
+            "in": "query",
+            "description": "Filter by one or more sku, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response.  Available values include `images`, `volume_discounts`, and `strains`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lt",
+            "in": "query",
+            "description": "Filter by the modified date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lte",
+            "in": "query",
+            "description": "Filter by the modified date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gt",
+            "in": "query",
+            "description": "Filter by the modified on date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gte",
+            "in": "query",
+            "description": "Filter by the modified date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_edit__lt",
+            "in": "query",
+            "description": "Filter by last edit date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_edit__lte",
+            "in": "query",
+            "description": "Filter by last edit date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_edit__gt",
+            "in": "query",
+            "description": "Filter by last edit date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_edit__gte",
+            "in": "query",
+            "description": "Filter by last edit date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lt",
+            "in": "query",
+            "description": "Filter by created on date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lte",
+            "in": "query",
+            "description": "Filter by created on date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gt",
+            "in": "query",
+            "description": "Filter by created on date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gte",
+            "in": "query",
+            "description": "Filter by created on date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by product id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by name, case insensitive",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Filter by a search term",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "display_name",
+            "in": "query",
+            "description": "Filter by display name, case insensitive",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by brand.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by company id.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "has_children",
+            "in": "query",
+            "description": "Filter by whether or not products have children",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parent",
+            "in": "query",
+            "description": "Filter by parent product id.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "parent__isnull",
+            "in": "query",
+            "description": "Filter by whether or not products are parent products.  A null value for parent indicated a parent product.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sub_category__isnull",
+            "in": "query",
+            "description": "Filter by whether or not products have sub-categories assigned. Values can be `true` or `false`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_line",
+            "in": "query",
+            "description": "Filter by product line id.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "strains",
+            "in": "query",
+            "description": "Filter by strain id.  Values available at the /strains/ endpoint.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by category id.  Values available at the /product-categories/ endpoint.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sub_category",
+            "in": "query",
+            "description": "Filter by sub_category id.  Values available at the /product-subcategories/ endpoint.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "license",
+            "in": "query",
+            "description": "Filter by license id.  Values available at the /licenses/ endpoint.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "license__isnull",
+            "in": "query",
+            "description": "Filter by license__isnull",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "license__type",
+            "in": "query",
+            "description": "Filter by license type display name.  Values available at /license-types/ endpoint.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "listing_state",
+            "in": "query",
+            "description": "Filter by listing state id.  Values available at /listing-states/ endpoint.  Multiple values separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archived",
+            "in": "query",
+            "description": "Filter by whether or not the product is archived",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "buyer",
+            "in": "query",
+            "description": "Filter by id for a specific buyer, view the products available to this buyer and the unique price_schedule_price if applicable",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "s2s_connected",
+            "in": "query",
+            "description": "Filter by s2s_connected",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by the seller company slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "seller_internal_id",
+            "in": "query",
+            "description": "Filter by internal product ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "external_id_key",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Must be used with external_id_values.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_values",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Multiple values separated by a comma.  Must be used with external_id_key.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductResponse"
+                      }
+                    }
+                  },
+                  "example": {
+                    "count": 2,
+                    "next": null,
+                    "previous": null,
+                    "results": [
+                      {
+                        "id": 2093,
+                        "created_on": "2020-02-19T00:36:22.353448-06:00",
+                        "last_edit": "2020-04-27T07:41:29.797149-06:00",
+                        "drop_date": null,
+                        "dropped": null,
+                        "name": "Swiss Masters Chocolate Bar (Dark)",
+                        "sku": "SWI-BAR-DAR-100",
+                        "description": "<p>Our premium Swiss Masters chocolate bars are bold, rich, and steeped in chocolate tradition.  The Swiss Master dark chocolate has 70% dark chocolate paired with 100mg THC.</p>",
+                        "quantity": "800.0000",
+                        "reserved_qty": "120.0000",
+                        "display_name": "Swiss Masters Chocolate Bar (Dark)",
+                        "unit_multiplier": 12,
+                        "retail_price": {
+                          "amount": 18,
+                          "currency": "USD"
+                        },
+                        "wholesale_price": {
+                          "amount": 108,
+                          "currency": "USD"
+                        },
+                        "sale_price": {
+                          "amount": 0,
+                          "currency": "USD"
+                        },
+                        "minimum_order": "1.0000",
+                        "maximum_order": null,
+                        "is_medical_line_item": false,
+                        "AVAILABLE_FOR_SAMPLES": true,
+                        "extern_acct_id": null,
+                        "extern_income_acct_id": "",
+                        "featured": false,
+                        "tagline": null,
+                        "featured_on_deals": false,
+                        "allow_fractional_quantities": false,
+                        "parent": null,
+                        "listing_state": "Available",
+                        "display_listing_state": "Available",
+                        "inventory_management": 1,
+                        "unit_of_measure": "Unit",
+                        "sell_in_unit_of_measure": "Case",
+                        "unit_denomination": {
+                          "id": 1,
+                          "value": "1.00000",
+                          "name": "One",
+                          "label": "1"
+                        },
+                        "category": 7,
+                        "grow_type": null,
+                        "seller": 3721,
+                        "seller_internal_id": "PROD-001",
+                        "brand": 49,
+                        "product_line": 164,
+                        "manufacturer": 3721,
+                        "strain_classification": "na",
+                        "license": {
+                          "id": 2619,
+                          "number": "404R-00000",
+                          "type": "Recreational",
+                          "display_type": "Adult Use",
+                          "classification": "MIPS"
+                        },
+                        "available_inventory": 680,
+                        "children_count": 0,
+                        "strains": [],
+                        "price_schedule_price": {
+                          "amount": 108,
+                          "currency": "USD"
+                        },
+                        "image_count": 1,
+                        "is_ancillary": false,
+                        "s2s_conversion_amount": "1.0000",
+                        "extern_sts_ids": null,
+                        "strain_classification_display": "N/A",
+                        "modified": "2020-06-11T15:53:07.137980-06:00",
+                        "sub_category": 14,
+                        "has_deals_eligible_children": false,
+                        "discount_percent": 0,
+                        "base_units_per_unit": null,
+                        "external_ids": {
+                          "system-name": "1234567890"
+                        },
+                        "threshold_value": 0,
+                        "threshold_action": "unavailable",
+                        "reverse_threshold_value": 1,
+                        "reverse_threshold_action": "available",
+                        "show_quantity": false
+                      },
+                      {
+                        "id": 2094,
+                        "created_on": "2020-02-22T00:36:22.353448-06:00",
+                        "last_edit": "2020-04-10T07:41:29.797149-06:00",
+                        "drop_date": null,
+                        "dropped": null,
+                        "name": "Great Heights Chocolate Bar (Milk)",
+                        "sku": "GRE-BAR-CHO-100",
+                        "description": "<p>Our Great Heights chocolate bars are delicious.  The milk chocolate contains 100mg THC.</p>",
+                        "quantity": "400.0000",
+                        "reserved_qty": "90.0000",
+                        "display_name": "Great Heights Chocolate Bar (Milk)",
+                        "unit_multiplier": 12,
+                        "retail_price": {
+                          "amount": 14,
+                          "currency": "USD"
+                        },
+                        "wholesale_price": {
+                          "amount": 100,
+                          "currency": "USD"
+                        },
+                        "sale_price": {
+                          "amount": 0,
+                          "currency": "USD"
+                        },
+                        "minimum_order": "1.0000",
+                        "maximum_order": null,
+                        "is_medical_line_item": false,
+                        "AVAILABLE_FOR_SAMPLES": true,
+                        "extern_acct_id": null,
+                        "extern_income_acct_id": "",
+                        "featured": false,
+                        "tagline": null,
+                        "featured_on_deals": false,
+                        "allow_fractional_quantities": false,
+                        "parent": null,
+                        "listing_state": "Available",
+                        "display_listing_state": "Available",
+                        "inventory_management": 1,
+                        "unit_of_measure": "Unit",
+                        "sell_in_unit_of_measure": "Case",
+                        "unit_denomination": {
+                          "id": 1,
+                          "value": "1.00000",
+                          "name": "One",
+                          "label": "1"
+                        },
+                        "category": 7,
+                        "grow_type": null,
+                        "seller": 3721,
+                        "seller_internal_id": "PROD-002",
+                        "brand": 49,
+                        "product_line": 164,
+                        "manufacturer": 3721,
+                        "strain_classification": "na",
+                        "license": {
+                          "id": 2619,
+                          "number": "404R-00000",
+                          "type": "Recreational",
+                          "display_type": "Adult Use",
+                          "classification": "MIPS"
+                        },
+                        "available_inventory": 310,
+                        "children_count": 0,
+                        "strains": [],
+                        "price_schedule_price": {
+                          "amount": 100,
+                          "currency": "USD"
+                        },
+                        "image_count": 1,
+                        "is_ancillary": false,
+                        "s2s_conversion_amount": "1.0000",
+                        "extern_sts_ids": null,
+                        "strain_classification_display": "N/A",
+                        "modified": "2020-06-11T15:53:07.137980-06:00",
+                        "sub_category": 14,
+                        "has_deals_eligible_children": false,
+                        "discount_percent": 0,
+                        "base_units_per_unit": null,
+                        "external_ids": {},
+                        "threshold_value": 0,
+                        "threshold_action": "unavailable",
+                        "reverse_threshold_value": 1,
+                        "reverse_threshold_action": "available",
+                        "show_quantity": true,
+                        "product_data_items": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "post": {
+        "operationId": "products_create",
+        "summary": "Create a product",
+        "description": "Create a new product.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "parameters": []
+    },
+    "/products/{id}/": {
+      "get": {
+        "operationId": "products_read",
+        "summary": "Retrieve a product",
+        "description": "Retrieve an individual product.",
+        "parameters": [
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response.  Available values include `images`, `volume_discounts`, and `strains`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "patch": {
+        "operationId": "products_partial_update",
+        "summary": "Update a product",
+        "description": "Update an existing product.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductUpdateResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "delete": {
+        "operationId": "products_delete",
+        "summary": "Archive a product",
+        "description": "Archive a product.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductArchiveResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "products"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the product.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "ProductLineResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "integer",
+            "description": "Id for the brand. See `id` in the brands response."
+          },
+          "menu_position": {
+            "description": "Position of the product line on the menu.",
+            "type": "integer"
+          }
+        }
+      },
+      "ProductLineCreate": {
+        "required": [
+          "name",
+          "brand"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "brand": {
+            "type": "integer",
+            "description": "Id for the brand. See `id` in the brands response."
+          },
+          "menu_position": {
+            "description": "Position of the product line on the menu.",
+            "type": "integer"
+          }
+        }
+      },
+      "ProductLineUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "brand": {
+            "type": "integer",
+            "description": "Id for the brand. See `id` in the brands response."
+          },
+          "menu_position": {
+            "description": "Position of the product line on the menu.",
+            "type": "integer"
+          }
+        }
+      },
+      "ProductResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique id generated by LeafLink.",
+            "type": "integer"
+          },
+          "created_on": {
+            "description": "Date and time the product was created",
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_edit": {
+            "description": "Date and time the product was last edited by a user",
+            "type": "string",
+            "format": "date-time"
+          },
+          "drop_date": {
+            "description": "Date and time the product is scheduled to transition to Available, if applicable.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "dropped": {
+            "description": "Date and time the product transitioned to Available.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Inventory level",
+            "type": "string"
+          },
+          "reserved_qty": {
+            "description": "Inventory reserved by orders in the `Submitted` or `Accepted` states",
+            "type": "string"
+          },
+          "available_inventory": {
+            "description": "Inventory available for sale (quantity - reserved_qty).",
+            "type": "string"
+          },
+          "display_name": {
+            "description": "If the product is a variety, the parent product name + the product name",
+            "type": "string"
+          },
+          "unit_multiplier": {
+            "description": "If sold in multiples, the number of units sold per case",
+            "default": 1,
+            "type": "integer"
+          },
+          "retail_price": {
+            "description": "Manufacturer's Suggested Retail Price (MSRP)",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "wholesale_price": {
+            "description": "Wholesale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sale_price": {
+            "description": "Sale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "minimum_order": {
+            "description": "Minimum units required for an order",
+            "type": "string"
+          },
+          "maximum_order": {
+            "description": "Maximum units allowed for an order",
+            "type": "string"
+          },
+          "is_medical_line_item": {
+            "description": "Is the product a medical product?",
+            "type": "boolean"
+          },
+          "AVAILABLE_FOR_SAMPLES": {
+            "description": "Is this product available for samples?",
+            "type": "boolean"
+          },
+          "extern_acct_id": {
+            "description": "Id of the product in QuickBooks Online.",
+            "type": "string"
+          },
+          "extern_income_acct_id": {
+            "description": "The id for the QuickBooks Online income account.",
+            "type": "string"
+          },
+          "featured": {
+            "description": "Is the product a featured product?",
+            "type": "boolean"
+          },
+          "tagline": {
+            "description": "One-liner that displayed when the product is featured",
+            "type": "string"
+          },
+          "featured_on_deals": {
+            "description": "Is this product featured on the LeafLink deals page?",
+            "type": "boolean"
+          },
+          "allow_fractional_quantities": {
+            "description": "Does this product allow fractional quantities to be ordered?",
+            "type": "boolean"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ParentProduct"
+          },
+          "listing_state": {
+            "type": "string",
+            "enum": [
+              "Available",
+              "Archived",
+              "Sample",
+              "Backorder",
+              "Internal",
+              "Unavailable"
+            ]
+          },
+          "display_listing_state": {
+            "description": "The listing state string displayed in the marketplace.",
+            "type": "string"
+          },
+          "inventory_management": {
+            "description": "id for the inventory setting [1: \"Managed\", 2: \"Unlimited\", 3: \"Inherited\"]",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "type": "string",
+            "enum": [
+              "Milligram",
+              "Gram",
+              "Kilogram",
+              "Ounce",
+              "Pound",
+              "Unit",
+              "Liter",
+              "Milliliter"
+            ]
+          },
+          "sell_in_unit_of_measure": {
+            "description": "If selling the product in cases as opposed to individual units, set this field to Case.",
+            "type": "string",
+            "enum": [
+              "Case"
+            ]
+          },
+          "unit_denomination": {
+            "$ref": "#/components/schemas/UnitDenomination"
+          },
+          "category": {
+            "description": "Id for the category. See `id` in the product-categories response.",
+            "type": "integer"
+          },
+          "sub_category": {
+            "description": "Id for the subcategory. See `id` in the product-subcategories response.",
+            "type": "integer"
+          },
+          "grow_type": {
+            "description": "If a flower product, the id for the type of grow operation.",
+            "type": "integer"
+          },
+          "seller": {
+            "description": "Id for the company listing the product. See `id` in the companies response.",
+            "type": "integer"
+          },
+          "seller_internal_id": {
+            "description": "Internal Product ID",
+            "type": "string"
+          },
+          "brand": {
+            "description": "Id for the brand. See `id` in the brands response.",
+            "type": "integer"
+          },
+          "product_line": {
+            "description": "Id for the product line. See `id` in the product-lines response.",
+            "type": "integer"
+          },
+          "manufacturer": {
+            "description": "Id for the company that manufactured the product. See `id` in the companies response.  Can be the same id as the seller field.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "description": "If not applicable to the product, use `na`.",
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          },
+          "license": {
+            "$ref": "#/components/schemas/ComplianceLicense"
+          },
+          "children_count": {
+            "description": "Number of varieties of this product",
+            "type": "string"
+          },
+          "strains": {
+            "description": "The strains associated with the product.  This field is required for products with the `Flower` category.",
+            "type": "array",
+            "items": {
+              "description": "Id for the strains associated with the product. See `id` in the strains response.",
+              "type": "integer"
+            },
+            "uniqueItems": true
+          },
+          "price_schedule_price": {
+            "description": "If using the buyer query parameter, the special price set for that customer with the price schedule feature.  Otherwise, same as wholesale price.",
+            "type": "string"
+          },
+          "image_count": {
+            "description": "The number of product images",
+            "type": "string"
+          },
+          "is_ancillary": {
+            "description": "Is the product an ancillary product?",
+            "type": "boolean"
+          },
+          "s2s_conversion_amount": {
+            "type": "string",
+            "format": "decimal",
+            "description": "Conversion value used by the Metrc add on."
+          },
+          "extern_sts_ids": {
+            "description": "Id used by the Metrc add on.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "strain_classification_display": {
+            "title": "Strain classification display",
+            "type": "string",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "description": "Date and time the product data was last modified.",
+            "type": "string"
+          },
+          "has_deals_eligible_children": {
+            "description": "Does the product have varieties that are eligible for LeafLink deals?'",
+            "type": "string"
+          },
+          "discount_percent": {
+            "description": "Discount applied to a product, calculated by comparing the wholesale and sale price.",
+            "type": "integer"
+          },
+          "base_units_per_unit": {
+            "description": "If the product `unit_of_measure` is `Unit`, this describes the number of base units in each unit of the product. The base unit is defined by the product category.<br>`Cartridges = Grams`<br>`Topicals = Milligrams of Cannabinoids`<br>`Concentrates = Grams`<br>`Flower (excluding Seeds and Clones) = Grams`<br>`Edibles & Ingestibles = Milligrams of Cannabinoids`<br>`Pre-Rolls = Grams`<br>`Accessories = N/A`",
+            "type": "string",
+            "format": "decimal"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "threshold_value": {
+            "description": "When product inventory quantity reaches below this value, take various actions.",
+            "type": "integer"
+          },
+          "threshold_action": {
+            "description": "Action to take when product inventory quantity reaches below a specified value. Available values include `default`, `backorder`, `unavailable`,and `internal`.",
+            "type": "string"
+          },
+          "reverse_threshold_value": {
+            "description": "When product inventory quantity reaches above this value, take various actions.",
+            "type": "integer"
+          },
+          "reverse_threshold_action": {
+            "description": "Action to take when product inventory quantity reaches above a specified value. Available values include `default`, `available`, and `internal`.",
+            "type": "string"
+          },
+          "show_quantity": {
+            "description": "Show inventory quantities to buyers?",
+            "type": "boolean"
+          },
+          "product_data_items": {
+            "description": "Product specifications.",
+            "type": "array",
+            "items": {
+              "required": [
+                "spec_type"
+              ],
+              "type": "object",
+              "properties": {
+                "spec_type": {
+                  "description": "The slug of the product specificaiton type.  Available values include `thc`, `thca`, `cbn`, `cbg`, `cbd`, `solvents`, `flowering`, `growth`, `cannabinoids`, `terpenes`, `nugget`, `other`, `yield`, `cbc`, `thcv`, `cbda`, `delta-8-thc`, `total-thc`, `total-cbd`, `cbl`, `delta-9-thc`, `cbga`, `cbdv`.",
+                  "type": "string"
+                },
+                "dosage_unit": {
+                  "description": "Dosage unit of the specification.  Available options are `mg` and `%`.  Null when `text_value` is populated.",
+                  "type": "string"
+                },
+                "decimal_value": {
+                  "description": "Value of the product specification.  Null if `text_value` is populated.",
+                  "type": "string",
+                  "format": "decimal"
+                },
+                "max_decimal_value": {
+                  "description": "If there is a range of values for the specification, the maximum value.",
+                  "type": "string",
+                  "format": "decimal"
+                },
+                "text_value": {
+                  "description": "The text value of the specification.  Null if `decimal_value` is populated.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "id": 2093,
+          "created_on": "2020-02-19T00:36:22.353448-06:00",
+          "last_edit": "2020-04-27T07:41:29.797149-06:00",
+          "drop_date": null,
+          "dropped": null,
+          "name": "Swiss Masters Chocolate Bar (Dark)",
+          "sku": "SWI-BAR-DAR-100",
+          "description": "<p>Our premium Swiss Masters chocolate bars are bold, rich, and steeped in chocolate tradition.  The Swiss Master dark chocolate has 70% dark chocolate paired with 100mg THC.</p>",
+          "quantity": "800.0000",
+          "reserved_qty": "120.0000",
+          "display_name": "Swiss Masters Chocolate Bar (Dark)",
+          "unit_multiplier": 12,
+          "retail_price": {
+            "amount": 18,
+            "currency": "USD"
+          },
+          "wholesale_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "sale_price": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "minimum_order": "1.0000",
+          "maximum_order": null,
+          "is_medical_line_item": false,
+          "AVAILABLE_FOR_SAMPLES": true,
+          "extern_acct_id": null,
+          "extern_income_acct_id": "",
+          "featured": false,
+          "tagline": null,
+          "featured_on_deals": false,
+          "allow_fractional_quantities": false,
+          "parent": null,
+          "listing_state": "Available",
+          "display_listing_state": "Available",
+          "inventory_management": 1,
+          "unit_of_measure": "Unit",
+          "sell_in_unit_of_measure": "Case",
+          "unit_denomination": {
+            "id": 1,
+            "value": "1.00000",
+            "name": "One",
+            "label": "1"
+          },
+          "category": 7,
+          "grow_type": null,
+          "seller": 3721,
+          "seller_internal_id": "PROD-001",
+          "brand": 49,
+          "product_line": 164,
+          "manufacturer": 3721,
+          "strain_classification": "na",
+          "license": {
+            "id": 2619,
+            "number": "404R-00000",
+            "type": "Recreational",
+            "display_type": "Adult Use",
+            "classification": "MIPS"
+          },
+          "available_inventory": 680,
+          "children_count": 0,
+          "strains": [],
+          "price_schedule_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "image_count": 1,
+          "is_ancillary": false,
+          "s2s_conversion_amount": "1.0000",
+          "extern_sts_ids": null,
+          "strain_classification_display": "N/A",
+          "modified": "2020-06-11T15:53:07.137980-06:00",
+          "sub_category": 14,
+          "has_deals_eligible_children": false,
+          "discount_percent": 0,
+          "base_units_per_unit": null,
+          "external_ids": {
+            "system-name": "1234567890"
+          },
+          "threshold_value": 0,
+          "threshold_action": "unavailable",
+          "reverse_threshold_value": 1,
+          "reverse_threshold_action": "available",
+          "show_quantity": true,
+          "product_data_items": [
+            {
+              "spec_type": "thc",
+              "dosage_unit": "%",
+              "decimal_value": "20.0"
+            }
+          ]
+        }
+      },
+      "ParentProduct": {
+        "title": "Parent",
+        "description": "Parent product to which this product belongs. Required if creating a variety (child product) of a parent product. Varieties are useful when selling a single product in various sizes (i.e. as eighths, grams, and half ounces).",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id of the product",
+            "type": "integer"
+          }
+        }
+      },
+      "UnitDenomination": {
+        "$ref": "./openapi-shared.json#/components/schemas/UnitDenomination"
+      },
+      "ComplianceLicense": {
+        "required": [
+          "number"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for license",
+            "type": "integer",
+            "readOnly": true
+          },
+          "number": {
+            "title": "License Number",
+            "description": "License Number",
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "type": {
+            "title": "Type",
+            "description": "Type",
+            "type": "string",
+            "readOnly": true
+          },
+          "display_type": {
+            "title": "Display type",
+            "description": "Display type",
+            "type": "string",
+            "readOnly": true
+          },
+          "classification": {
+            "title": "Classification",
+            "description": "Classification",
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "ExternalIds": {
+        "$ref": "./openapi-shared.json#/components/schemas/ExternalIds"
+      },
+      "ProductCreate": {
+        "required": [
+          "name",
+          "description",
+          "retail_price",
+          "wholesale_price",
+          "sale_price",
+          "minimum_order",
+          "maximum_order",
+          "listing_state",
+          "inventory_management",
+          "unit_of_measure",
+          "unit_denomination",
+          "category",
+          "sub_category",
+          "seller",
+          "brand",
+          "manufacturer",
+          "strain_classification",
+          "sku",
+          "license"
+        ],
+        "type": "object",
+        "properties": {
+          "drop_date": {
+            "description": "Date and time the product is scheduled to transition to \"Available\", if applicable. The product must be set to a listing status of \"Unavailable\" in order to flip it to \"Available\" on the drop date.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "description": "A company's unique identifier for a product. Commas are not supported.",
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "description": "Populate with product name if no additional description is available in source system.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Inventory level. Required if seller is managing inventory",
+            "type": "string"
+          },
+          "unit_multiplier": {
+            "description": "Required if seller is selling in cases (multiples). This is a very common practice for sellers across all product categories. If sold in multiples, the number of units sold per case. If not selling in multiples, set to \"1\".",
+            "default": 1,
+            "type": "integer"
+          },
+          "retail_price": {
+            "description": "Manufacturer's Suggested Retail Price (MSRP). Use \"0.00\" if no retail price is stored in the source system.",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "wholesale_price": {
+            "description": "Wholesale price displayed to buyers in the LeafLink marketplace.",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sale_price": {
+            "description": "Sale price displayed to buyers in the LeafLink marketplace. Use \"0.00\" if no sale price is stored in the source system.",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "minimum_order": {
+            "description": "Minimum units required for an order. Use \"0.01\" if no minimum order quantity is stored in the source system.",
+            "type": "string"
+          },
+          "maximum_order": {
+            "description": "Maximum units allowed for an order. Use \"100000\" if no maximum order quantity is stored in the source system.",
+            "type": "string"
+          },
+          "AVAILABLE_FOR_SAMPLES": {
+            "description": "Is this product available for samples? Set to \"true\" if value is not available in source system. Certain markets like Canada and OH do not allow samples.",
+            "type": "boolean"
+          },
+          "extern_acct_id": {
+            "description": "Id of the product in QuickBooks Online.",
+            "type": "string"
+          },
+          "extern_income_acct_id": {
+            "description": "The id for the QuickBooks Online income account.",
+            "type": "string"
+          },
+          "featured": {
+            "description": "Is the product a featured product? Set to \"false\" if value is not available in source system.",
+            "type": "boolean"
+          },
+          "tagline": {
+            "description": "One-liner that displayed when the product is featured",
+            "type": "string"
+          },
+          "allow_fractional_quantities": {
+            "description": "Does this product allow fractional quantities to be ordered? Recommended if Flower category product is sold in bulk.",
+            "type": "boolean"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ParentProduct"
+          },
+          "listing_state": {
+            "description": "Set to \"Available\" to make the product available for selling/buying. \"Internal\" should be used when a seller does not want a product to be visible to buyers, but may be manually added to orders by the seller.",
+            "type": "string",
+            "enum": [
+              "Available",
+              "Archived",
+              "Sample",
+              "Backorder",
+              "Internal",
+              "Unavailable"
+            ]
+          },
+          "display_listing_state": {
+            "description": "The listing state string displayed in the marketplace.",
+            "type": "string"
+          },
+          "inventory_management": {
+            "description": "id for the inventory setting [1: \"Managed\", 2: \"Unlimited\", 3: \"Inherited\"] Use \"1\" to set the inventory of the product to managed. If set to \"1\", available inventory quantity should be set using \"quantity\" field.",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "description": "If appropriate unit of measure is not available as an option, use \"Unit\" and enter the number of units per unit in the base_units_per_unit field.",
+            "type": "string",
+            "enum": [
+              "Milligram",
+              "Gram",
+              "Kilogram",
+              "Ounce",
+              "Pound",
+              "Unit",
+              "Liter",
+              "Milliliter"
+            ]
+          },
+          "sell_in_unit_of_measure": {
+            "description": "If selling the product in cases as opposed to individual units, set this field to \"Case\". Required if seller is selling in cases and unit_multiplier is greater than 1.",
+            "type": "string",
+            "enum": [
+              "Case"
+            ]
+          },
+          "unit_denomination": {
+            "description": "id for the unit denomination [1: \"1\", 2: \"1/2\", 3: \"1/4\", 4: \"1/8\", 5: \"3/4\", 6: \"2\", 7: \"3 1/2\", 8: \"7\", 9: \"14\", 10: \"6\", 11: \"28\", 12: \"5 1/4\", 13: \"4\", 14: \"2 1/2\", 15: \"8\", 16: \"3 3/4\", 17: \"1/10\", 18: \"6/5\", 19: \"3/2\", 20: \"2/10\", 21: \"1/5\", 22: \"1/3\", 23: \"1/6\", 24: \"3/10\", 25: \"4/10\"]. Set to \"1\" if appropriate value is not available as an option.",
+            "type": "integer"
+          },
+          "category": {
+            "description": "Id for the category. See `id` in the product-categories response. Ids may differ per environment.",
+            "type": "integer"
+          },
+          "sub_category": {
+            "description": "Id for the subcategory. See `id` in the product-subcategories response. Ids may differ per environment.",
+            "type": "integer"
+          },
+          "grow_type": {
+            "description": "If a flower product, the id for the type of grow operation.",
+            "type": "integer"
+          },
+          "seller": {
+            "description": "Id for the company listing the product. See `id` in the companies response.",
+            "type": "integer"
+          },
+          "seller_internal_id": {
+            "description": "Internal Product ID",
+            "type": "string"
+          },
+          "brand": {
+            "description": "Id for the brand. See `id` in the brands response.",
+            "type": "integer"
+          },
+          "product_line": {
+            "description": "Id for the product line. See `id` in the product-lines response. Using product lines provides a better experience for buyers to be able to navigate the seller's menu. For the seller, it provides better in platform reporting and analytics.",
+            "type": "integer"
+          },
+          "manufacturer": {
+            "description": "Id for the company that manufactured the product. See `id` in the companies response.  Typically set to the same id as the seller field.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "description": "If not applicable to the product, use `na`.",
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          },
+          "license": {
+            "type": "integer",
+            "description": "Id for the license.  See `id` in the licenses response. Required for product to appear on menu for buyer visibility and for compliance. Use \"N/A\" for ancillary products."
+          },
+          "strains": {
+            "description": "The strains associated with the product.  This field is required for products with the `Flower` category.",
+            "type": "array",
+            "items": {
+              "description": "Id for the strains associated with the product. See `id` in the strains response.",
+              "type": "integer"
+            },
+            "uniqueItems": true
+          },
+          "extern_sts_ids": {
+            "description": "Id used by the Metrc add on.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "base_units_per_unit": {
+            "description": "Required if using Unit as base unit of measure. If the product `unit_of_measure` is `Unit`, this describes the number of base units in each unit of the product.  The base unit is defined by the product category.<br>`Cartridges = Grams`<br>`Topicals = Milligrams of Cannabinoids`<br>`Concentrates = Grams`<br>`Flower (excluding Seeds and Clones) = Grams`<br>`Edibles & Ingestibles = Milligrams of Cannabinoids`<br>`Pre-Rolls = Grams`<br>`Accessories = N/A`",
+            "type": "string",
+            "format": "decimal"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "threshold_value": {
+            "description": "When product inventory quantity reaches below this value, take various actions.",
+            "type": "integer"
+          },
+          "threshold_action": {
+            "description": "Action to take when product inventory quantity reaches below a specified value. Available values include `default`, `backorder`, `unavailable`, and `internal`.",
+            "type": "string"
+          },
+          "reverse_threshold_value": {
+            "description": "When product inventory quantity reaches above this value, take various actions.",
+            "type": "integer"
+          },
+          "reverse_threshold_action": {
+            "description": "Action to take when product inventory quantity reaches above a specified value. Available values include `default`, `available`, and `internal`.",
+            "type": "string"
+          },
+          "show_quantity": {
+            "description": "Show inventory quantities to buyers?",
+            "type": "boolean"
+          },
+          "product_data_items": {
+            "description": "Product specifications.",
+            "type": "array",
+            "items": {
+              "required": [
+                "spec_type"
+              ],
+              "type": "object",
+              "properties": {
+                "spec_type": {
+                  "description": "The slug of the product specificaiton type.  Available values include `thc`, `thca`, `cbn`, `cbg`, `cbd`, `solvents`, `flowering`, `growth`, `cannabinoids`, `terpenes`, `nugget`, `other`, `yield`, `cbc`, `thcv`, `cbda`, `delta-8-thc`, `total-thc`, `total-cbd`, `cbl`, `delta-9-thc`, `cbga`, `cbdv`.",
+                  "type": "string"
+                },
+                "dosage_unit": {
+                  "description": "Dosage unit of the specification.  Available options are `mg` and `%`.  Required only if `decimal_value` is sent.",
+                  "type": "string"
+                },
+                "decimal_value": {
+                  "description": "Value of the product specification.  Required if `text_value` is not sent.",
+                  "type": "string",
+                  "format": "decimal"
+                },
+                "max_decimal_value": {
+                  "description": "If there is a range of values for the specification, the maximum value.",
+                  "type": "string",
+                  "format": "decimal"
+                },
+                "text_value": {
+                  "description": "The text value of the specification.  Required if `decimal_value` is not sent.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "name": "Swiss Masters Chocolate Bar (Dark)",
+          "sku": "SWI-BAR-DAR-100",
+          "description": "<p>Our premium Swiss Masters chocolate bars are bold, rich, and steeped in chocolate tradition.  The Swiss Master dark chocolate has 70% dark chocolate paired with 100mg THC.</p>",
+          "quantity": "800.0000",
+          "display_name": "Swiss Masters Chocolate Bar (Dark)",
+          "unit_multiplier": 12,
+          "retail_price": {
+            "amount": 18,
+            "currency": "USD"
+          },
+          "wholesale_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "sale_price": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "minimum_order": "1.0000",
+          "maximum_order": null,
+          "listing_state": "Available",
+          "inventory_management": 1,
+          "unit_of_measure": "Unit",
+          "unit_denomination": 1,
+          "category": 7,
+          "seller": 3721,
+          "seller_internal_id": "PROD-001",
+          "brand": 49,
+          "manufacturer": 3721,
+          "strain_classification": "na",
+          "license": 2619,
+          "external_ids": {
+            "system-name": "1234567890"
+          },
+          "threshold_value": 0,
+          "threshold_action": "unavailable",
+          "reverse_threshold_value": 1,
+          "reverse_threshold_action": "available",
+          "show_quantity": true
+        }
+      },
+      "ProductUpdate": {
+        "type": "object",
+        "properties": {
+          "drop_date": {
+            "description": "Date and time the product is scheduled to transition to Available, if applicable.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Inventory level",
+            "type": "string"
+          },
+          "available_inventory": {
+            "description": "Inventory available for sale (quantity - reserved_qty).",
+            "type": "string"
+          },
+          "unit_multiplier": {
+            "description": "If sold in multiples, the number of units sold per case",
+            "default": 1,
+            "type": "integer"
+          },
+          "retail_price": {
+            "description": "Manufacturer's Suggested Retail Price (MSRP)",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "wholesale_price": {
+            "description": "Wholesale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sale_price": {
+            "description": "Sale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "minimum_order": {
+            "description": "Minimum units required for an order",
+            "type": "string"
+          },
+          "maximum_order": {
+            "description": "Maximum units allowed for an order",
+            "type": "string"
+          },
+          "AVAILABLE_FOR_SAMPLES": {
+            "description": "Is this product available for samples?",
+            "type": "boolean"
+          },
+          "extern_acct_id": {
+            "description": "Id of the product in QuickBooks Online.",
+            "type": "string"
+          },
+          "extern_income_acct_id": {
+            "description": "The id for the QuickBooks Online income account.",
+            "type": "string"
+          },
+          "featured": {
+            "description": "Is the product a featured product?",
+            "type": "boolean"
+          },
+          "tagline": {
+            "description": "One-liner that displayed when the product is featured",
+            "type": "string"
+          },
+          "allow_fractional_quantities": {
+            "description": "Does this product allow fractional quantities to be ordered?",
+            "type": "boolean"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ParentProduct"
+          },
+          "listing_state": {
+            "type": "string",
+            "enum": [
+              "Available",
+              "Archived",
+              "Sample",
+              "Backorder",
+              "Internal",
+              "Unavailable"
+            ]
+          },
+          "display_listing_state": {
+            "description": "The listing state string displayed in the marketplace.",
+            "type": "string"
+          },
+          "inventory_management": {
+            "description": "id for the inventory setting [1: \"Managed\", 2: \"Unlimited\", 3: \"Inherited\"]",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "type": "string",
+            "enum": [
+              "Milligram",
+              "Gram",
+              "Kilogram",
+              "Ounce",
+              "Pound",
+              "Unit",
+              "Liter",
+              "Milliliter"
+            ]
+          },
+          "sell_in_unit_of_measure": {
+            "description": "If selling the product in cases as opposed to individual units, set this field to Case.",
+            "type": "string",
+            "enum": [
+              "Case"
+            ]
+          },
+          "unit_denomination": {
+            "description": "id for the unit denomination [1: \"1\", 2: \"1/2\", 3: \"1/4\", 4: \"1/8\", 5: \"3/4\", 6: \"2\", 7: \"3 1/2\", 8: \"7\", 9: \"14\", 10: \"6\", 11: \"28\", 12: \"5 1/4\", 13: \"4\", 14: \"2 1/2\", 15: \"8\", 16: \"3 3/4\", 17: \"1/10\", 18: \"6/5\", 19: \"3/2\", 20: \"2/10\", 21: \"1/5\", 22: \"1/3\", 23: \"1/6\", 24: \"3/10\", 25: \"4/10\"]",
+            "type": "integer"
+          },
+          "category": {
+            "description": "Id for the category. See `id` in the product-categories response.",
+            "type": "integer"
+          },
+          "sub_category": {
+            "description": "Id for the subcategory. See `id` in the product-subcategories response.",
+            "type": "integer"
+          },
+          "grow_type": {
+            "description": "If a flower product, the id for the type of grow operation.",
+            "type": "integer"
+          },
+          "seller": {
+            "description": "Id for the company listing the product. See `id` in the companies response.",
+            "type": "integer"
+          },
+          "seller_internal_id": {
+            "description": "Internal Product ID",
+            "type": "string"
+          },
+          "brand": {
+            "description": "Id for the brand. See `id` in the brands response.",
+            "type": "integer"
+          },
+          "product_line": {
+            "description": "Id for the product line. See `id` in the product-lines response.",
+            "type": "integer"
+          },
+          "manufacturer": {
+            "description": "Id for the company that manufactured the product. See `id` in the companies response.  Can be the same id as the seller field.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "description": "If not applicable to the product, use `na`.",
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          },
+          "license": {
+            "$ref": "#/components/schemas/ComplianceLicense"
+          },
+          "strains": {
+            "description": "The strains associated with the product.  This field is required for products with the `Flower` category.",
+            "type": "array",
+            "items": {
+              "description": "Id for the strains associated with the product. See `id` in the strains response.",
+              "type": "integer"
+            },
+            "uniqueItems": true
+          },
+          "extern_sts_ids": {
+            "description": "Id used by the Metrc add on.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "base_units_per_unit": {
+            "description": "If the product `unit_of_measure` is `Unit`, this describes the number of base units in each unit of the product.  The base unit is defined by the product category.<br>`Cartridges = Grams`<br>`Topicals = Milligrams of Cannabinoids`<br>`Concentrates = Grams`<br>`Flower (excluding Seeds and Clones) = Grams`<br>`Edibles & Ingestibles = Milligrams of Cannabinoids`<br>`Pre-Rolls = Grams`<br>`Accessories = N/A`",
+            "type": "string",
+            "format": "decimal"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "threshold_value": {
+            "description": "When product inventory quantity reaches below this value, take various actions.",
+            "type": "integer"
+          },
+          "threshold_action": {
+            "description": "Action to take when product inventory quantity reaches below a specified value. Available values include `default`, `backorder`, `unavailable`, and `internal`.",
+            "type": "string"
+          },
+          "reverse_threshold_value": {
+            "description": "When product inventory quantity reaches above this value, take various actions.",
+            "type": "integer"
+          },
+          "reverse_threshold_action": {
+            "description": "Action to take when product inventory quantity reaches above a specified value. Available values include `default`, `available`, and `internal`.",
+            "type": "string"
+          },
+          "show_quantity": {
+            "description": "Show inventory quantities to buyers?",
+            "type": "boolean"
+          },
+          "product_data_items": {
+            "description": "Product specifications.  The list in the request will replace any existing product data items.",
+            "type": "array",
+            "items": {
+              "required": [
+                "spec_type"
+              ],
+              "type": "object",
+              "properties": {
+                "spec_type": {
+                  "description": "The slug of the product specificaiton type.  Available values include `thc`, `thca`, `cbn`, `cbg`, `cbd`, `solvents`, `flowering`, `growth`, `cannabinoids`, `terpenes`, `nugget`, `other`, `yield`, `cbc`, `thcv`, `cbda`, `delta-8-thc`, `total-thc`, `total-cbd`, `cbl`, `delta-9-thc`, `cbga`, `cbdv`.",
+                  "type": "string"
+                },
+                "dosage_unit": {
+                  "description": "Dosage unit of the specification.  Available options are `mg` and `%`.  Required only if `decimal_value` is sent.",
+                  "type": "string"
+                },
+                "decimal_value": {
+                  "description": "Value of the product specification.  Required if `text_value` is not sent.",
+                  "type": "string",
+                  "format": "decimal"
+                },
+                "max_decimal_value": {
+                  "description": "If there is a range of values for the specification, the maximum value.",
+                  "type": "string",
+                  "format": "decimal"
+                },
+                "text_value": {
+                  "description": "The text value of the specification.  Required if `decimal_value` is not sent.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "quantity": 2000
+        }
+      },
+      "ProductUpdateResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique id generated by LeafLink.",
+            "type": "integer"
+          },
+          "created_on": {
+            "description": "Date and time the product was created",
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_edit": {
+            "description": "Date and time the product was last edited by a user",
+            "type": "string",
+            "format": "date-time"
+          },
+          "drop_date": {
+            "description": "Date and time the product is scheduled to transition to Available, if applicable.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "dropped": {
+            "description": "Date and time the product transitioned to Available.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Inventory level",
+            "type": "string"
+          },
+          "reserved_qty": {
+            "description": "Inventory reserved by orders in the `Submitted` or `Accepted` states",
+            "type": "string"
+          },
+          "available_inventory": {
+            "description": "Inventory available for sale (quantity - reserved_qty).",
+            "type": "string"
+          },
+          "display_name": {
+            "description": "If the product is a variety, the parent product name + the product name",
+            "type": "string"
+          },
+          "unit_multiplier": {
+            "description": "If sold in multiples, the number of units sold per case",
+            "default": 1,
+            "type": "integer"
+          },
+          "retail_price": {
+            "description": "Manufacturer's Suggested Retail Price (MSRP)",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "wholesale_price": {
+            "description": "Wholesale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sale_price": {
+            "description": "Sale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "minimum_order": {
+            "description": "Minimum units required for an order",
+            "type": "string"
+          },
+          "maximum_order": {
+            "description": "Maximum units allowed for an order",
+            "type": "string"
+          },
+          "is_medical_line_item": {
+            "description": "Is the product a medical product?",
+            "type": "boolean"
+          },
+          "AVAILABLE_FOR_SAMPLES": {
+            "description": "Is this product available for samples?",
+            "type": "boolean"
+          },
+          "extern_acct_id": {
+            "description": "Id of the product in QuickBooks Online.",
+            "type": "string"
+          },
+          "extern_income_acct_id": {
+            "description": "The id for the QuickBooks Online income account.",
+            "type": "string"
+          },
+          "featured": {
+            "description": "Is the product a featured product?",
+            "type": "boolean"
+          },
+          "tagline": {
+            "description": "One-liner that displayed when the product is featured",
+            "type": "string"
+          },
+          "featured_on_deals": {
+            "description": "Is this product featured on the LeafLink deals page?",
+            "type": "boolean"
+          },
+          "allow_fractional_quantities": {
+            "description": "Does this product allow fractional quantities to be ordered?",
+            "type": "boolean"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ParentProduct"
+          },
+          "listing_state": {
+            "type": "string",
+            "enum": [
+              "Available",
+              "Archived",
+              "Sample",
+              "Backorder",
+              "Internal",
+              "Unavailable"
+            ]
+          },
+          "display_listing_state": {
+            "description": "The listing state string displayed in the marketplace.",
+            "type": "string"
+          },
+          "inventory_management": {
+            "description": "id for the inventory setting [1: \"Managed\", 2: \"Unlimited\", 3: \"Inherited\"]",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "type": "string",
+            "enum": [
+              "Milligram",
+              "Gram",
+              "Kilogram",
+              "Ounce",
+              "Pound",
+              "Unit",
+              "Liter",
+              "Milliliter"
+            ]
+          },
+          "sell_in_unit_of_measure": {
+            "description": "If selling the product in cases as opposed to individual units, set this field to Case.",
+            "type": "string",
+            "enum": [
+              "Case"
+            ]
+          },
+          "unit_denomination": {
+            "$ref": "#/components/schemas/UnitDenomination"
+          },
+          "category": {
+            "description": "Id for the category. See `id` in the product-categories response.",
+            "type": "integer"
+          },
+          "sub_category": {
+            "description": "Id for the subcategory. See `id` in the product-subcategories response.",
+            "type": "integer"
+          },
+          "grow_type": {
+            "description": "If a flower product, the id for the type of grow operation.",
+            "type": "integer"
+          },
+          "seller": {
+            "description": "Id for the company listing the product. See `id` in the companies response.",
+            "type": "integer"
+          },
+          "seller_internal_id": {
+            "description": "Internal Product ID",
+            "type": "string"
+          },
+          "brand": {
+            "description": "Id for the brand. See `id` in the brands response.",
+            "type": "integer"
+          },
+          "product_line": {
+            "description": "Id for the product line. See `id` in the product-lines response.",
+            "type": "integer"
+          },
+          "manufacturer": {
+            "description": "Id for the company that manufactured the product. See `id` in the companies response.  Can be the same id as the seller field.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "description": "If not applicable to the product, use `na`.",
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          },
+          "license": {
+            "$ref": "#/components/schemas/ComplianceLicense"
+          },
+          "children_count": {
+            "description": "Number of varieties of this product",
+            "type": "string"
+          },
+          "strains": {
+            "description": "The strains associated with the product.  This field is required for products with the `Flower` category.",
+            "type": "array",
+            "items": {
+              "description": "Id for the strains associated with the product. See `id` in the strains response.",
+              "type": "integer"
+            },
+            "uniqueItems": true
+          },
+          "price_schedule_price": {
+            "description": "If using the buyer query parameter, the special price set for that customer with the price schedule feature.  Otherwise, same as wholesale price.",
+            "type": "string"
+          },
+          "image_count": {
+            "description": "The number of product images",
+            "type": "string"
+          },
+          "is_ancillary": {
+            "description": "Is the product an ancillary product?",
+            "type": "boolean"
+          },
+          "s2s_conversion_amount": {
+            "type": "string",
+            "format": "decimal",
+            "description": "Conversion value used by the Metrc add on."
+          },
+          "extern_sts_ids": {
+            "description": "Id used by the Metrc add on.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "strain_classification_display": {
+            "title": "Strain classification display",
+            "type": "string",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "description": "Date and time the product data was last modified.",
+            "type": "string"
+          },
+          "has_deals_eligible_children": {
+            "description": "Does the product have varieties that are eligible for LeafLink deals?'",
+            "type": "string"
+          },
+          "discount_percent": {
+            "description": "Discount applied to a product, calculated by comparing the wholesale and sale price.",
+            "type": "integer"
+          },
+          "base_units_per_unit": {
+            "description": "If the product `unit_of_measure` is `Unit`, this describes the number of base units in each unit of the product.  The base unit is defined by the product category.<br>`Cartridges = Grams`<br>`Topicals = Milligrams of Cannabinoids`<br>`Concentrates = Grams`<br>`Flower (excluding Seeds and Clones) = Grams`<br>`Edibles & Ingestibles = Milligrams of Cannabinoids`<br>`Pre-Rolls = Grams`<br>`Accessories = N/A`",
+            "type": "string",
+            "format": "decimal"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "threshold_value": {
+            "description": "When product inventory quantity reaches below this value, take various actions.",
+            "type": "integer"
+          },
+          "threshold_action": {
+            "description": "Action to take when product inventory quantity reaches below a specified value. Available values include `default`, `backorder`, `unavailable`, and `internal`.",
+            "type": "string"
+          },
+          "reverse_threshold_value": {
+            "description": "When product inventory quantity reaches above this value, take various actions.",
+            "type": "integer"
+          },
+          "reverse_threshold_action": {
+            "description": "Action to take when product inventory quantity reaches above a specified value. Available values include `default`, `available`, and `internal`.",
+            "type": "string"
+          },
+          "show_quantity": {
+            "description": "Show inventory quantities to buyers?",
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "id": 2093,
+          "created_on": "2020-02-19T00:36:22.353448-06:00",
+          "last_edit": "2020-04-27T07:41:29.797149-06:00",
+          "drop_date": null,
+          "dropped": null,
+          "name": "Swiss Masters Chocolate Bar (Dark)",
+          "sku": "SWI-BAR-DAR-100",
+          "description": "<p>Our premium Swiss Masters chocolate bars are bold, rich, and steeped in chocolate tradition.  The Swiss Master dark chocolate has 70% dark chocolate paired with 100mg THC.</p>",
+          "quantity": "2000.0000",
+          "reserved_qty": "120.0000",
+          "display_name": "Swiss Masters Chocolate Bar (Dark)",
+          "unit_multiplier": 12,
+          "retail_price": {
+            "amount": 18,
+            "currency": "USD"
+          },
+          "wholesale_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "sale_price": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "minimum_order": "1.0000",
+          "maximum_order": null,
+          "is_medical_line_item": false,
+          "AVAILABLE_FOR_SAMPLES": true,
+          "extern_acct_id": null,
+          "extern_income_acct_id": "",
+          "featured": false,
+          "tagline": null,
+          "featured_on_deals": false,
+          "allow_fractional_quantities": false,
+          "parent": null,
+          "listing_state": "Available",
+          "display_listing_state": "Available",
+          "inventory_management": 1,
+          "unit_of_measure": "Unit",
+          "sell_in_unit_of_measure": "Case",
+          "unit_denomination": {
+            "id": 1,
+            "value": "1.00000",
+            "name": "One",
+            "label": "1"
+          },
+          "category": 7,
+          "grow_type": null,
+          "seller": 3721,
+          "seller_internal_id": "PROD-001",
+          "brand": 49,
+          "product_line": 164,
+          "manufacturer": 3721,
+          "strain_classification": "na",
+          "license": {
+            "id": 2619,
+            "number": "404R-00000",
+            "type": "Recreational",
+            "display_type": "Adult Use",
+            "classification": "MIPS"
+          },
+          "available_inventory": 1880,
+          "children_count": 0,
+          "strains": [],
+          "price_schedule_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "image_count": 1,
+          "is_ancillary": false,
+          "s2s_conversion_amount": "1.0000",
+          "extern_sts_ids": null,
+          "strain_classification_display": "N/A",
+          "modified": "2020-06-11T15:53:07.137980-06:00",
+          "sub_category": 14,
+          "has_deals_eligible_children": false,
+          "discount_percent": 0,
+          "base_units_per_unit": null,
+          "external_ids": {
+            "system-name": "1234567890"
+          },
+          "threshold_value": 0,
+          "threshold_action": "unavailable",
+          "reverse_threshold_value": 1,
+          "reverse_threshold_action": "available",
+          "show_quantity": true
+        }
+      },
+      "ProductArchiveResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique id generated by LeafLink.",
+            "type": "integer"
+          },
+          "created_on": {
+            "description": "Date and time the product was created",
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_edit": {
+            "description": "Date and time the product was last edited by a user",
+            "type": "string",
+            "format": "date-time"
+          },
+          "drop_date": {
+            "description": "Date and time the product is scheduled to transition to Available, if applicable.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "dropped": {
+            "description": "Date and time the product transitioned to Available.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Inventory level",
+            "type": "string"
+          },
+          "reserved_qty": {
+            "description": "Inventory reserved by orders in the `Submitted` or `Accepted` states",
+            "type": "string"
+          },
+          "available_inventory": {
+            "description": "Inventory available for sale (quantity - reserved_qty).",
+            "type": "string"
+          },
+          "display_name": {
+            "description": "If the product is a variety, the parent product name + the product name",
+            "type": "string"
+          },
+          "unit_multiplier": {
+            "description": "If sold in multiples, the number of units sold per case",
+            "default": 1,
+            "type": "integer"
+          },
+          "retail_price": {
+            "description": "Manufacturer's Suggested Retail Price (MSRP)",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "wholesale_price": {
+            "description": "Wholesale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sale_price": {
+            "description": "Sale price displayed to buyers in the LeafLink marketplace",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "minimum_order": {
+            "description": "Minimum units required for an order",
+            "type": "string"
+          },
+          "maximum_order": {
+            "description": "Maximum units allowed for an order",
+            "type": "string"
+          },
+          "is_medical_line_item": {
+            "description": "Is the product a medical product?",
+            "type": "boolean"
+          },
+          "AVAILABLE_FOR_SAMPLES": {
+            "description": "Is this product available for samples?",
+            "type": "boolean"
+          },
+          "extern_acct_id": {
+            "description": "Id of the product in QuickBooks Online.",
+            "type": "string"
+          },
+          "extern_income_acct_id": {
+            "description": "The id for the QuickBooks Online income account.",
+            "type": "string"
+          },
+          "featured": {
+            "description": "Is the product a featured product?",
+            "type": "boolean"
+          },
+          "tagline": {
+            "description": "One-liner that displayed when the product is featured",
+            "type": "string"
+          },
+          "featured_on_deals": {
+            "description": "Is this product featured on the LeafLink deals page?",
+            "type": "boolean"
+          },
+          "allow_fractional_quantities": {
+            "description": "Does this product allow fractional quantities to be ordered?",
+            "type": "boolean"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/ParentProduct"
+          },
+          "listing_state": {
+            "type": "string",
+            "enum": [
+              "Available",
+              "Archived",
+              "Sample",
+              "Backorder",
+              "Internal",
+              "Unavailable"
+            ]
+          },
+          "display_listing_state": {
+            "description": "The listing state string displayed in the marketplace.",
+            "type": "string"
+          },
+          "inventory_management": {
+            "description": "id for the inventory setting [1: \"Managed\", 2: \"Unlimited\", 3: \"Inherited\"]",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "type": "string",
+            "enum": [
+              "Milligram",
+              "Gram",
+              "Kilogram",
+              "Ounce",
+              "Pound",
+              "Unit",
+              "Liter",
+              "Milliliter"
+            ]
+          },
+          "sell_in_unit_of_measure": {
+            "description": "If selling the product in cases as opposed to individual units, set this field to Case.",
+            "type": "string",
+            "enum": [
+              "Case"
+            ]
+          },
+          "unit_denomination": {
+            "$ref": "#/components/schemas/UnitDenomination"
+          },
+          "category": {
+            "description": "Id for the category. See `id` in the product-categories response.",
+            "type": "integer"
+          },
+          "sub_category": {
+            "description": "Id for the subcategory. See `id` in the product-subcategories response.",
+            "type": "integer"
+          },
+          "grow_type": {
+            "description": "If a flower product, the id for the type of grow operation.",
+            "type": "integer"
+          },
+          "seller": {
+            "description": "Id for the company listing the product. See `id` in the companies response.",
+            "type": "integer"
+          },
+          "seller_internal_id": {
+            "description": "Internal Product ID",
+            "type": "string"
+          },
+          "brand": {
+            "description": "Id for the brand. See `id` in the brands response.",
+            "type": "integer"
+          },
+          "product_line": {
+            "description": "Id for the product line. See `id` in the product-lines response.",
+            "type": "integer"
+          },
+          "manufacturer": {
+            "description": "Id for the company that manufactured the product. See `id` in the companies response.  Can be the same id as the seller field.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "description": "If not applicable to the product, use `na`.",
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          },
+          "license": {
+            "$ref": "#/components/schemas/ComplianceLicense"
+          },
+          "children_count": {
+            "description": "Number of varieties of this product",
+            "type": "string"
+          },
+          "strains": {
+            "description": "The strains associated with the product.  This field is required for products with the `Flower` category.",
+            "type": "array",
+            "items": {
+              "description": "Id for the strains associated with the product. See `id` in the strains response.",
+              "type": "integer"
+            },
+            "uniqueItems": true
+          },
+          "price_schedule_price": {
+            "description": "If using the buyer query parameter, the special price set for that customer with the price schedule feature.  Otherwise, same as wholesale price.",
+            "type": "string"
+          },
+          "image_count": {
+            "description": "The number of product images",
+            "type": "string"
+          },
+          "is_ancillary": {
+            "description": "Is the product an ancillary product?",
+            "type": "boolean"
+          },
+          "s2s_conversion_amount": {
+            "type": "string",
+            "format": "decimal",
+            "description": "Conversion value used by the Metrc add on."
+          },
+          "extern_sts_ids": {
+            "description": "Id used by the Metrc add on.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "strain_classification_display": {
+            "title": "Strain classification display",
+            "type": "string",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "description": "Date and time the product data was last modified.",
+            "type": "string"
+          },
+          "has_deals_eligible_children": {
+            "description": "Does the product have varieties that are eligible for LeafLink deals?'",
+            "type": "string"
+          },
+          "discount_percent": {
+            "description": "Discount applied to a product, calculated by comparing the wholesale and sale price.",
+            "type": "integer"
+          },
+          "base_units_per_unit": {
+            "description": "If the product `unit_of_measure` is `Unit`, this describes the number of base units in each unit of the product.  The base unit is defined by the product category.<br>`Cartridges = Grams`<br>`Topicals = Milligrams of Cannabinoids`<br>`Concentrates = Grams`<br>`Flower (excluding Seeds and Clones) = Grams`<br>`Edibles & Ingestibles = Milligrams of Cannabinoids`<br>`Pre-Rolls = Grams`<br>`Accessories = N/A`",
+            "type": "string",
+            "format": "decimal"
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "threshold_value": {
+            "description": "When product inventory quantity reaches below this value, take various actions.",
+            "type": "integer"
+          },
+          "threshold_action": {
+            "description": "Action to take when product inventory quantity reaches below a specified value. Available values include `default`, `backorder`, `unavailable`, and `internal`.",
+            "type": "string"
+          },
+          "reverse_threshold_value": {
+            "description": "When product inventory quantity reaches above this value, take various actions.",
+            "type": "integer"
+          },
+          "reverse_threshold_action": {
+            "description": "Action to take when product inventory quantity reaches above a specified value. Available values include `default`, `available`, and `internal`.",
+            "type": "string"
+          },
+          "show_quantity": {
+            "description": "Show inventory quantities to buyers?",
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "id": 2093,
+          "created_on": "2020-02-19T00:36:22.353448-06:00",
+          "last_edit": "2020-04-27T07:41:29.797149-06:00",
+          "drop_date": null,
+          "dropped": null,
+          "name": "Swiss Masters Chocolate Bar (Dark)",
+          "sku": "SWI-BAR-DAR-100",
+          "description": "<p>Our premium Swiss Masters chocolate bars are bold, rich, and steeped in chocolate tradition.  The Swiss Master dark chocolate has 70% dark chocolate paired with 100mg THC.</p>",
+          "quantity": "800.0000",
+          "reserved_qty": "120.0000",
+          "display_name": "Swiss Masters Chocolate Bar (Dark)",
+          "unit_multiplier": 12,
+          "retail_price": {
+            "amount": 18,
+            "currency": "USD"
+          },
+          "wholesale_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "sale_price": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "minimum_order": "1.0000",
+          "maximum_order": null,
+          "is_medical_line_item": false,
+          "AVAILABLE_FOR_SAMPLES": true,
+          "extern_acct_id": null,
+          "extern_income_acct_id": "",
+          "featured": false,
+          "tagline": null,
+          "featured_on_deals": false,
+          "allow_fractional_quantities": false,
+          "parent": null,
+          "listing_state": "Archived",
+          "display_listing_state": "Archived",
+          "inventory_management": 1,
+          "unit_of_measure": "Unit",
+          "sell_in_unit_of_measure": "Case",
+          "unit_denomination": {
+            "id": 1,
+            "value": "1.00000",
+            "name": "One",
+            "label": "1"
+          },
+          "category": 7,
+          "grow_type": null,
+          "seller": 3721,
+          "seller_internal_id": "PROD-001",
+          "brand": 49,
+          "product_line": 164,
+          "manufacturer": 3721,
+          "strain_classification": "na",
+          "license": {
+            "id": 2619,
+            "number": "404R-00000",
+            "type": "Recreational",
+            "display_type": "Adult Use",
+            "classification": "MIPS"
+          },
+          "available_inventory": 680,
+          "children_count": 0,
+          "strains": [],
+          "price_schedule_price": {
+            "amount": 108,
+            "currency": "USD"
+          },
+          "image_count": 1,
+          "is_ancillary": false,
+          "s2s_conversion_amount": "1.0000",
+          "extern_sts_ids": null,
+          "strain_classification_display": "N/A",
+          "modified": "2020-06-11T15:53:07.137980-06:00",
+          "sub_category": 14,
+          "has_deals_eligible_children": false,
+          "discount_percent": 0,
+          "base_units_per_unit": null,
+          "external_ids": {
+            "system-name": "1234567890"
+          },
+          "threshold_value": 0,
+          "threshold_action": "unavailable",
+          "reverse_threshold_value": 1,
+          "reverse_threshold_action": "available",
+          "show_quantity": true
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

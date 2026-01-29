@@ -1,0 +1,841 @@
+# LeafLink API Rules & Patterns
+
+Essential patterns, conventions, and best practices for working with the LeafLink Marketplace V2 API.
+
+## Table of Contents
+
+1. [Authentication & Authorization](#authentication--authorization)
+2. [Base URLs & Environments](#base-urls--environments)
+3. [Request/Response Patterns](#requestresponse-patterns)
+4. [Pagination](#pagination)
+5. [Filtering](#filtering)
+6. [Date & Time Formats](#date--time-formats)
+7. [Company Scoping](#company-scoping)
+8. [HTTP Methods & CRUD Operations](#http-methods--crud-operations)
+9. [Error Responses](#error-responses)
+10. [Rate Limiting](#rate-limiting)
+11. [Caching Strategy](#caching-strategy)
+12. [Best Practices](#best-practices)
+13. [Golden Rules Summary](#golden-rules-summary)
+
+---
+
+## Authentication & Authorization
+
+### API Key Types
+
+LeafLink supports two authentication methods:
+
+#### 1. Application API Key (Recommended)
+```
+Authorization: App {API_KEY}
+```
+
+**Characteristics:**
+- Scoped to a specific company
+- More secure and controlled
+- Better for integrations
+- Explicitly granted permissions
+
+**Example:**
+```php
+$headers = [
+    'Authorization' => 'App MY_API_KEY_HERE',
+    'Accept' => 'application/json'
+];
+```
+
+#### 2. User Token (Legacy)
+```
+Authorization: Token {USER_TOKEN}
+```
+
+**Characteristics:**
+- Scoped to user's companies
+- Broader access
+- Supports multi-company scenarios
+- Legacy method
+
+### Storage in BudTags
+
+API keys are stored per-organization in the `Secret` model:
+
+```php
+Schema:
+- user_id (foreign key)
+- org_id (foreign key)
+- type ('leaflink')
+- part1 (encrypted API key)
+- active (boolean)
+- description (nullable string)
+```
+
+### Retrieving API Key
+
+```php
+// In LeafLinkApi service
+public function headers() {
+    $secret = $this->api_key ?? request()->user()->leaf_link_key?->part1 ?? null;
+
+    if (!$secret) {
+        throw new Exception('no active leaf-link key found for current user');
+    }
+
+    return [
+        'Authorization' => 'App ' . $secret,
+        'Accept' => 'application/json',
+    ];
+}
+```
+
+---
+
+## Base URLs & Environments
+
+### Production
+```
+https://app.leaflink.com/api/v2/
+```
+
+**Use for:**
+- Live customer orders
+- Real product catalog
+- Actual inventory
+
+### Sandbox
+```
+https://www.sandbox.leaflink.com/api/v2/
+```
+
+**Use for:**
+- Testing integrations
+- Development
+- Training
+
+### Integrations Sandbox
+```
+https://www.leaflink-integrations.leaflink.com/api/v2/
+```
+
+**Use for:**
+- Partner integrations testing
+- Pre-production validation
+
+### Configuration in BudTags
+
+```php
+// config/budtags.php
+'leaf_link_base_url' => env('LEAF_LINK_BASE_URL', 'https://app.leaflink.com/api/v2/'),
+```
+
+---
+
+## Request/Response Patterns
+
+### Trailing Slash Requirement (CRITICAL!)
+
+**All endpoint paths MUST end with a trailing slash (`/`)**
+
+❌ **Wrong** (Returns 400 Bad Request):
+```php
+$api->get('/orders-received')
+```
+
+✅ **Correct**:
+```php
+$api->get('/orders-received/')
+```
+
+This is the #1 most common error when working with LeafLink API!
+
+### Standard Response Structure
+
+#### List Endpoints (GET /resource/)
+```json
+{
+    "count": 250,
+    "next": "https://app.leaflink.com/api/v2/orders-received/?limit=50&offset=50",
+    "previous": null,
+    "results": [
+        {
+            "id": 123,
+            "field1": "value1",
+            ...
+        }
+    ]
+}
+```
+
+#### Detail Endpoints (GET /resource/{id}/)
+```json
+{
+    "id": 123,
+    "field1": "value1",
+    "field2": "value2",
+    ...
+}
+```
+
+#### Create/Update Responses (POST, PATCH)
+```json
+{
+    "id": 123,
+    "field1": "value1",
+    ...
+}
+```
+
+#### Delete Response (DELETE)
+```
+HTTP 204 No Content
+(empty body)
+```
+
+---
+
+## Pagination
+
+LeafLink uses **offset-based pagination** for all list endpoints.
+
+### Parameters
+
+| Parameter | Type | Default | Max | Description |
+|-----------|------|---------|-----|-------------|
+| `limit` | integer | 50 | 100 | Number of results per page |
+| `offset` | integer | 0 | - | Starting position (0-indexed) |
+
+### Request Example
+
+```php
+$response = $api->get('/orders-received/', [
+    'limit' => 100,    // Get 100 results
+    'offset' => 0      // Start at beginning
+]);
+```
+
+### Response Structure
+
+```json
+{
+    "count": 250,                           // Total number of results
+    "next": "https://.../orders-received/?limit=100&offset=100",  // Next page URL
+    "previous": null,                       // Previous page URL (null for first page)
+    "results": [...]                        // Array of results (up to 'limit' items)
+}
+```
+
+### Calculating Pages
+
+```php
+// Calculate total pages
+$totalPages = ceil($response->json('count') / $limit);
+
+// Calculate current page
+$currentPage = ($offset / $limit) + 1;
+
+// Calculate next offset
+$nextOffset = $offset + $limit;
+```
+
+### Implementation in BudTags
+
+```php
+// LeafLinkApi::paginate_get()
+protected function paginate_get(
+    string $url,
+    int $page,
+    string $path,
+    array $values = [],
+): LengthAwarePaginator {
+    $amt = 50;  // Results per page
+
+    if ($page < 1) {
+        $page = 1;
+    }
+
+    $offset = ($page - 1) * $amt;
+
+    $response = $this->get($url, [
+        'limit' => $amt,
+        'offset' => $offset,
+        ...$values,
+    ]);
+
+    return new LengthAwarePaginator(
+        $response->json('results'),
+        $response->json('count'),
+        50,
+        $page,
+        ['path' => $path]
+    );
+}
+```
+
+### Iterating Through All Pages
+
+```php
+// Fetch all results across multiple pages
+$allResults = [];
+$offset = 0;
+$limit = 100;
+
+do {
+    $response = $api->get('/orders-received/', [
+        'limit' => $limit,
+        'offset' => $offset
+    ]);
+
+    $data = $response->json();
+    $allResults = array_merge($allResults, $data['results']);
+
+    $offset += $limit;
+} while ($data['next'] !== null);
+
+// $allResults now contains all orders
+```
+
+---
+
+## Filtering
+
+LeafLink supports **extensive filtering** via query parameters. The filtering syntax follows Django REST framework conventions.
+
+### Filter Operators
+
+| Operator | Example | Description |
+|----------|---------|-------------|
+| (none) | `status=draft` | Exact match |
+| `__in` | `status__in=draft,confirmed` | Multiple values (comma-separated) |
+| `__lt` | `created_date__lt=2025-01-31` | Less than |
+| `__lte` | `created_date__lte=2025-01-31` | Less than or equal |
+| `__gt` | `created_date__gt=2025-01-01` | Greater than |
+| `__gte` | `created_date__gte=2025-01-01` | Greater than or equal |
+| `__icontains` | `name__icontains=blue` | Case-insensitive contains |
+| `__startswith` | `name__startswith=Blue` | Starts with (case-sensitive) |
+| `__istartswith` | `name__istartswith=blue` | Starts with (case-insensitive) |
+| `__endswith` | `name__endswith=OG` | Ends with (case-sensitive) |
+| `__iendswith` | `name__iendswith=og` | Ends with (case-insensitive) |
+| `__isnull` | `deleted_at__isnull=true` | Check for null/non-null |
+
+### Common Filter Patterns
+
+#### Date Range Filtering (Most Common)
+```php
+$response = $api->get('/orders-received/', [
+    'created_date__gte' => '2025-01-01',        // After or on Jan 1
+    'created_date__lte' => '2025-01-31',        // Before or on Jan 31
+]);
+```
+
+#### Status Filtering
+```php
+// Single status
+$response = $api->get('/orders-received/', [
+    'status' => 'confirmed'
+]);
+
+// Multiple statuses
+$response = $api->get('/orders-received/', [
+    'status__in' => 'draft,confirmed,shipped'
+]);
+```
+
+#### Text Search
+```php
+// Case-insensitive contains
+$response = $api->get('/customers/', [
+    'name__icontains' => 'dispensary'
+]);
+
+// Starts with
+$response = $api->get('/products/', [
+    'name__startswith' => 'Blue'
+]);
+```
+
+#### Relationship Filtering
+```php
+// Filter by related company
+$response = $api->get('/orders-received/', [
+    'customer' => 123  // Customer ID
+]);
+
+// Filter by related product
+$response = $api->get('/line-items/', [
+    'product' => 456  // Product ID
+]);
+```
+
+### Complex Filtering Examples
+
+#### Orders Created in Date Range with Specific Status
+```php
+$response = $api->get('/orders-received/', [
+    'created_date__gte' => '2025-01-01',
+    'created_date__lte' => '2025-01-31',
+    'status__in' => 'confirmed,shipped',
+    'limit' => 100,
+    'offset' => 0
+]);
+```
+
+#### Customers with Multiple Filters
+```php
+// The /customers/ endpoint supports 87 filter parameters!
+$response = $api->get('/customers/', [
+    'license_types__in' => 'retail,cultivation',  // Multiple license types
+    'status' => 'active',                         // Only active
+    'created_date__gte' => '2024-01-01',         // Created this year
+    'name__icontains' => 'green',                 // Name contains "green"
+    'city' => 'Denver',                           // Located in Denver
+    'state' => 'CO',                              // Colorado only
+    'limit' => 100
+]);
+```
+
+#### Products with Category and Price Range
+```php
+$response = $api->get('/products/', [
+    'category' => 5,                              // Specific category ID
+    'price__gte' => 10.00,                        // Minimum price
+    'price__lte' => 50.00,                        // Maximum price
+    'in_stock' => true,                           // Only in-stock items
+    'active' => true                              // Only active products
+]);
+```
+
+---
+
+## Date & Time Formats
+
+LeafLink uses **ISO 8601** format for all dates and timestamps.
+
+### Accepted Formats
+
+#### Date Only
+```
+YYYY-MM-DD
+Example: 2025-01-15
+```
+
+#### Date with Time
+```
+YYYY-MM-DDTHH:MM:SSZ
+Example: 2025-01-15T10:30:00Z
+```
+
+#### Date with Timezone
+```
+YYYY-MM-DDTHH:MM:SS+HH:MM
+Example: 2025-01-15T10:30:00-07:00
+```
+
+### Common Date Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `created_date` | datetime | When record was created |
+| `modified` | datetime | When record was last updated |
+| `order_date` | date | Order placed date |
+| `delivery_date` | date | Requested delivery date |
+| `shipped_date` | date | Date order was shipped |
+
+### Filtering by Date
+
+```php
+// Today's orders
+$response = $api->get('/orders-received/', [
+    'created_date__gte' => now()->startOfDay()->toIso8601String(),
+    'created_date__lte' => now()->endOfDay()->toIso8601String()
+]);
+
+// Last 30 days
+$response = $api->get('/orders-received/', [
+    'created_date__gte' => now()->subDays(30)->toDateString()
+]);
+
+// Specific month
+$response = $api->get('/orders-received/', [
+    'created_date__gte' => '2025-01-01',
+    'created_date__lt' => '2025-02-01'
+]);
+```
+
+---
+
+## Company Scoping
+
+**CRITICAL CONCEPT:** All LeafLink operations are scoped to a company context.
+
+### Two Company Types
+
+#### 1. Seller (Brand/Manufacturer)
+- Manages products and inventory
+- Receives orders from buyers
+- Ships orders to buyers
+- Views "orders-received"
+
+#### 2. Buyer (Retailer/Dispensary)
+- Places orders from sellers
+- Manages retailer inventory
+- Tracks deliveries
+- Views "buyer/orders"
+
+### API Key Company Association
+
+Each API key is associated with ONE company:
+
+```php
+// API key determines which company's data you see
+$headers = ['Authorization' => 'App SELLER_KEY'];  // See seller data
+$headers = ['Authorization' => 'App BUYER_KEY'];   // See buyer data
+```
+
+### Data Visibility Rules
+
+| Resource | Seller Sees | Buyer Sees |
+|----------|-------------|------------|
+| **Orders** | Incoming orders (`/orders-received/`) | Outgoing orders (`/buyer/orders/`) |
+| **Products** | Own products only | All seller products (searchable) |
+| **Customers** | Own customer relationships | N/A (not applicable) |
+| **Inventory** | Own inventory | Own retailer inventory |
+| **Line Items** | Line items for orders received | Line items for orders placed |
+
+### Checking Company Context
+
+```php
+// Get authenticated company
+$response = $api->get('/companies/me/');
+
+$company = $response->json();
+// {
+//     "id": 123,
+//     "name": "Acme Cannabis Co",
+//     "company_type": "seller",  // or "buyer"
+//     ...
+// }
+```
+
+### Common Issues with Company Scoping
+
+❌ **Wrong**: Trying to access another company's data
+```php
+// This will return 404 or empty results
+$api->get('/orders-received/999999/');  // Order doesn't belong to your company
+```
+
+✅ **Correct**: Only access your company's data
+```php
+// Filter by your relationships
+$api->get('/orders-received/', [
+    'customer' => $yourCustomerId
+]);
+```
+
+---
+
+## HTTP Methods & CRUD Operations
+
+LeafLink follows RESTful conventions:
+
+| Method | Endpoint | Purpose | Returns |
+|--------|----------|---------|---------|
+| **GET** | `/resource/` | List all resources | Paginated list |
+| **GET** | `/resource/{id}/` | Get single resource | Single object |
+| **POST** | `/resource/` | Create new resource | Created object |
+| **PATCH** | `/resource/{id}/` | Update resource (partial) | Updated object |
+| **PUT** | `/resource/{id}/` | Replace resource (full) | Replaced object |
+| **DELETE** | `/resource/{id}/` | Delete resource | 204 No Content |
+
+### POST vs PATCH vs PUT
+
+#### POST - Create New
+```php
+$response = $api->post('/products/', [
+    'name' => 'Blue Dream',
+    'price' => 25.00,
+    'category' => 3
+]);
+```
+
+#### PATCH - Partial Update
+```php
+// Only update specific fields
+$response = $api->patch('/products/123/', [
+    'price' => 30.00  // Only update price
+]);
+```
+
+#### PUT - Full Replace
+```php
+// Replace entire object
+$response = $api->put('/products/123/', [
+    'name' => 'Blue Dream',
+    'price' => 30.00,
+    'category' => 3,
+    'description' => '...',
+    // Must include ALL required fields
+]);
+```
+
+### Special Action Endpoints
+
+Some resources have special action endpoints:
+
+```php
+// Transition order status
+POST /orders-received/{id}/transition/{action}/
+
+// Examples:
+POST /orders-received/123/transition/accept/
+POST /orders-received/123/transition/confirm/
+POST /orders-received/123/transition/ship/
+POST /orders-received/123/transition/deliver/
+```
+
+---
+
+## Error Responses
+
+### HTTP Status Codes
+
+| Code | Meaning | Common Causes |
+|------|---------|---------------|
+| **200** | OK | Successful GET/PATCH/PUT |
+| **201** | Created | Successful POST |
+| **204** | No Content | Successful DELETE |
+| **400** | Bad Request | Missing trailing slash, invalid parameters, validation errors |
+| **401** | Unauthorized | Missing/invalid API key |
+| **403** | Forbidden | No permission to access resource |
+| **404** | Not Found | Resource doesn't exist or doesn't belong to your company |
+| **429** | Too Many Requests | Rate limit exceeded |
+| **500** | Server Error | LeafLink internal error |
+
+### Error Response Format
+
+```json
+{
+    "detail": "Error message describing what went wrong",
+    "field_name": ["Specific field error message"]
+}
+```
+
+### Common Errors
+
+#### Missing Trailing Slash
+```
+400 Bad Request: "Request path must end in a slash"
+```
+
+#### Invalid Filter Syntax
+```
+400 Bad Request: "Unknown filter: date__greater_than. Did you mean date__gte?"
+```
+
+#### Authentication Error
+```
+401 Unauthorized: "Invalid token"
+```
+
+#### Permission Error
+```
+403 Forbidden: "You do not have permission to perform this action"
+```
+
+---
+
+## Rate Limiting
+
+LeafLink implements rate limiting to protect API performance.
+
+### Limits (Typical)
+- **Unknown exact limits** - Not publicly documented
+- **Best practice**: Implement exponential backoff
+- **Status code**: 429 Too Many Requests
+
+### Handling Rate Limits
+
+```php
+public function get(string $url, array $params = [], int $retries = 3) {
+    $attempt = 0;
+
+    retry:
+    $response = Http::withHeaders($this->headers())
+        ->get($this->url($url), $params);
+
+    if ($response->status() === 429 && $attempt < $retries) {
+        $attempt++;
+        $delay = pow(2, $attempt); // Exponential backoff: 2s, 4s, 8s
+        sleep($delay);
+        goto retry;
+    }
+
+    return $response;
+}
+```
+
+### Best Practices
+
+✅ **Do:**
+- Implement exponential backoff
+- Cache frequently accessed data
+- Batch operations when possible
+- Use webhooks instead of polling (if available)
+
+❌ **Don't:**
+- Make rapid-fire requests in loops
+- Poll for updates more than once per minute
+- Ignore 429 responses
+
+---
+
+## Caching Strategy
+
+### When to Cache
+
+✅ **Good candidates for caching:**
+- Product categories and subcategories (rarely change)
+- Brands list (rarely change)
+- License types (static data)
+- Company information (rarely change)
+- Product lines (rarely change)
+
+❌ **Bad candidates for caching:**
+- Orders (change frequently)
+- Inventory quantities (real-time data)
+- Customer activity (time-sensitive)
+- Order status (dynamic)
+
+### Implementation in BudTags
+
+```php
+// LeafLinkApi::fetch_from_cache_or_api()
+protected function fetch_from_cache_or_api(
+    string $key,
+    callable $call,
+    ?callable $each = null,
+    bool $force_fetch = false,
+    int $seconds_to_cache = self::DEFAULT_CACHE_TIME  // 5 minutes
+): array {
+    if ($force_fetch) {
+        $data = $call();
+        Cache::put($key, $data, $seconds_to_cache);
+        return $data;
+    }
+
+    return Cache::remember($key, $seconds_to_cache, function () use ($call, $each, $seconds_to_cache) {
+        $data = $call();
+
+        // Optionally cache individual items
+        if ($each) {
+            foreach ($data as $item) {
+                Cache::set($each($item), $item, $seconds_to_cache);
+            }
+        }
+
+        return $data;
+    });
+}
+```
+
+### Cache Invalidation
+
+```php
+// Clear all LeafLink caches for an organization
+public function clearCache(string $orgId): void {
+    $keys = [
+        "leaflink_brands_{$orgId}",
+        "leaflink_categories_{$orgId}",
+        "leaflink_subcategories_{$orgId}",
+        "leaflink_inventory_{$orgId}",
+    ];
+
+    foreach ($keys as $key) {
+        Cache::forget($key);
+    }
+}
+
+// Call after bulk updates
+$api->clearCache($user->active_org->id);
+```
+
+---
+
+## Best Practices
+
+### 1. Always Include Trailing Slash
+```php
+✅ $api->get('/orders-received/');
+❌ $api->get('/orders-received');
+```
+
+### 2. Use Proper Filter Syntax
+```php
+✅ 'created_date__gte' => '2025-01-01'
+❌ 'created_date' => '>2025-01-01'
+```
+
+### 3. Paginate Large Datasets
+```php
+✅ Fetch with limit/offset
+❌ Fetch all results at once
+```
+
+### 4. Cache Static Data
+```php
+✅ Cache categories, brands, license types
+❌ Cache orders, inventory quantities
+```
+
+### 5. Use LogService for Logging
+```php
+✅ LogService::store('LeafLink Order Fetched', $details);
+❌ Log::info('Fetched order');  // Wrong service!
+```
+
+### 6. Handle Errors Gracefully
+```php
+$response = $api->get('/orders-received/');
+
+if ($response->successful()) {
+    // Process data
+} else {
+    LogService::store(
+        'LeafLink API Error',
+        "Status: {$response->status()}\nBody: {$response->body()}"
+    );
+    // Handle error
+}
+```
+
+### 7. Respect Company Context
+```php
+// Always be aware of which company you're authenticated as
+$company = $api->get('/companies/me/')->json();
+// Use company data to make context-aware decisions
+```
+
+### 8. Use ISO 8601 Dates
+```php
+✅ '2025-01-15T10:30:00Z'
+❌ '01/15/2025'
+```
+
+---
+
+## Golden Rules Summary
+
+1. **ALWAYS end endpoint paths with `/`** - Most common error
+2. **Use proper filter operators** (`__gte`, `__lte`, `__in`, etc.)
+3. **Paginate large result sets** (limit/offset pattern)
+4. **Understand company scoping** - You only see your company's data
+5. **Cache static data, not dynamic data**
+6. **Use ISO 8601 date formats**
+7. **Handle 429 rate limits with exponential backoff**
+8. **Use LogService, never Log facade**
+9. **Check response status before processing**
+10. **Clear cache after bulk updates**
+
+---
+
+**Master these patterns and you'll have smooth LeafLink integration!**

@@ -1,0 +1,355 @@
+# Metrc API v2 - Rules, Patterns & Conventions
+
+This document summarizes the common patterns, conventions, and rules discovered from analyzing the complete Metrc API v2 Postman collection.
+
+---
+
+## Table of Contents
+1. [Authentication & Authorization](#authentication--authorization)
+2. [Common Query Parameters](#common-query-parameters)
+3. [Request/Response Patterns](#requestresponse-patterns)
+4. [Endpoint Naming Conventions](#endpoint-naming-conventions)
+5. [Date & Time Formats](#date--time-formats)
+6. [Pagination Patterns](#pagination-patterns)
+7. [Batch Operations](#batch-operations)
+8. [License Type Restrictions](#license-type-restrictions)
+9. [Error Handling](#error-handling)
+10. [HTTP Methods Usage](#http-methods-usage)
+
+---
+
+## Authentication & Authorization
+
+### Required Authentication
+- **API Key**: All endpoints require a Metrc API key configured in the request headers
+- **License Number**: Nearly ALL endpoints require `licenseNumber` as a query parameter
+  - Format: `?licenseNumber={{licenseNumber}}`
+  - Example: `?licenseNumber=AU-R-000001`
+  - Represents the facility/license making the API call
+
+### Base URL Pattern
+```
+{{Metrc.api.server}}/[category]/v2/[endpoint]
+```
+- Example: `https://api-ca.metrc.com/packages/v2/active`
+
+---
+
+## Common Query Parameters
+
+### Universal Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `licenseNumber` | string | ✅ Yes (almost all) | Facility license number |
+| `pageNumber` | integer | ❌ Optional | Page number for pagination (default: 1) |
+| `pageSize` | integer | ❌ Optional | Results per page (default varies, max typically 50-200) |
+
+### Date Filtering Parameters
+| Parameter | Type | Format | Description |
+|-----------|------|--------|-------------|
+| `lastModifiedStart` | string | ISO 8601 | Start date for filtering modified records |
+| `lastModifiedEnd` | string | ISO 8601 | End date for filtering modified records |
+
+Example:
+```
+?licenseNumber=AU-R-000001&lastModifiedStart=2025-01-01&lastModifiedEnd=2025-01-31&pageNumber=1&pageSize=50
+```
+
+---
+
+## Request/Response Patterns
+
+### Request Bodies
+- **Content-Type**: `application/json`
+- **Format**: Nearly all POST/PUT endpoints accept **arrays of objects**
+  ```json
+  [
+    {
+      "Field1": "value1",
+      "Field2": "value2"
+    },
+    {
+      "Field1": "value3",
+      "Field2": "value4"
+    }
+  ]
+  ```
+- **Batch Operations**: Multiple entities can be created/updated in a single API call
+
+### Response Bodies
+- **Success**: Returns array of objects or single object
+- **Pagination**: Includes pagination metadata in headers or response body
+- **Empty Results**: Returns empty array `[]` rather than error
+
+---
+
+## Endpoint Naming Conventions
+
+### GET Endpoints (Retrieval)
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `Get[Entity]ById` | Retrieve single entity by ID | `GetPackageById` |
+| `Get[Entity]ByLabel` | Retrieve by label/tag | `GetPlantByLabel` |
+| `GetActive` | Get all active entities | `GetActive` (packages, plants, items) |
+| `GetInactive` | Get all inactive entities | `GetInactive` |
+| `GetOnHold` | Get entities on hold | `GetOnHold` |
+| `Get[State]` | Get entities in specific state | `GetVegetativePlants`, `GetFloweringPlants` |
+| `Get[Type]` | Get types/categories | `GetTypes`, `GetCategories` |
+
+### POST Endpoints (Creation)
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `Create[Entity]` | Create new entity | `CreatePackages` |
+| `Create[Entity]For[Purpose]` | Create for specific purpose | `CreatePackagesForTesting` |
+| `Record[Action]` | Record an action/event | `RecordAdditivesByPlants` |
+
+### PUT Endpoints (Updates)
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `Update[Entity]` | Update existing entity | `UpdateTemplates` |
+| `[Action]` | Perform specific action | `Move`, `Rename`, `Replace` |
+| `[State]` | Change state | `Finish`, `Unfinish` |
+
+### DELETE Endpoints (Removal)
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `Void[Entity]` | Void/cancel entity | `VoidExternalIncoming` |
+| `Archive[Entity]` | Archive entity | `ArchiveTemplate` |
+| `Discontinue[Entity]` | Discontinue entity | `DiscontinueWaste` |
+
+---
+
+## Date & Time Formats
+
+### ISO 8601 Standard
+**All date/time fields use ISO 8601 format:**
+
+```
+Date only: "2025-01-15"
+DateTime: "2025-01-15T13:30:00Z"
+DateTime with timezone: "2025-01-15T13:30:00-08:00"
+```
+
+### Common Date Fields
+| Field Name | Format | Purpose |
+|------------|--------|---------|
+| `ActualDate` | Date | Actual date of action/event |
+| `PlannedDate` | Date | Planned/scheduled date |
+| `EstimatedDepartureDateTime` | DateTime | Estimated departure |
+| `EstimatedArrivalDateTime` | DateTime | Estimated arrival |
+| `ExpirationDate` | Date | Product expiration |
+| `SellByDate` | Date | Product sell-by date |
+| `UseByDate` | Date | Product use-by date |
+| `HarvestDate` | Date | Harvest date |
+| `PackagedDate` | Date | Packaging date |
+
+---
+
+## Pagination Patterns
+
+### Standard Pagination
+```
+GET /[category]/v2/[endpoint]?licenseNumber={{license}}&pageNumber=1&pageSize=50
+```
+
+- **pageNumber**: 1-indexed (starts at 1, not 0)
+- **pageSize**: Typical values are 50, 100, or 200
+- **Response**: May include pagination metadata (total pages, total records)
+
+### Iteration Pattern
+```javascript
+let pageNumber = 1;
+const pageSize = 50;
+let hasMore = true;
+
+while (hasMore) {
+  const response = await fetch(`/endpoint?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+  const data = await response.json();
+
+  if (data.length < pageSize) {
+    hasMore = false; // Last page
+  }
+
+  pageNumber++;
+}
+```
+
+---
+
+## Batch Operations
+
+### Array-Based Operations
+Most create/update endpoints accept **arrays of objects**, allowing batch operations:
+
+```json
+POST /plants/v2/tag?licenseNumber=AU-R-000001
+[
+  {
+    "Label": "ABCDEF012345670000010001",
+    "NewTag": "ABCDEF012345670000020001",
+    "ReplaceDate": "2025-01-15"
+  },
+  {
+    "Label": "ABCDEF012345670000010002",
+    "NewTag": "ABCDEF012345670000020002",
+    "ReplaceDate": "2025-01-15"
+  }
+]
+```
+
+### Benefits
+- ✅ Fewer API calls (reduced latency)
+- ✅ Transactional (all succeed or all fail together)
+- ✅ Better performance for bulk operations
+
+---
+
+## License Type Restrictions
+
+### CRITICAL: License Types Determine Available Endpoints
+
+Different Metrc license types have access to different endpoints:
+
+| License Type | Code Pattern | Access |
+|--------------|--------------|--------|
+| **Cultivation** | `AU-C-######` | Plants, Plant Batches, Harvests, Plant Waste |
+| **Processing/Manufacturing** | `AU-P-######` | Packages, Items, Lab Tests, but NOT Plants |
+| **Retail** | `AU-R-######` | Packages, Sales, Transfers, but NOT Plants |
+| **Testing Lab** | `AU-L-######` | Lab Tests only |
+
+### Key Rules
+1. **Plant endpoints** (`/plants/v2/*`) are ONLY accessible to **Cultivation licenses**
+2. **Plant waste reasons** are ONLY available to **Cultivation licenses**
+3. **Sales endpoints** (`/sales/v2/*`) are ONLY accessible to **Retail licenses**
+4. **Processing/Manufacturing** licenses work with packages but cannot access plant-specific data
+
+### Example Error Scenario
+```javascript
+// This will FAIL with 401 if licenseNumber is a Processing license:
+GET /plants/v2/vegetative?licenseNumber=AU-P-000001
+
+// Error: "No valid endpoint found" or 401 Unauthorized
+```
+
+### Best Practice
+```javascript
+// Check license type before making plant-related API calls
+const licenseType = license.split('-')[1]; // Extract 'C', 'P', or 'R'
+
+if (licenseType === 'C') {
+  // Safe to call plant endpoints
+  const plants = await api.get('/plants/v2/vegetative');
+} else {
+  // Skip plant endpoints for non-cultivation licenses
+  console.warn('Plant endpoints not available for this license type');
+}
+```
+
+---
+
+## Error Handling
+
+### Common HTTP Status Codes
+| Code | Meaning | Common Causes |
+|------|---------|---------------|
+| 200 | Success | Request succeeded |
+| 400 | Bad Request | Invalid request body/parameters |
+| 401 | Unauthorized | Invalid API key or insufficient permissions |
+| 403 | Forbidden | License type doesn't have access to endpoint |
+| 404 | Not Found | Entity doesn't exist or invalid endpoint |
+| 429 | Too Many Requests | Rate limit exceeded |
+| 500 | Server Error | Metrc internal error |
+
+### Rate Limiting
+- Metrc enforces rate limits (exact limits not specified in collection)
+- Implement exponential backoff for 429 responses
+- Batch operations reduce number of API calls
+
+---
+
+## HTTP Methods Usage
+
+### Standard REST Conventions
+| Method | Purpose | Idempotent | Examples |
+|--------|---------|------------|----------|
+| **GET** | Retrieve data | ✅ Yes | `GetActive`, `GetById` |
+| **POST** | Create new entities | ❌ No | `CreatePackages`, `RecordAdditives` |
+| **PUT** | Update existing entities | ✅ Yes | `UpdateTemplates`, `MovePlantBatch` |
+| **DELETE** | Remove/discontinue entities | ✅ Yes | `VoidTransfer`, `DiscontinueWaste` |
+
+### Idempotency Notes
+- **GET/PUT/DELETE**: Safe to retry on failure
+- **POST**: May create duplicates if retried - implement idempotency keys if needed
+
+---
+
+## Additional Patterns Discovered
+
+### 1. **Tag/Label Requirements**
+- Tags must be assigned before creating plants/packages
+- Tags are tracked separately (see `/tags/v2/` endpoints)
+- Tags can be replaced/reassigned via PUT endpoints
+
+### 2. **Location Hierarchy**
+- Locations can have Sublocations
+- Format: `Location` + optional `Sublocation`
+- Used for tracking physical storage/growing areas
+
+### 3. **Units of Measure**
+- Standardized UoM required for weights/volumes
+- Available via `/unitsofmeasure/v2/` endpoints
+- Common: Grams, Ounces, Pounds, Each, Gallons, Milligrams
+
+### 4. **Waste Tracking**
+- Separate waste types for different entities (plant waste vs harvest waste vs package waste)
+- Waste methods standardized (see `/wastemethods/v2/`)
+- All waste requires actual dates and reasons
+
+### 5. **Lab Testing Integration**
+- Packages can require lab test batches before sale
+- Lab test stages tracked (`LabTestStageId`)
+- COA (Certificate of Analysis) management via `/labtests/v2/`
+
+### 6. **Transfer/Delivery Workflow**
+```
+1. Create Transfer Template (optional, reusable)
+2. Create Outgoing Transfer
+3. Add Transporter details
+4. Add Packages to delivery
+5. Recipient facility receives via Incoming Transfer
+6. Accept or Reject transfer
+```
+
+### 7. **Patient-Specific Features**
+- Medical cannabis licenses have additional patient tracking
+- Patient check-ins, caregiver status, patient licenses
+- HIPAA considerations apply
+
+---
+
+## Summary: Golden Rules for Metrc API Integration
+
+1. ✅ **ALWAYS include `licenseNumber`** query parameter
+2. ✅ **Use ISO 8601 dates** for all date/time fields
+3. ✅ **Check license type** before calling plant-specific endpoints
+4. ✅ **Implement pagination** for large result sets
+5. ✅ **Use batch operations** (arrays) for multiple entities
+6. ✅ **Handle rate limits** with exponential backoff
+7. ✅ **Validate tags** are available before assigning
+8. ✅ **Set proper Content-Type**: `application/json`
+9. ✅ **Log and handle errors** gracefully (401, 403, 429)
+10. ✅ **Test in Sandbox** environment before production
+
+---
+
+## Resources
+
+- **Metrc Documentation**: https://api-ca.metrc.com/Documentation
+- **Postman Collections**: See `collections/` directory for individual category files
+- **Support**: Contact Metrc support for specific integration questions
+
+---
+
+**Document Version**: 1.0
+**Generated**: January 2025
+**Based on**: Metrc Postman Collection v2 (26 categories, 258 total endpoints)

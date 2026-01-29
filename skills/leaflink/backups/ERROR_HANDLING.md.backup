@@ -1,0 +1,792 @@
+# LeafLink Error Handling Guide
+
+Common errors, troubleshooting steps, and solutions for LeafLink Marketplace API integration.
+
+## Table of Contents
+
+1. [HTTP Status Codes](#http-status-codes)
+2. [Common Errors](#common-errors)
+3. [Authentication Errors](#authentication-errors)
+4. [Validation Errors](#validation-errors)
+5. [Filter Syntax Errors](#filter-syntax-errors)
+6. [Pagination Issues](#pagination-issues)
+7. [Company Context Errors](#company-context-errors)
+8. [Rate Limiting](#rate-limiting)
+9. [Network & Connectivity](#network--connectivity)
+10. [Debugging Tips](#debugging-tips)
+
+---
+
+## HTTP Status Codes
+
+| Code | Name | Meaning | Common Causes |
+|------|------|---------|---------------|
+| **200** | OK | Successful GET/PATCH/PUT | Request succeeded |
+| **201** | Created | Successful POST | Resource created successfully |
+| **204** | No Content | Successful DELETE | Resource deleted successfully |
+| **400** | Bad Request | Invalid request | Missing slash, bad params, validation error |
+| **401** | Unauthorized | Authentication failed | Missing/invalid API key |
+| **403** | Forbidden | Permission denied | No access to resource |
+| **404** | Not Found | Resource not found | Wrong ID or company context issue |
+| **405** | Method Not Allowed | HTTP method not supported | Wrong method for endpoint |
+| **429** | Too Many Requests | Rate limit exceeded | Too many requests in short time |
+| **500** | Internal Server Error | LeafLink server error | Contact LeafLink support |
+| **502** | Bad Gateway | Upstream error | Temporary LeafLink issue |
+| **503** | Service Unavailable | Service down | LeafLink maintenance/outage |
+
+---
+
+## Common Errors
+
+### Error #1: Missing Trailing Slash (MOST COMMON!)
+
+**Error Message:**
+```
+400 Bad Request
+"Request path must end in a slash character ('/')."
+```
+
+**Cause:**
+All LeafLink endpoint paths MUST end with `/`
+
+**Examples:**
+```php
+❌ $api->get('/orders-received')          // WRONG
+❌ $api->get('/products')                  // WRONG
+❌ $api->post('/customers')                // WRONG
+
+✅ $api->get('/orders-received/')         // CORRECT
+✅ $api->get('/products/')                 // CORRECT
+✅ $api->post('/customers/')               // CORRECT
+```
+
+**Solution:**
+Always add trailing slash to all endpoint paths.
+
+---
+
+### Error #2: Invalid Filter Syntax
+
+**Error Message:**
+```
+400 Bad Request
+"Unknown filter: date__greater_than"
+```
+
+**Cause:**
+Incorrect filter operator syntax.
+
+**Examples:**
+```php
+❌ 'date' => '>2025-01-01'                 // WRONG
+❌ 'date__greater_than' => '2025-01-01'    // WRONG
+❌ 'created_date' => 'gte:2025-01-01'      // WRONG
+
+✅ 'date__gt' => '2025-01-01'              // CORRECT
+✅ 'date__gte' => '2025-01-01'             // CORRECT
+✅ 'created_date__lte' => '2025-01-31'     // CORRECT
+```
+
+**Valid Operators:**
+- `__gte` - Greater than or equal
+- `__lte` - Less than or equal
+- `__gt` - Greater than
+- `__lt` - Less than
+- `__in` - In list (comma-separated)
+- `__icontains` - Case-insensitive contains
+- `__startswith` - Starts with
+- `__endswith` - Ends with
+
+**See:** `LEAFLINK_API_RULES.md` for complete filter reference
+
+---
+
+### Error #3: Invalid Date Format
+
+**Error Message:**
+```
+400 Bad Request
+"Enter a valid date/time."
+```
+
+**Cause:**
+Wrong date format (LeafLink requires ISO 8601).
+
+**Examples:**
+```php
+❌ 'created_date__gte' => '01/15/2025'               // WRONG
+❌ 'created_date__gte' => '2025-1-15'                // WRONG (no leading zeros)
+❌ 'created_date__gte' => '15-01-2025'               // WRONG (DD-MM-YYYY)
+
+✅ 'created_date__gte' => '2025-01-15'               // CORRECT (date only)
+✅ 'created_date__gte' => '2025-01-15T10:30:00Z'     // CORRECT (with time)
+✅ 'created_date__gte' => '2025-01-15T10:30:00-07:00' // CORRECT (with timezone)
+```
+
+**Solution:**
+Always use ISO 8601 format: `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SSZ`
+
+---
+
+### Error #4: No Results Found (404 vs Empty Results)
+
+**Scenario 1: 404 Not Found**
+```php
+$response = $api->get('/orders-received/999999/');
+// 404 - Order doesn't exist OR doesn't belong to your company
+```
+
+**Scenario 2: Empty Results (200 OK)**
+```php
+$response = $api->get('/orders-received/', ['status' => 'nonexistent']);
+// 200 OK, but results = []
+```
+
+**Difference:**
+- **404** = Resource with that ID doesn't exist or you don't have access
+- **200 + empty results** = Query succeeded but no matches found
+
+**Solution for 404:**
+1. Verify the ID is correct
+2. Check company context (you can only see your company's data)
+3. Verify the resource exists
+
+**Solution for Empty Results:**
+1. Check your filter parameters
+2. Try without filters to see all data
+3. Verify status/state values are correct
+
+---
+
+## Authentication Errors
+
+### Missing API Key
+
+**Error:**
+```
+401 Unauthorized
+"Authentication credentials were not provided."
+```
+
+**Cause:**
+No Authorization header sent.
+
+**Solution:**
+```php
+// Ensure API key is set
+$api->set_key($apiKey);
+
+// Or verify secret exists in database
+$secret = Secret::where('type', 'leaflink')
+    ->where('org_id', $orgId)
+    ->where('active', true)
+    ->first();
+
+if (!$secret) {
+    throw new Exception('No active LeafLink API key found');
+}
+```
+
+---
+
+### Invalid API Key
+
+**Error:**
+```
+401 Unauthorized
+"Invalid token."
+```
+
+**Cause:**
+API key is incorrect or expired.
+
+**Solution:**
+1. Verify API key in LeafLink dashboard
+2. Regenerate API key if needed
+3. Update Secret model with new key
+4. Clear any cached credentials
+
+```php
+// Test API key
+$response = $api->get('/companies/me/');
+
+if ($response->status() === 401) {
+    LogService::store(
+        'LeafLink Auth Failed',
+        "Invalid API key for org {$orgId}"
+    );
+    // Prompt user to re-enter API key
+}
+```
+
+---
+
+### Wrong Authorization Header Format
+
+**Error:**
+```
+401 Unauthorized
+```
+
+**Cause:**
+Incorrect header format.
+
+**Examples:**
+```php
+❌ 'Authorization' => 'Bearer MY_API_KEY'      // WRONG (not OAuth)
+❌ 'Authorization' => 'MY_API_KEY'             // WRONG (missing prefix)
+❌ 'Authorization' => 'App: MY_API_KEY'        // WRONG (colon instead of space)
+
+✅ 'Authorization' => 'App MY_API_KEY'         // CORRECT (Application key)
+✅ 'Authorization' => 'Token MY_API_KEY'       // CORRECT (Legacy user token)
+```
+
+---
+
+## Validation Errors
+
+### Missing Required Fields
+
+**Error:**
+```
+400 Bad Request
+{
+    "field_name": ["This field is required."]
+}
+```
+
+**Example:**
+```php
+// Creating product without required fields
+$response = $api->post('/products/', [
+    'name' => 'Blue Dream'
+    // Missing: category, unit_price, etc.
+]);
+
+// Response:
+{
+    "category": ["This field is required."],
+    "unit_price": ["This field is required."]
+}
+```
+
+**Solution:**
+Include all required fields. Check API docs for required fields per endpoint.
+
+---
+
+### Invalid Field Values
+
+**Error:**
+```
+400 Bad Request
+{
+    "status": ["\"invalid_status\" is not a valid choice."]
+}
+```
+
+**Example:**
+```php
+// Invalid status value
+$response = $api->get('/orders-received/', [
+    'status' => 'pending'  // Not a valid status
+]);
+
+// Valid statuses: 'draft', 'confirmed', 'shipped', 'delivered'
+```
+
+**Solution:**
+Use only valid enum values. Check OpenAPI specs for valid options.
+
+---
+
+### Field Type Mismatch
+
+**Error:**
+```
+400 Bad Request
+{
+    "price": ["A valid number is required."]
+}
+```
+
+**Example:**
+```php
+❌ 'unit_price' => 'twenty-five dollars'  // WRONG
+✅ 'unit_price' => 25.00                  // CORRECT
+```
+
+**Solution:**
+Ensure correct data types:
+- Numbers: `25.00`, `100`
+- Booleans: `true`, `false`
+- Strings: `"text"`
+- Dates: `"2025-01-15"`
+
+---
+
+## Filter Syntax Errors
+
+### Unknown Filter Parameter
+
+**Error:**
+```
+400 Bad Request
+"Unknown filter: price__greater"
+```
+
+**Cause:**
+Using incorrect filter operator.
+
+**Solution:**
+Use correct operators from LEAFLINK_API_RULES.md:
+```php
+✅ __gte, __lte, __gt, __lt
+✅ __in, __icontains
+✅ __startswith, __endswith
+```
+
+---
+
+### Invalid Filter Value Format
+
+**Error:**
+```
+400 Bad Request
+"Enter a valid value."
+```
+
+**Examples:**
+```php
+// __in filter expects comma-separated string
+❌ 'status__in' => ['draft', 'confirmed']         // WRONG (array)
+✅ 'status__in' => 'draft,confirmed'              // CORRECT (string)
+
+// Boolean filters expect 'true' or 'false'
+❌ 'active' => 1                                  // WRONG
+✅ 'active' => true                               // CORRECT
+```
+
+---
+
+## Pagination Issues
+
+### Missing Results (Offset Too High)
+
+**Problem:**
+Fetching page 100 when only 50 pages exist.
+
+**Result:**
+```json
+{
+    "count": 250,
+    "next": null,
+    "previous": "...",
+    "results": []  // Empty!
+}
+```
+
+**Solution:**
+```php
+// Calculate max pages
+$limit = 50;
+$totalCount = $response->json('count');
+$maxPages = ceil($totalCount / $limit);
+
+if ($page > $maxPages) {
+    $page = $maxPages;
+}
+```
+
+---
+
+### Pagination Parameter Errors
+
+**Error:**
+```
+400 Bad Request
+"limit must be between 1 and 100"
+```
+
+**Cause:**
+Invalid limit or offset values.
+
+**Examples:**
+```php
+❌ 'limit' => 0                    // WRONG (min: 1)
+❌ 'limit' => 500                  // WRONG (max: 100)
+❌ 'offset' => -10                 // WRONG (must be >= 0)
+
+✅ 'limit' => 50                   // CORRECT
+✅ 'limit' => 100                  // CORRECT (max)
+✅ 'offset' => 0                   // CORRECT (first page)
+```
+
+---
+
+## Company Context Errors
+
+### Accessing Another Company's Data
+
+**Error:**
+```
+404 Not Found
+```
+
+**Cause:**
+Trying to access a resource that belongs to a different company.
+
+**Example:**
+```php
+// Your company ID: 123
+// Order belongs to company 456
+
+$response = $api->get('/orders-received/999/');
+// 404 - Order exists but belongs to company 456, not your company 123
+```
+
+**Solution:**
+Only access resources that belong to your authenticated company:
+
+```php
+// Check current company
+$myCompany = $api->get('/companies/me/')->json();
+$myCompanyId = $myCompany['id'];
+
+// Only query your company's data
+$orders = $api->get('/orders-received/', [
+    // All results are automatically filtered to your company
+]);
+```
+
+---
+
+### Wrong Company Type Context
+
+**Problem:**
+Seller trying to access buyer-only endpoints or vice versa.
+
+**Example:**
+```php
+// Seller company trying to access buyer orders
+$response = $api->get('/buyer/orders/');  // May return empty or error
+
+// Buyer company trying to see orders-received
+$response = $api->get('/orders-received/');  // May return empty
+```
+
+**Solution:**
+Check company type first:
+
+```php
+$company = $api->get('/companies/me/')->json();
+
+if ($company['company_type'] === 'seller') {
+    // Use seller endpoints
+    $orders = $api->get('/orders-received/');
+} else {
+    // Use buyer endpoints
+    $orders = $api->get('/buyer/orders/');
+}
+```
+
+---
+
+## Rate Limiting
+
+### Too Many Requests
+
+**Error:**
+```
+429 Too Many Requests
+"Request was throttled. Expected available in X seconds."
+```
+
+**Cause:**
+Exceeded rate limit (exact limits not publicly documented).
+
+**Solution:**
+Implement exponential backoff:
+
+```php
+public function get_with_retry(string $url, array $params = [], int $maxRetries = 3): Response {
+    $attempt = 0;
+
+    while ($attempt < $maxRetries) {
+        $response = $this->get($url, $params);
+
+        if ($response->status() !== 429) {
+            return $response;
+        }
+
+        // Exponential backoff: 2s, 4s, 8s
+        $delay = pow(2, $attempt + 1);
+
+        LogService::store(
+            'LeafLink Rate Limit',
+            "Hit rate limit. Retrying in {$delay}s (attempt {$attempt})"
+        );
+
+        sleep($delay);
+        $attempt++;
+    }
+
+    return $response;  // Return last response after max retries
+}
+```
+
+---
+
+### Avoiding Rate Limits
+
+**Best Practices:**
+
+✅ **Use caching for static data:**
+```php
+// Cache brands, categories, etc.
+$brands = $api->get_brands();  // Uses internal caching
+```
+
+✅ **Batch requests when possible:**
+```php
+// Instead of: 10 individual requests
+for ($id in $ids) {
+    $api->get_customer_by_id($id);
+}
+
+// Do: 1 batch request
+$customers = $api->get_customers(ids: $ids);
+```
+
+✅ **Implement request throttling:**
+```php
+// Add delay between requests in loops
+foreach ($batches as $batch) {
+    $api->post('/batches/', $batch);
+    usleep(500000);  // 0.5 second delay
+}
+```
+
+❌ **Don't poll frequently:**
+```php
+// Don't do this:
+while (true) {
+    $orders = $api->get_orders();  // Every second is too much!
+    sleep(1);
+}
+
+// Do this instead:
+// Poll every 5-10 minutes, or use webhooks if available
+```
+
+---
+
+## Network & Connectivity
+
+### Connection Timeout
+
+**Error:**
+```
+cURL error 28: Operation timed out
+```
+
+**Cause:**
+Network issue or LeafLink slow response.
+
+**Solution:**
+```php
+// Increase timeout in Http client
+$response = Http::timeout(30)  // 30 seconds
+    ->withHeaders($this->headers())
+    ->get($this->url($url), $params);
+```
+
+---
+
+### SSL Certificate Errors
+
+**Error:**
+```
+cURL error 60: SSL certificate problem
+```
+
+**Cause:**
+SSL certificate verification issue.
+
+**Solution:**
+Ensure PHP has up-to-date CA certificates:
+
+```php
+// Update cacert.pem in PHP
+// OR temporarily disable (NOT recommended for production):
+$response = Http::withOptions(['verify' => false])
+    ->withHeaders($this->headers())
+    ->get($url);
+```
+
+---
+
+### DNS Resolution Failure
+
+**Error:**
+```
+cURL error 6: Could not resolve host
+```
+
+**Cause:**
+DNS issue or incorrect base URL.
+
+**Solution:**
+```php
+// Verify base URL configuration
+config('budtags.leaf_link_base_url');
+// Should be: https://app.leaflink.com/api/v2/
+
+// Test DNS resolution
+$ip = gethostbyname('app.leaflink.com');
+if ($ip === 'app.leaflink.com') {
+    // DNS resolution failed
+    Log::error('Cannot resolve app.leaflink.com');
+}
+```
+
+---
+
+## Debugging Tips
+
+### Enable Request/Response Logging
+
+```php
+public function get(string $url, array $params = []) {
+    $fullUrl = $this->url($url);
+
+    LogService::store(
+        'LeafLink API Request',
+        "GET {$fullUrl}\nParams: " . json_encode($params, JSON_PRETTY_PRINT)
+    );
+
+    $response = Http::withHeaders($this->headers())
+        ->get($fullUrl, $params);
+
+    LogService::store(
+        'LeafLink API Response',
+        "Status: {$response->status()}\n" .
+        "Body: " . $response->body()
+    );
+
+    return $response;
+}
+```
+
+---
+
+### Check Response Before Processing
+
+```php
+$response = $api->get('/orders-received/');
+
+// Always check status first
+if (!$response->successful()) {
+    LogService::store(
+        'LeafLink API Error',
+        "Status: {$response->status()}\n" .
+        "URL: {$response->effectiveUri()}\n" .
+        "Body: {$response->body()}"
+    );
+
+    // Handle error appropriately
+    return [];
+}
+
+// Safe to process
+$orders = $response->json('results');
+```
+
+---
+
+### Validate Data Before Sending
+
+```php
+// Before creating a product
+$productData = [
+    'name' => 'Blue Dream',
+    'category' => 3,
+    'unit_price' => 25.00
+];
+
+// Validate required fields
+$required = ['name', 'category', 'unit_price'];
+foreach ($required as $field) {
+    if (!isset($productData[$field])) {
+        throw new Exception("Missing required field: {$field}");
+    }
+}
+
+// Now safe to send
+$response = $api->post('/products/', $productData);
+```
+
+---
+
+### Use Try-Catch for Exception Handling
+
+```php
+try {
+    $response = $api->get_orders(1, 'confirmed');
+
+    if ($response->successful()) {
+        // Process orders
+    } else {
+        // Log non-successful response
+        LogService::store(
+            'LeafLink API Warning',
+            "Non-200 response: {$response->status()}"
+        );
+    }
+} catch (\Illuminate\Http\Client\ConnectionException $e) {
+    // Network error
+    LogService::store('LeafLink Connection Error', $e->getMessage());
+} catch (\Exception $e) {
+    // Other errors
+    LogService::store('LeafLink Error', $e->getMessage());
+}
+```
+
+---
+
+### Test with Sandbox Environment
+
+```php
+// Switch to sandbox for testing
+// In .env:
+LEAF_LINK_BASE_URL=https://www.sandbox.leaflink.com/api/v2/
+
+// Test without affecting production data
+$api = new LeafLinkApi();
+$response = $api->get('/orders-received/');
+```
+
+---
+
+## Quick Troubleshooting Checklist
+
+When encountering errors, check in this order:
+
+1. ✅ **Trailing slash?** All endpoints must end with `/`
+2. ✅ **API key valid?** Check Secret model and test with `/companies/me/`
+3. ✅ **Correct filter syntax?** Use `__gte`, `__lte`, `__in`, etc.
+4. ✅ **Valid date format?** Use ISO 8601: `YYYY-MM-DD`
+5. ✅ **Company context?** Can only see your company's data
+6. ✅ **Response status?** Check before processing JSON
+7. ✅ **Required fields?** All required fields included in POST/PATCH
+8. ✅ **Valid enum values?** Status, type fields use specific values
+9. ✅ **Rate limits?** Implement exponential backoff
+10. ✅ **Logs enabled?** Use LogService to track all requests
+
+---
+
+**Still having issues? Check:**
+- `LEAFLINK_API_RULES.md` - API patterns and conventions
+- `OPERATIONS_CATALOG.md` - Method signatures and examples
+- `CODE_EXAMPLES.md` - Working code samples
+- LeafLink Developer Docs: https://developer.leaflink.com/

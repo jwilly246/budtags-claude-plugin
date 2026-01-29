@@ -1,0 +1,930 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Products Metadata",
+    "description": "Product metadata, images, batches, and strains\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/product-batches/": {
+      "get": {
+        "operationId": "product-batches_list",
+        "summary": "List assignments",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductBatchResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-batches"
+        ]
+      },
+      "post": {
+        "operationId": "product-batches_create",
+        "summary": "Create an assignment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductBatchCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductBatchResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-batches"
+        ]
+      },
+      "parameters": []
+    },
+    "/product-batches/{id}/": {
+      "get": {
+        "operationId": "product-batches__read",
+        "summary": "Retrieve an assignment",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductBatchResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-batches"
+        ]
+      },
+      "delete": {
+        "operationId": "product-batches__delete",
+        "summary": "Delete an assignment",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "product-batches"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the assignment.",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "/product-categories/": {
+      "get": {
+        "operationId": "product-categories_list",
+        "summary": "List categories",
+        "description": "List all categories.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductCategoryResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-categories"
+        ]
+      },
+      "parameters": []
+    },
+    "/product-categories/{id}/": {
+      "get": {
+        "operationId": "product-categories_read",
+        "summary": "Retrieve a category",
+        "description": "Retrieve an individual category.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-categories"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the category.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/product-images/": {
+      "get": {
+        "operationId": "product-images_list",
+        "summary": "List images",
+        "description": "List all all images.\n<br />\n<br />\nRetrieved per product via the product query parameter or with the following path parameter, /products/{product_id}/images",
+        "parameters": [
+          {
+            "name": "product",
+            "in": "query",
+            "description": "Filter by product id.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by image id.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by company slug.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductImageResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-images"
+        ]
+      },
+      "post": {
+        "operationId": "product-images_create",
+        "summary": "Upload an image",
+        "description": "Upload a new product image. This request requires multipart form data.",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "image": {
+                    "description": "The uploaded file, sent via multipart form data. Retrieved as a url link.",
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "product": {
+                    "description": "The id for the product that the image will be assigned to.",
+                    "type": "integer"
+                  },
+                  "position": {
+                    "description": "The position of the image.",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "x-nullable": true
+                  }
+                },
+                "required": [
+                  "image",
+                  "product",
+                  "position"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductImageResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-images"
+        ]
+      },
+      "parameters": []
+    },
+    "/product-images/{id}/": {
+      "get": {
+        "operationId": "product-images_read",
+        "summary": "Retrieve an image",
+        "description": "Retrieve an individual image.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductImageResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-images"
+        ]
+      },
+      "delete": {
+        "operationId": "product-images_delete",
+        "summary": "Delete an image",
+        "description": "Delete an image.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "product-images"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the image.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/product-subcategories/": {
+      "get": {
+        "operationId": "product-subcategories_list",
+        "summary": "List subcategories",
+        "description": "List all subcategories.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductSubcategoryResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-subcategories"
+        ]
+      },
+      "parameters": []
+    },
+    "/product-subcategories/{id}/": {
+      "get": {
+        "operationId": "product-subcategories_read",
+        "summary": "Retrieve a subcategory",
+        "description": "Retrieve an individual subcategory.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSubcategoryResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "product-subcategories"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "The id for the product subcategory.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/strains/": {
+      "get": {
+        "operationId": "strains_list",
+        "summary": "List strains",
+        "description": "List all strains.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by strain id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter by strain name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company",
+            "in": "query",
+            "description": "Filter by company ids, separated by commas",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by company slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company__isnull",
+            "in": "query",
+            "description": "Filter by company__isnull",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "parents",
+            "in": "query",
+            "description": "Filter by parent strain ids, separated by commas",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "strain_classification",
+            "in": "query",
+            "description": "Filter by strain classifications, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StrainResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "strains"
+        ]
+      },
+      "post": {
+        "operationId": "strains_create",
+        "summary": "Create a strain",
+        "description": "Create a new strain.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StrainCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrainResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "strains"
+        ]
+      },
+      "parameters": []
+    },
+    "/strains/{id}/": {
+      "get": {
+        "operationId": "strains_read",
+        "summary": "Retrieve a strain",
+        "description": "Retrieve an individual Strain.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrainResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "strains"
+        ]
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "ProductBatchResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique id generated by LeafLink.",
+            "type": "integer"
+          },
+          "product": {
+            "description": "Id for the Product. See `id` in the product object.",
+            "type": "string"
+          },
+          "batch": {
+            "description": "Id for the batch.  See `id` in the batch object.",
+            "type": "integer"
+          }
+        }
+      },
+      "ProductBatchCreate": {
+        "required": [
+          "product",
+          "batch"
+        ],
+        "type": "object",
+        "properties": {
+          "product": {
+            "description": "Id for the Product. See `id` in the product object.",
+            "type": "string"
+          },
+          "batch": {
+            "description": "Id for the batch.  See `id` in the batch object.",
+            "type": "integer"
+          }
+        }
+      },
+      "ProductCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductImageResponse": {
+        "description": "Images for the product",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "image": {
+            "description": "Url link to the image",
+            "type": "string",
+            "format": "uri"
+          },
+          "product": {
+            "description": "Id for the associated product",
+            "type": "integer"
+          },
+          "position": {
+            "description": "Image position",
+            "type": "integer",
+            "maximum": 5,
+            "minimum": 1
+          }
+        }
+      },
+      "ProductSubcategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "integer",
+            "description": "The id for the category this subcategory belongs to.  See `id` in the product-categories response."
+          }
+        }
+      },
+      "StrainResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "parents": {
+            "type": "array",
+            "description": "Array of parent strain ids",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "company": {
+            "description": "Id for the company that created the strain.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          }
+        }
+      },
+      "StrainCreate": {
+        "required": [
+          "name",
+          "strain_classification"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "parents": {
+            "type": "array",
+            "description": "Array of parent strain ids",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "company": {
+            "description": "Id for the company that created the strain.",
+            "type": "integer"
+          },
+          "strain_classification": {
+            "type": "string",
+            "enum": [
+              "sativa",
+              "indica",
+              "hybrid",
+              "na",
+              "11-cbd",
+              "high-cbd",
+              "sativa-hybrid",
+              "indica-hybrid"
+            ]
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

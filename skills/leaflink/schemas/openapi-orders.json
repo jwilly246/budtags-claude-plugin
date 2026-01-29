@@ -1,0 +1,4271 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Orders",
+    "description": "Order management and lifecycle operations\n\n# Introduction\n## HTTP Request Notes\nAll endpoints covered in this document are preceded by `https://{{domain}}/api/v2/` unless otherwise noted.\n\nAvailable domains\n\n- `app.leaflink.com` - production environment\n\n- `www.sandbox.leaflink.com` - sandbox environment\n\n- `www.leaflink-integrations.leaflink.com` - integrations sandbox environment\n\n[Learn more about sandbox environments](https://developer.leaflink.com/brands/api/authorization/#sandbox-environments)\n\n\nRequest paths must end in a slash character ('/'). Those that do not will return a 400 (Bad Request) response.\n\n## Dynamic Responses\nSome of our API endpoints support dynamic responses. These\nare responses that vary in content and/or object level payload size\naccording to request path or query parameters.\n\nAvailable parameters are listed beneath endpoint definitions.\n",
+    "termsOfService": "https://leaflink.com/terms-and-conditions/",
+    "contact": {
+      "email": "support@leaflink.com"
+    },
+    "version": ""
+  },
+  "security": [
+    {
+      "Token": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://app.leaflink.com/api/v2"
+    }
+  ],
+  "paths": {
+    "/line-items/": {
+      "get": {
+        "operationId": "line-items_list",
+        "summary": "List line items",
+        "description": "List line items for all active companies where the user has the Manage Orders Received permission.\n    <br />\n    <br />Line items can also be retrieved by order via <b>/orders-received/{order_number}/line-items</b>\n    <br />or by company via <b>/companies/{company_id}/line-items/</b>",
+        "parameters": [
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Expand an id field into its full object.  Supported values include `product`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "product__name",
+            "in": "query",
+            "description": "Filter by product name.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_id",
+            "in": "query",
+            "description": "Filter by product id.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Filter by order number or external_id_seller. Multiple values may be separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "is_sample",
+            "in": "query",
+            "description": "Filter by sample status.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__created_on__gte",
+            "in": "query",
+            "description": "Filter by Order created_on, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__created_on__lte",
+            "in": "query",
+            "description": "Filter by Order created_on, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__ship_date__gte",
+            "in": "query",
+            "description": "Filter by Order ship_date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__ship_date__lte",
+            "in": "query",
+            "description": "Filter by Order ship_date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__modified__gte",
+            "in": "query",
+            "description": "Filter by Order modified, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__modified__lte",
+            "in": "query",
+            "description": "Filter by Order modified, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__customer__cities",
+            "in": "query",
+            "description": "Filter by Order Customer cities, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__customer__managers",
+            "in": "query",
+            "description": "Filter by Order Customer managers, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__customers",
+            "in": "query",
+            "description": "Filter by Order Customer, separated by commas.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by seller company slug",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order__service_zone",
+            "in": "query",
+            "description": "Filter by order__service_zone",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LineItemResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "line-items"
+        ]
+      },
+      "post": {
+        "operationId": "line-items_create",
+        "summary": "Create line item",
+        "description": "Create a line item for an existing order.\n\n > ⚠️ **WARNING - BETA FEATURE**\n >\n > This API is in active development and is subject to change.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineItemCreate"
+              },
+              "example": {
+                "product": 2093,
+                "quantity": 10,
+                "notes": "Please include sample",
+                "ordered_unit_price": {
+                  "amount": 108,
+                  "currency": "USD"
+                },
+                "sale_price": {
+                  "amount": 99,
+                  "currency": "USD"
+                },
+                "order": "93b532b3-a125-4cd2-9b71-9996b1e164ce"
+              }
+            }
+          },
+          "x-s2o-overloaded": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineItemResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "line-items"
+        ],
+        "x-s2o-warning": "Operation line-items_create has multiple requestBodies"
+      }
+    },
+    "/line-items/{id}/": {
+      "get": {
+        "operationId": "line-items_read",
+        "summary": "Retrieve a line item",
+        "description": "Retrieve an individual line item",
+        "parameters": [
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Expand an id field into its full object.  Supported values include `product`.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineItemResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "line-items"
+        ]
+      },
+      "patch": {
+        "operationId": "line-items_partial_update",
+        "summary": "Update a line item",
+        "description": "Update an existing line item",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineItemUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LineItemResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "line-items"
+        ]
+      },
+      "delete": {
+        "operationId": "line-items_delete",
+        "summary": "Delete a line item",
+        "description": "Delete a line item",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "line-items"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this ordered product.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/order-event-logs/": {
+      "get": {
+        "operationId": "order-event-logs_list",
+        "summary": "List",
+        "description": "List all order event logs.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Filter by id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "by",
+            "in": "query",
+            "description": "Filter Event Logs by the username, first name, or last name of the person whose event created it.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "Filter Event Logs by their associated order number.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderEventLog"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-event-logs"
+        ]
+      },
+      "parameters": []
+    },
+    "/order-event-logs/{id}/": {
+      "get": {
+        "operationId": "order-event-logs_read",
+        "summary": "Read",
+        "description": "Retrieve an individual order event log by id.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderEventLog"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-event-logs"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this order event log.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/order-payments/": {
+      "get": {
+        "operationId": "order-payments_list",
+        "summary": "List payments",
+        "description": "List payments for all active companies where the user has the Manage Orders Received permission. <br /> <br />Filter by order with /orders-received/{order_number}/payments/",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderPaymentResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-payments"
+        ]
+      },
+      "post": {
+        "operationId": "order-payments_create",
+        "summary": "Create a payment",
+        "description": "Create a new payment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderPaymentCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPaymentResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-payments"
+        ]
+      },
+      "parameters": []
+    },
+    "/order-payments/{id}/": {
+      "get": {
+        "operationId": "order-payments_read",
+        "summary": "Retrieve a payment",
+        "description": "Retrieve a payment by id.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderPaymentResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-payments"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying the order payment.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/order-sales-reps/": {
+      "get": {
+        "operationId": "order-sales-reps_list",
+        "summary": "List",
+        "description": "List all OrderSalesReps under the company access scope.  For legacy auth, includes companies where the user has the `Can Manage Orders Received` permission.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "required": [
+                    "count",
+                    "results"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderSalesRepSerialzer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-sales-reps"
+        ]
+      },
+      "post": {
+        "operationId": "order-sales-reps_create",
+        "summary": "Create",
+        "description": "Create a new OrderSalesRep.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderSalesRepSerialzer"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderSalesRepSerialzer"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-sales-reps"
+        ]
+      },
+      "parameters": []
+    },
+    "/order-sales-reps/{id}/": {
+      "get": {
+        "operationId": "order-sales-reps_read",
+        "summary": "Read",
+        "description": "Retrieve an individual OrderSalesRep by ID.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderSalesRepSerialzer"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "order-sales-reps"
+        ]
+      },
+      "delete": {
+        "operationId": "order-sales-reps_delete",
+        "summary": "Delete",
+        "description": "Remove OrderSalesRep object by ID.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "order-sales-reps"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "A unique integer value identifying this order sales rep.",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          }
+        }
+      ]
+    },
+    "/buyer/orders/": {
+      "get": {
+        "operationId": "buyer-orders_list",
+        "summary": "List orders",
+        "description": "List orders sent",
+        "parameters": [
+          {
+            "name": "seller",
+            "in": "query",
+            "description": "Filter results by seller id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_add",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `created_by` and `last_changed_by`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `line_items`, `customer`, and `sales_reps`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "seller__slug__iexact",
+            "in": "query",
+            "description": "Filter results the company slug on the seller side of the order.  Case-insensitive exact match.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gte",
+            "in": "query",
+            "description": "Filter by the modified date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lte",
+            "in": "query",
+            "description": "Filter by the modified date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gt",
+            "in": "query",
+            "description": "Filter by the modified date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lt",
+            "in": "query",
+            "description": "Filter by the modified date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_seller",
+            "in": "query",
+            "description": "Filter by the number assigned to the order by the seller company",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_seller__icontains",
+            "in": "query",
+            "description": "Filter by the number assigned to the order by the seller company. Case-insensitive containment match: returns orders that contain the string",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gte",
+            "in": "query",
+            "description": "Filter by the created_on date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lte",
+            "in": "query",
+            "description": "Filter by the created_on date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gt",
+            "in": "query",
+            "description": "Filter by the created_on date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lt",
+            "in": "query",
+            "description": "Filter by the created_on date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "Filter by the external_id_seller or the number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "number",
+            "in": "query",
+            "description": "Filter by the unique order number generated by LeafLink.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "submitted",
+                "accepted",
+                "backorder",
+                "fulfilled",
+                "shipped",
+                "complete",
+                "rejected",
+                "combined",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by brand id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "brand__in",
+            "in": "query",
+            "description": "Filter by multiple brand ids, separated by commas",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "paid",
+            "in": "query",
+            "description": "Filter by paid status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sales_rep",
+            "in": "query",
+            "description": "Filter by the user id of the sales rep assigned to an order.  This is the id field on the company-staff object.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "classification",
+            "in": "query",
+            "description": "Filter by the classification of the license-type associated to the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "description": "Filter by the username, first name, or last name of the last person who edited the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "connected_to_metrc",
+            "in": "query",
+            "description": "Filter by whether or not they have metrc packages associated with their line items",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "manual",
+            "in": "query",
+            "description": "Filter by whether or not orders were manually created by the company on the seller side of the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by the slug of seller company",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service_zone",
+            "in": "query",
+            "description": "Filter Orders by service zone of customers",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "external_id_key",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Must be used with external_id_values.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_values",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Multiple values separated by a comma.  Must be used with external_id_key.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/BuyerOrderResponse"
+                      }
+                    }
+                  },
+                  "example": {
+                    "count": 1,
+                    "next": null,
+                    "previous": null,
+                    "results": [
+                      {
+                        "id": "d8240c79-7c90-4177-8c46-919b5577a4c0",
+                        "short_id": "5577a4c0",
+                        "status": "Shipped",
+                        "type": "Adult Use",
+                        "buyer": {
+                          "id": 4231,
+                          "name": "Green Fields",
+                          "address": "123 Yale St",
+                          "unit_number": null,
+                          "city": "Denver",
+                          "state": "CO",
+                          "zip": "80033",
+                          "phone": null,
+                          "licenses": [
+                            {
+                              "id": 4344,
+                              "number": "402R-00000",
+                              "type": "Recreational",
+                              "classification": "Store"
+                            }
+                          ],
+                          "email": "greenfields@gmail.com"
+                        },
+                        "seller": {
+                          "id": 2499,
+                          "name": "Liquid Labs",
+                          "address": "8001 East Boulder Street, Suite A",
+                          "unit_number": null,
+                          "city": "Denver",
+                          "state": "CO",
+                          "zip": "80036",
+                          "phone": "123-456-7890",
+                          "licenses": [
+                            {
+                              "id": 2400,
+                              "number": "404R-00001",
+                              "type": "Recreational",
+                              "classification": "MIPS"
+                            },
+                            {
+                              "id": 4949,
+                              "number": "404-00002",
+                              "type": "Medical",
+                              "classification": "MIPS"
+                            }
+                          ]
+                        },
+                        "source": "BGO",
+                        "created_by": {
+                          "id": 4265,
+                          "name": "John Doe",
+                          "username": "johngreenfields",
+                          "email": "john@greeenfields.com"
+                        },
+                        "created_on": "2020-07-12T10:40:00.681487-06:00",
+                        "last_edited_on": "2020-07-14T14:13:53.753792-06:00",
+                        "currency": "USD",
+                        "line_items": [
+                          {
+                            "product": {
+                              "id": 237808,
+                              "sku": "3bb8021c3a214690f0e9",
+                              "name": "Cartridge - Blueberry",
+                              "brand": {
+                                "id": 312,
+                                "name": "Premium Cartridges"
+                              },
+                              "unit_of_measure": "Unit",
+                              "unit_denomination": "One",
+                              "base_unit_of_measure": "Gram",
+                              "base_units_per_unit": null,
+                              "sold_in_multiples": true,
+                              "units_per_case": 10,
+                              "category": {
+                                "name": "Cartridges",
+                                "slug": "cartridge",
+                                "description": "Cartridge"
+                              },
+                              "sub_category": {
+                                "id": 10,
+                                "name": "Disposable",
+                                "slug": "disposable",
+                                "description": "Disposable",
+                                "category": 1
+                              }
+                            },
+                            "quantity": 1,
+                            "sold_by": "Case",
+                            "price": 220,
+                            "total": 220
+                          },
+                          {
+                            "product": {
+                              "id": 357811,
+                              "sku": "14632acc1f10568a0dec",
+                              "name": "Cartridge - Strawberry",
+                              "brand": {
+                                "id": 312,
+                                "name": "Premium Cartridges"
+                              },
+                              "unit_of_measure": "Unit",
+                              "unit_denomination": "One",
+                              "base_unit_of_measure": "Gram",
+                              "base_units_per_unit": null,
+                              "sold_in_multiples": true,
+                              "units_per_case": 10,
+                              "category": {
+                                "name": "Cartridges",
+                                "slug": "cartridge",
+                                "description": "Cartridge"
+                              },
+                              "sub_category": {
+                                "id": 10,
+                                "name": "Disposable",
+                                "slug": "disposable",
+                                "description": "Disposable",
+                                "category": 1
+                              }
+                            },
+                            "quantity": 2,
+                            "sold_by": "Case",
+                            "price": 200,
+                            "total": 400
+                          }
+                        ],
+                        "subtotal": 620,
+                        "shipping_charge": 0,
+                        "discount": 0,
+                        "tax": 0,
+                        "total": 620,
+                        "payable_to": {
+                          "name": "Labs Capital",
+                          "address": "321 Broad Street, Suite 12",
+                          "city": "Denver",
+                          "state": "CO",
+                          "zipcode": "80001"
+                        },
+                        "payment_term": null,
+                        "payment_methods": [],
+                        "payment_due_date": null,
+                        "ship_date": null,
+                        "shipping_details": null,
+                        "is_delivered": false,
+                        "delivered_date": null,
+                        "notes": "",
+                        "sales_reps": [
+                          "Lauren Doe"
+                        ],
+                        "delivery_address": {
+                          "address": "17034 Highway 17",
+                          "city": "Moffat",
+                          "state": "CO",
+                          "unit_number": "1A",
+                          "zipcode": "81143"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "buyer-orders"
+        ]
+      }
+    },
+    "/orders-received/": {
+      "get": {
+        "operationId": "orders-received_list",
+        "summary": "List orders",
+        "description": "List received orders for all active companies where the user has the Manage Orders Received permission. <br /> <br />Per company via <b>/companies/{company_id}/orders-received/</b>",
+        "parameters": [
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_add",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `created_by` and `last_changed_by`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `line_items`, `customer`, and `sales_reps`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "seller__slug__iexact",
+            "in": "query",
+            "description": "Filter results the company slug on the seller side of the order.  Case-insensitive exact match.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gte",
+            "in": "query",
+            "description": "Filter by the modified date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lte",
+            "in": "query",
+            "description": "Filter by the modified date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__gt",
+            "in": "query",
+            "description": "Filter by the modified date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modified__lt",
+            "in": "query",
+            "description": "Filter by the modified date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_seller",
+            "in": "query",
+            "description": "Filter by the number assigned to the order by the seller company",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_seller__icontains",
+            "in": "query",
+            "description": "Filter by the number assigned to the order by the seller company. Case-insensitive containment match: returns orders that contain the string",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gte",
+            "in": "query",
+            "description": "Filter by the created_on date, greater than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lte",
+            "in": "query",
+            "description": "Filter by the created_on date, less than or equal to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__gt",
+            "in": "query",
+            "description": "Filter by the created_on date, greater than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_on__lt",
+            "in": "query",
+            "description": "Filter by the created_on date, less than",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "Filter by the external_id_seller or the number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "number",
+            "in": "query",
+            "description": "Filter by the unique order number generated by LeafLink.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status. Multiple statuses can be submitted as comma-separated list. Case Insensitive.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "submitted",
+                "accepted",
+                "backorder",
+                "fulfilled",
+                "shipped",
+                "complete",
+                "rejected",
+                "combined",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "status__not",
+            "in": "query",
+            "description": "Exclude by order status. Multiple statuses can be submitted as a comma-separated list. Case Insensitive.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "submitted",
+                "accepted",
+                "backorder",
+                "fulfilled",
+                "shipped",
+                "complete",
+                "rejected",
+                "combined",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "description": "Filter by brand id",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "brand__in",
+            "in": "query",
+            "description": "Filter by multiple brand ids, separated by commas",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "buyer",
+            "in": "query",
+            "description": "Filter by the id of the company on the buyer side of the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paid",
+            "in": "query",
+            "description": "Filter by paid status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customer",
+            "in": "query",
+            "description": "Filter by the customer name or nickname for the company on the buyer side of the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sales_rep",
+            "in": "query",
+            "description": "Filter by the user id of the sales rep assigned to an order.  This is the id field on the company-staff object.",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "classification",
+            "in": "query",
+            "description": "Filter by the classification of the license-type associated to the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "description": "Filter by the username, first name, or last name of the last person who edited the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "connected_to_metrc",
+            "in": "query",
+            "description": "Filter by whether or not they have metrc packages associated with their line items",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "manual",
+            "in": "query",
+            "description": "Filter by whether or not orders were manually created by the company on the seller side of the order",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "company_slug",
+            "in": "query",
+            "description": "Filter by the slug of seller company",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "service_zone",
+            "in": "query",
+            "description": "Filter Orders by service zone of customers",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of results to return per page.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The initial index from which to return the results.",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "external_id_key",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Must be used with external_id_values.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "external_id_values",
+            "in": "query",
+            "description": "Filter for orders that match external_ids key:values.  Multiple values separated by a comma.  Must be used with external_id_key.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "count": {
+                      "type": "integer"
+                    },
+                    "next": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "previous": {
+                      "type": "string",
+                      "format": "uri",
+                      "nullable": true
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderResponse"
+                      }
+                    }
+                  },
+                  "example": {
+                    "count": 2,
+                    "next": null,
+                    "previous": null,
+                    "results": [
+                      {
+                        "number": "aec108ac-a1f4-40fa-966e-a12ga9bf6e2f",
+                        "short_id": "a9bf6e2f",
+                        "external_id_seller": null,
+                        "external_id_buyer": null,
+                        "ext_acct_id": null,
+                        "created_on": "2020-06-10T15:15:03.776119-06:00",
+                        "user": "james.g",
+                        "buyer": 6109,
+                        "seller": 1,
+                        "customer": {
+                          "id": 148515,
+                          "display_name": "Good Vibrations Dispensary",
+                          "ext_acct_id": null,
+                          "delinquent": false
+                        },
+                        "brand": null,
+                        "status": "Accepted",
+                        "manual": false,
+                        "discount": 0,
+                        "discount_type": "%",
+                        "tax_amount": 0,
+                        "tax_type": "%",
+                        "final_tax": "0.00",
+                        "shipping_charge": {
+                          "amount": 0,
+                          "currency": "USD"
+                        },
+                        "total": {
+                          "amount": 594,
+                          "currency": "USD"
+                        },
+                        "payment_term": "Net 7",
+                        "payment_methods": [
+                          "Cash",
+                          "ACH"
+                        ],
+                        "available_payment_options": [
+                          {
+                            "id": 216377,
+                            "is_default": true,
+                            "payment_program": "flexible",
+                            "payment_strategy": "reverse_factored",
+                            "payment_method": {
+                              "id": 4,
+                              "method": "ACH"
+                            },
+                            "payment_term": {
+                              "id": 3,
+                              "term": "Net 15",
+                              "days": 15,
+                              "code": "net15"
+                            }
+                          },
+                          {
+                            "id": 216375,
+                            "is_default": false,
+                            "payment_program": null,
+                            "payment_strategy": null,
+                            "payment_method": {
+                              "id": 1,
+                              "method": "Cash"
+                            },
+                            "payment_term": {
+                              "id": 20,
+                              "term": "COD",
+                              "days": null,
+                              "code": "cod"
+                            }
+                          }
+                        ],
+                        "selected_payment_option": {
+                          "id": 1732313,
+                          "is_default": true,
+                          "payment_program": "flexible",
+                          "payment_strategy": "reverse_factored",
+                          "payment_method": {
+                            "id": 4,
+                            "method": "ACH"
+                          },
+                          "payment_term": {
+                            "id": 3,
+                            "term": "Net 15",
+                            "days": 15,
+                            "code": "net15"
+                          }
+                        },
+                        "payment_due_date": null,
+                        "paid": false,
+                        "paid_date": null,
+                        "ship_date": null,
+                        "shipping_details": null,
+                        "notes": "",
+                        "internal_notes": null,
+                        "delivery_preferences": "Monday - Wednesday Only Please",
+                        "sales_reps": [
+                          {
+                            "id": 13,
+                            "user": "John Doe"
+                          }
+                        ],
+                        "classification": "Adult Use",
+                        "payment_balance": 594,
+                        "available_transitions": [
+                          "fulfilled",
+                          "rejected"
+                        ],
+                        "modified": "2020-06-10T16:14:49.494713-06:00",
+                        "has_special_requests": false,
+                        "delivery_provider": null,
+                        "order_taxes": [],
+                        "delivery_info": null,
+                        "is_combination": false,
+                        "credits": "0.00",
+                        "facility_id": 123,
+                        "order_number": "aec108ac-a1f4-40fa-966e-a12ga9bf6e2f",
+                        "order_seller_number": "a9bf6e2f",
+                        "order_buyer_number": "a9bf6e2f",
+                        "order_short_number": "a9bf6e2f",
+                        "distributor": "",
+                        "external_ids": {
+                          "system-name": "45897"
+                        },
+                        "corporate_address": {
+                          "address": "17034 Highway 10",
+                          "city": "Moffat",
+                          "state": "CO",
+                          "unit_number": "1A",
+                          "zipcode": "81143"
+                        },
+                        "delivery_address": {
+                          "address": "17034 Highway 17",
+                          "city": "Moffat",
+                          "state": "CO",
+                          "unit_number": "1A",
+                          "zipcode": "81143"
+                        }
+                      },
+                      {
+                        "number": "4165a155-979b-4e6e-b3a5-8ef917ce9491",
+                        "short_id": "17ce9491",
+                        "external_id_seller": null,
+                        "external_id_buyer": null,
+                        "ext_acct_id": null,
+                        "created_on": "2020-06-10T13:34:10.663097-06:00",
+                        "user": "scooter.s",
+                        "buyer": 3109,
+                        "seller": 1,
+                        "customer": {
+                          "id": 26032,
+                          "display_name": "New Leaf",
+                          "ext_acct_id": null,
+                          "delinquent": false
+                        },
+                        "brand": null,
+                        "status": "Accepted",
+                        "manual": true,
+                        "discount": 0,
+                        "discount_type": "%",
+                        "tax_amount": 0,
+                        "tax_type": "%",
+                        "final_tax": "0.00",
+                        "shipping_charge": {
+                          "amount": 0,
+                          "currency": "USD"
+                        },
+                        "total": {
+                          "amount": 210.4,
+                          "currency": "USD"
+                        },
+                        "payment_term": "COD",
+                        "payment_methods": [
+                          "Wire Transfer"
+                        ],
+                        "payment_due_date": null,
+                        "paid": false,
+                        "paid_date": null,
+                        "ship_date": null,
+                        "shipping_details": null,
+                        "notes": "Mary can process on 6/15",
+                        "internal_notes": null,
+                        "delivery_preferences": "",
+                        "sales_reps": [
+                          {
+                            "id": 5659,
+                            "user": "Jane Doe"
+                          }
+                        ],
+                        "classification": "Adult Use",
+                        "payment_balance": 210.4,
+                        "available_transitions": [
+                          "fulfilled",
+                          "rejected"
+                        ],
+                        "modified": "2020-06-10T16:04:40.312860-06:00",
+                        "has_special_requests": true,
+                        "delivery_provider": null,
+                        "order_taxes": [],
+                        "delivery_info": null,
+                        "is_combination": false,
+                        "credits": "45.01",
+                        "facility_id": 123,
+                        "order_number": "4165a155-979b-4e6e-b3a5-8ef917ce9491",
+                        "order_seller_number": "17ce9491",
+                        "order_buyer_number": "17ce9491",
+                        "order_short_number": "17ce9491",
+                        "distributor": "",
+                        "external_ids": {},
+                        "corporate_address": {
+                          "address": "Some Address 2",
+                          "city": "Moffat",
+                          "state": "CO",
+                          "unit_number": "1A",
+                          "zipcode": "81143"
+                        },
+                        "delivery_address": {
+                          "address": "Some Address 1",
+                          "city": "Moffat",
+                          "state": "CO",
+                          "unit_number": "1A",
+                          "zipcode": "81143"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders-received"
+        ]
+      },
+      "post": {
+        "operationId": "orders-received_create",
+        "summary": "Create an order",
+        "description": "Create an Order. May create child LineItem objects in the same request.\n\n__WARNING - BETA FEATURE:__ This API is in active development and is subject to change.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderCreate"
+              },
+              "example": {
+                "external_id_seller": "INV-1092",
+                "ext_acct_id": null,
+                "seller": 1,
+                "customer": {
+                  "id": 148515
+                },
+                "line_items": [
+                  {
+                    "product": 2093,
+                    "quantity": 10,
+                    "notes": "Please include sample",
+                    "ordered_unit_price": {
+                      "amount": 108,
+                      "currency": "USD"
+                    },
+                    "sale_price": {
+                      "amount": 99,
+                      "currency": "USD"
+                    }
+                  }
+                ],
+                "status": "Draft",
+                "discount": 0,
+                "discount_type": "%",
+                "tax_amount": 0,
+                "tax_type": "%",
+                "shipping_charge": {
+                  "amount": 0,
+                  "currency": "USD"
+                },
+                "payment_term": "Net 7",
+                "selected_payment_option": {
+                  "payment_method_id": 4,
+                  "payment_term_id": 3
+                },
+                "delivery_preferences": "Monday - Wednesday Only Please",
+                "sales_reps": [
+                  {
+                    "id": 13
+                  }
+                ],
+                "facility_id": 123
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders-received"
+        ]
+      }
+    },
+    "/orders-received/{number}/": {
+      "get": {
+        "operationId": "orders-received_read",
+        "summary": "Retrieve an order",
+        "description": "Retrieve an individual order.",
+        "parameters": [
+          {
+            "name": "fields_include",
+            "in": "query",
+            "description": "Include only specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_exclude",
+            "in": "query",
+            "description": "Exclude specific fields in the response, separated by commas.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fields_add",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `created_by` and `last_changed_by`",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "include_children",
+            "in": "query",
+            "description": "Include additional fields in the response. Available values include `line_items`, `customer`, and `sales_reps`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders-received"
+        ]
+      },
+      "patch": {
+        "operationId": "orders-received_partial_update",
+        "summary": "Update an order",
+        "description": "Update an Order. May update child LineItem objects in the same request.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderUpdate"
+              },
+              "example": {
+                "discount": 15,
+                "discount_type": "$"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders-received"
+        ]
+      },
+      "delete": {
+        "operationId": "orders-received_delete",
+        "summary": "Delete a draft order",
+        "description": "Delete a draft order. This operation is <b>only available for draft orders</b>.",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "orders-received"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "number",
+          "in": "path",
+          "required": true,
+          "description": "Order number",
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ]
+    },
+    "/orders-received/{number}/transition/{action}/": {
+      "post": {
+        "operationId": "orders-received_transition_create",
+        "summary": "Transition an order",
+        "description": "Perform an order transition action.",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "orders-received"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "number",
+          "in": "path",
+          "description": "Order number",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "action",
+          "in": "path",
+          "required": true,
+          "description": "Order transition action.  Available values include `submit`, `accept`, `fulfill`, `cancel`, `reject`, `ship`, and `complete`",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    }
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTerm"
+      },
+      "PaymentMethods": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethods"
+      },
+      "PaymentMethod": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethod"
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptionsCustomer"
+      },
+      "AvailablePaymentOptions": {
+        "$ref": "./openapi-shared.json#/components/parameters/AvailablePaymentOptions"
+      },
+      "SelectedPaymentOption": {
+        "$ref": "./openapi-shared.json#/components/parameters/SelectedPaymentOption"
+      },
+      "PaymentTermFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentTermFilter"
+      },
+      "PaymentMethodFilter": {
+        "$ref": "./openapi-shared.json#/components/parameters/PaymentMethodFilter"
+      }
+    },
+    "schemas": {
+      "LineItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id of the line item",
+            "type": "integer"
+          },
+          "ordered_unit_price": {
+            "description": "Price at the time the order was placed",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "quantity": {
+            "title": "Quantity",
+            "description": "Number of units ordered",
+            "type": "string",
+            "format": "decimal"
+          },
+          "order": {
+            "title": "Order",
+            "description": "The number of the order this line item is attached to.  `number` or `order_number` on the order object.",
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "product": {
+            "title": "Product",
+            "description": "id for the product",
+            "type": "string"
+          },
+          "notes": {
+            "title": "Notes",
+            "description": "Notes for this specific ordered product",
+            "type": "string",
+            "nullable": true
+          },
+          "is_sample": {
+            "title": "Is sample",
+            "description": "Is this line item a sample?",
+            "type": "boolean"
+          },
+          "sale_price": {
+            "description": "Alternative sale price",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "unit_multiplier": {
+            "title": "Unit multiplier",
+            "description": "How many individual units are sold when compared to the assigned unit of measure",
+            "type": "integer"
+          },
+          "is_medical_line_item": {
+            "title": "Is medical line item",
+            "description": "Is this a medical line item?",
+            "type": "boolean"
+          },
+          "is_packed": {
+            "title": "Is packed",
+            "description": "Is the line-item packed?",
+            "type": "boolean"
+          },
+          "packed_at": {
+            "title": "Packed at",
+            "description": "Date and time this line-item was packed",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "packed_by": {
+            "title": "CompanyStaff user",
+            "description": "The CompanyStaff user that packed this product",
+            "type": "integer",
+            "nullable": true
+          },
+          "unit_of_measure": {
+            "title": "Unit of measure",
+            "description": "Units this product is measured in",
+            "type": "string",
+            "readOnly": true
+          },
+          "position": {
+            "title": "Position",
+            "description": "Position for this line item in the displayed list of line items on the order",
+            "type": "integer",
+            "nullable": true
+          },
+          "bulk_units": {
+            "title": "Bulk units",
+            "description": "The number of units of bulk available.  quantity / unit_multiplier",
+            "type": "integer"
+          },
+          "on_sale": {
+            "title": "On sale",
+            "description": "Is this line item on sale?",
+            "type": "boolean"
+          },
+          "is_backorder": {
+            "title": "Is backorder",
+            "description": "Is this line item backordered?",
+            "type": "boolean",
+            "nullable": true
+          },
+          "order_id": {
+            "title": "Order id",
+            "type": "string",
+            "readOnly": true
+          },
+          "batch": {
+            "title": "Batch",
+            "description": "Batch that should be displayed in invoice.",
+            "type": "integer",
+            "nullable": true
+          },
+          "package_tags": {
+            "title": "Package tags",
+            "description": "Tags associated to line items via attached packages.",
+            "type": "string",
+            "readOnly": true
+          },
+          "frozen_data": {
+            "title": "Frozen data",
+            "type": "object"
+          },
+          "wholesale_price": {
+            "title": "Wholesale price",
+            "description": "Wholesale Price",
+            "type": "string",
+            "format": "decimal",
+            "nullable": true
+          }
+        }
+      },
+      "LineItemCreate": {
+        "required": [
+          "ordered_unit_price",
+          "quantity",
+          "sale_price",
+          "product"
+        ],
+        "type": "object",
+        "title": "Line Item",
+        "properties": {
+          "ordered_unit_price": {
+            "description": "Price at the time the order was placed",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "sale_price": {
+            "description": "Sale price for this order",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "quantity": {
+            "title": "Quantity",
+            "description": "Number of units ordered",
+            "type": "string",
+            "format": "decimal"
+          },
+          "product": {
+            "title": "Product",
+            "description": "id for the product",
+            "type": "string"
+          },
+          "order": {
+            "title": "Order",
+            "description": "The number of the order this line item is attached to.  Optional for line items embedded in an order object.",
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "notes": {
+            "title": "Notes",
+            "description": "Notes for this specific ordered product",
+            "type": "string",
+            "nullable": true
+          },
+          "is_sample": {
+            "title": "Is sample",
+            "description": "Is this line item a sample?",
+            "type": "boolean"
+          },
+          "unit_multiplier": {
+            "title": "Unit multiplier",
+            "description": "How many individual units are sold when compared to the assigned unit of measure",
+            "type": "integer"
+          },
+          "is_medical_line_item": {
+            "title": "Is medical line item",
+            "description": "Is this a medical line item?",
+            "type": "boolean"
+          },
+          "is_packed": {
+            "title": "Is packed",
+            "description": "Is the line-item packed?",
+            "type": "boolean"
+          },
+          "packed_at": {
+            "title": "Packed at",
+            "description": "Date and time this line-item was packed",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "packed_by": {
+            "title": "CompanyStaff user",
+            "description": "The CompanyStaff user that packed this product",
+            "type": "integer",
+            "nullable": true
+          },
+          "unit_of_measure": {
+            "title": "Unit of measure",
+            "description": "Units this product is measured in",
+            "type": "string",
+            "readOnly": true
+          },
+          "position": {
+            "title": "Position",
+            "description": "Position for this line item in the displayed list of line items on the order",
+            "type": "integer",
+            "nullable": true
+          },
+          "batch": {
+            "title": "Batch",
+            "description": "Batch that should be displayed in invoice.",
+            "type": "integer",
+            "nullable": true
+          },
+          "package_tags": {
+            "title": "Package tags",
+            "description": "Tags associated to line items via attached packages.",
+            "type": "string",
+            "readOnly": true
+          },
+          "wholesale_price": {
+            "title": "Wholesale price",
+            "description": "Wholesale Price",
+            "type": "string",
+            "format": "decimal",
+            "nullable": true
+          }
+        }
+      },
+      "LineItemUpdate": {
+        "type": "object",
+        "properties": {
+          "ordered_unit_price": {
+            "description": "Price at the time the order was placed",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "quantity": {
+            "title": "Quantity",
+            "description": "Number of units ordered",
+            "type": "string",
+            "format": "decimal"
+          },
+          "notes": {
+            "title": "Notes",
+            "description": "Notes for this specific ordered product",
+            "type": "string",
+            "nullable": true
+          },
+          "is_sample": {
+            "title": "Is sample",
+            "description": "Is this line item a sample?",
+            "type": "boolean"
+          },
+          "sale_price": {
+            "description": "Alternative sale price",
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "is_packed": {
+            "title": "Is packed",
+            "description": "Is the line-item packed?",
+            "type": "boolean"
+          },
+          "packed_at": {
+            "title": "Packed at",
+            "description": "Date and time this line-item was packed",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "packed_by": {
+            "title": "CompanyStaff user",
+            "description": "The CompanyStaff user that packed this product",
+            "type": "integer",
+            "nullable": true
+          },
+          "position": {
+            "title": "Position",
+            "description": "Position for this line item in the displayed list of line items on the order",
+            "type": "integer",
+            "nullable": true
+          },
+          "batch": {
+            "title": "Batch",
+            "description": "Batch that should be displayed in invoice.",
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "OrderEventLog": {
+        "required": [
+          "event_type"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "order": {
+            "title": "Order",
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "author_name": {
+            "title": "Author name",
+            "type": "string",
+            "readOnly": true
+          },
+          "by": {
+            "title": "By",
+            "type": "string",
+            "pattern": "^[\\w.@+-]+$",
+            "readOnly": true
+          },
+          "event_type": {
+            "title": "Event type",
+            "type": "string",
+            "enum": [
+              "accepted",
+              "backordered",
+              "cancelled",
+              "completed",
+              "created",
+              "edited",
+              "fulfilled",
+              "rejected",
+              "combined",
+              "rep_edited",
+              "shipped",
+              "shipping_edited",
+              "submitted",
+              "unaccepted"
+            ]
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "created_on": {
+            "title": "Created on",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "timestamp": {
+            "title": "Timestamp",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "changed_fields": {
+            "title": "Changed fields",
+            "type": "object",
+            "readOnly": true
+          },
+          "source": {
+            "title": "Event Source",
+            "description": "Where the change to the Order was made",
+            "type": "string",
+            "enum": [
+              "app",
+              "api",
+              "other"
+            ]
+          },
+          "source_detail": {
+            "title": "Event Source Desc.",
+            "description": "Where the change to the Order was made.",
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "OrderPaymentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique id generated by LeafLink.",
+            "type": "integer"
+          },
+          "created_on": {
+            "description": "Date and time the payment was created.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified": {
+            "description": "Date and time the payment was last modified.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "order": {
+            "description": "Number of the order this payment applies to.  See `number` on the order object.",
+            "type": "string"
+          },
+          "recorded_by": {
+            "description": "Id of the user who recorded this payment.  See `id` on the company staff object.",
+            "type": "integer"
+          },
+          "recorder_name": {
+            "description": "Name of the user who recorded this payment.  See `display_name` on the company staff object.",
+            "type": "string",
+            "readOnly": true
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "payment_date": {
+            "description": "Date and time the payment was submitted on.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "description": "Description for this payment.",
+            "type": "string"
+          },
+          "payment_type": {
+            "description": "Type of payment",
+            "type": "string",
+            "enum": [
+              "other",
+              "cash",
+              "check",
+              "credit",
+              "trade",
+              "ach",
+              "wire",
+              "cashier"
+            ]
+          }
+        }
+      },
+      "OrderPaymentCreate": {
+        "required": [
+          "order",
+          "recorded_by",
+          "total",
+          "payment_date"
+        ],
+        "type": "object",
+        "properties": {
+          "order": {
+            "description": "Number of the order this payment applies to.  See `number` on the order object.",
+            "type": "string"
+          },
+          "recorded_by": {
+            "description": "Id of the user recording this payment.  See `id` on the company staff object.",
+            "type": "integer"
+          },
+          "total": {
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "payment_date": {
+            "description": "Date and time the payment was submitted on.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason": {
+            "description": "Description for this payment.",
+            "type": "string"
+          },
+          "payment_type": {
+            "description": "Type of payment",
+            "type": "string",
+            "enum": [
+              "other",
+              "cash",
+              "check",
+              "credit",
+              "trade",
+              "ach",
+              "wire",
+              "cashier"
+            ]
+          }
+        }
+      },
+      "OrderSalesRepSerialzer": {
+        "required": [
+          "order",
+          "rep"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "ID",
+            "type": "integer",
+            "readOnly": true
+          },
+          "order": {
+            "title": "Order",
+            "type": "string",
+            "format": "uuid"
+          },
+          "rep": {
+            "title": "Rep",
+            "type": "integer"
+          },
+          "created_on": {
+            "title": "Created on",
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "BuyerOrderResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "description": "Unique id generated by LeafLink",
+            "type": "string"
+          },
+          "short_id": {
+            "description": "The _Order No._ displayed in the user interface",
+            "type": "string"
+          },
+          "status": {
+            "description": "Order status",
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Submitted",
+              "Accepted",
+              "Backorder",
+              "Fulfilled",
+              "Shipped",
+              "Complete",
+              "Rejected",
+              "Combined",
+              "Cancelled"
+            ]
+          },
+          "type": {
+            "description": "License type for the order",
+            "type": "string"
+          },
+          "buyer": {
+            "type": "object",
+            "description": "Company on the buy side of the order",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "unit_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "zip": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "licenses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/BuyerLicense"
+                }
+              }
+            }
+          },
+          "seller": {
+            "type": "object",
+            "description": "Company on the sell side of the order",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "unit_number": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "zip": {
+                "type": "string"
+              },
+              "phone": {
+                "type": "string"
+              },
+              "licenses": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/BuyerLicense"
+                }
+              }
+            }
+          },
+          "source": {
+            "description": "Describes whether this was a buyer or seller generated order `\"BGO\"` `\"SGO\"`",
+            "type": "string"
+          },
+          "created_by": {
+            "description": "User who created the order.  If BGO, full staff member details.  If SGO, the staff member's name.",
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "null if SGO"
+              },
+              "name": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string",
+                "description": "null if SGO"
+              },
+              "email": {
+                "type": "string",
+                "description": "null if SGO"
+              }
+            }
+          },
+          "created_on": {
+            "description": "Date and time that the order was created",
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_edited_on": {
+            "description": "Date and time that the order was last edited",
+            "type": "string",
+            "format": "date-time"
+          },
+          "currency": {
+            "description": "Currency used in the order",
+            "type": "string"
+          },
+          "line_items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "product": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "sku": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "brand": {
+                      "type": "objet",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "unit_of_measure": {
+                      "type": "string"
+                    },
+                    "unit_denomination": {
+                      "type": "string"
+                    },
+                    "base_unit_of_measure": {
+                      "type": "string"
+                    },
+                    "base_units_per_unit": {
+                      "type": "integer"
+                    },
+                    "sold_in_multiples": {
+                      "type": "boolean"
+                    },
+                    "units_per_case": {
+                      "type": "integer"
+                    },
+                    "category": {
+                      "$ref": "#/components/schemas/ProductCategoryResponse"
+                    },
+                    "sub_category": {
+                      "$ref": "#/components/schemas/ProductSubcategoryResponse"
+                    }
+                  }
+                },
+                "quantity": {
+                  "type": "integer"
+                },
+                "sold_by": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "number"
+                },
+                "total": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "shipping_charge": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "number"
+          },
+          "tax": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "payable_to": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "address": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "zip": {
+                "type": "string"
+              }
+            }
+          },
+          "payment_term": {
+            "$ref": "#/components/parameters/PaymentTerm"
+          },
+          "payment_methods": {
+            "$ref": "#/components/parameters/PaymentMethods"
+          },
+          "payment_due_date": {
+            "description": "Date the payment is due",
+            "type": "string",
+            "format": "date"
+          },
+          "ship_date": {
+            "description": "Date and time the order was shipped",
+            "type": "string",
+            "format": "date-time"
+          },
+          "shipping_details": {
+            "type": "string",
+            "description": "Shipping notes added by the seller"
+          },
+          "is_delivered": {
+            "type": "boolean"
+          },
+          "delivered_date": {
+            "type": "string",
+            "description": "Date and time the order was delivered"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes added by the seller"
+          },
+          "sales_reps": {
+            "description": "Names of the sales reps assigned to the order",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "delivery_address": {
+            "$ref": "#/components/schemas/OrderAddress"
+          }
+        },
+        "example": {
+          "id": "d8240c79-7c90-4177-8c46-919b5577a4c0",
+          "short_id": "5577a4c0",
+          "status": "Shipped",
+          "type": "Adult Use",
+          "buyer": {
+            "id": 4231,
+            "name": "Green Fields",
+            "address": "123 Yale St",
+            "unit_number": null,
+            "city": "Denver",
+            "state": "CO",
+            "zip": "80033",
+            "phone": null,
+            "licenses": [
+              {
+                "id": 4344,
+                "number": "402R-00000",
+                "type": "Recreational",
+                "classification": "Store"
+              }
+            ],
+            "email": "greenfields@gmail.com"
+          },
+          "seller": {
+            "id": 2499,
+            "name": "Liquid Labs",
+            "address": "8001 East Boulder Street, Suite A",
+            "unit_number": null,
+            "city": "Denver",
+            "state": "CO",
+            "zip": "80036",
+            "phone": "123-456-7890",
+            "licenses": [
+              {
+                "id": 2400,
+                "number": "404R-00001",
+                "type": "Recreational",
+                "classification": "MIPS"
+              },
+              {
+                "id": 4949,
+                "number": "404-00002",
+                "type": "Medical",
+                "classification": "MIPS"
+              }
+            ]
+          },
+          "source": "BGO",
+          "created_by": {
+            "id": 4265,
+            "name": "John Doe",
+            "username": "johngreenfields",
+            "email": "john@greeenfields.com"
+          },
+          "created_on": "2020-07-12T10:40:00.681487-06:00",
+          "last_edited_on": "2020-07-14T14:13:53.753792-06:00",
+          "currency": "USD",
+          "line_items": [
+            {
+              "product": {
+                "id": 237808,
+                "sku": "3bb8021c3a214690f0e9",
+                "name": "Cartridge - Blueberry",
+                "brand": {
+                  "id": 312,
+                  "name": "Premium Cartridges"
+                },
+                "unit_of_measure": "Unit",
+                "unit_denomination": "One",
+                "base_unit_of_measure": "Gram",
+                "base_units_per_unit": null,
+                "sold_in_multiples": true,
+                "units_per_case": 10,
+                "category": {
+                  "id": 1,
+                  "name": "Cartridges",
+                  "slug": "cartridge",
+                  "description": "Cartridge"
+                },
+                "sub_category": {
+                  "id": 10,
+                  "name": "Disposable",
+                  "slug": "disposable",
+                  "description": "Disposable",
+                  "category": 1
+                }
+              },
+              "quantity": 1,
+              "sold_by": "Case",
+              "price": 220,
+              "total": 220
+            },
+            {
+              "product": {
+                "id": 357811,
+                "sku": "14632acc1f10568a0dec",
+                "name": "Cartridge - Strawberry",
+                "brand": {
+                  "id": 312,
+                  "name": "Premium Cartridges"
+                },
+                "unit_of_measure": "Unit",
+                "unit_denomination": "One",
+                "base_unit_of_measure": "Gram",
+                "base_units_per_unit": null,
+                "sold_in_multiples": true,
+                "units_per_case": 10,
+                "category": {
+                  "id": 1,
+                  "name": "Cartridges",
+                  "slug": "cartridge",
+                  "description": "Cartridge"
+                },
+                "sub_category": {
+                  "id": 10,
+                  "name": "Disposable",
+                  "slug": "disposable",
+                  "description": "Disposable",
+                  "category": 1
+                }
+              },
+              "quantity": 2,
+              "sold_by": "Case",
+              "price": 200,
+              "total": 400
+            }
+          ],
+          "subtotal": 620,
+          "shipping_charge": 0,
+          "discount": 0,
+          "tax": 0,
+          "total": 620,
+          "payable_to": {
+            "name": "Labs Capital",
+            "address": "321 Broad Street, Suite 12",
+            "city": "Denver",
+            "state": "CO",
+            "zipcode": "80001"
+          },
+          "payment_term": null,
+          "payment_methods": [],
+          "payment_due_date": null,
+          "ship_date": null,
+          "shipping_details": null,
+          "is_delivered": false,
+          "delivered_date": null,
+          "notes": "",
+          "sales_reps": [
+            "Lauren Doe"
+          ],
+          "delivery_address": {
+            "address": "17034 Highway 17",
+            "city": "Moffat",
+            "state": "CO",
+            "unit_number": "1A",
+            "zipcode": "81143"
+          }
+        }
+      },
+      "BuyerLicense": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "classification": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductCategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "ProductSubcategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique id generated by LeafLink."
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "category": {
+            "type": "integer",
+            "description": "The id for the category this subcategory belongs to.  See `id` in the product-categories response."
+          }
+        }
+      },
+      "OrderAddress": {
+        "type": "object",
+        "title": "Delivery Address",
+        "description": "Read only delivery address as provided during order creation.",
+        "readOnly": true,
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "unit_number": {
+            "title": "Unit Number",
+            "type": "string"
+          },
+          "city": {
+            "title": "City",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "description": "State abbreviation",
+            "type": "string"
+          },
+          "zipcode": {
+            "title": "Zip Code",
+            "type": "string"
+          }
+        }
+      },
+      "OrderResponse": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "title": "Number",
+            "description": "<uuid> Order number generated by LeafLink",
+            "type": "string",
+            "readOnly": true,
+            "minLength": 1
+          },
+          "short_id": {
+            "description": "The _Order No._ displayed in the user interface",
+            "type": "string"
+          },
+          "external_id_seller": {
+            "title": "External id seller",
+            "description": "Number assigned to the order by the seller company",
+            "type": "string",
+            "minLength": 1,
+            "nullable": true
+          },
+          "external_id_buyer": {
+            "title": "External id buyer",
+            "description": "Number assigned to the order by the buyer company",
+            "type": "string",
+            "minLength": 1,
+            "nullable": true
+          },
+          "ext_acct_id": {
+            "title": "Accounting Service ID",
+            "description": "Accounting Service ID",
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "created_on": {
+            "title": "Created on",
+            "description": "Date and time the order was created",
+            "type": "string",
+            "format": "date-time"
+          },
+          "user": {
+            "title": "User",
+            "description": "username of the user who last edited the order",
+            "type": "string",
+            "readOnly": true
+          },
+          "buyer": {
+            "title": "Buyer",
+            "description": "Company on the buy side of the order.",
+            "type": "integer",
+            "nullable": true
+          },
+          "seller": {
+            "title": "Seller",
+            "description": "Company on the sell side of the order.",
+            "type": "integer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/LightCompanyCustomer"
+          },
+          "brand": {
+            "title": "Brand of Order",
+            "description": "id of the brand for this order.  Only applicable if the seller has the \"Separate Orders by Brand\" setting enabled.",
+            "type": "integer",
+            "nullable": true
+          },
+          "status": {
+            "title": "Status",
+            "description": "Order status",
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Submitted",
+              "Accepted",
+              "Backorder",
+              "Fulfilled",
+              "Shipped",
+              "Complete",
+              "Rejected",
+              "Combined",
+              "Cancelled"
+            ]
+          },
+          "manual": {
+            "title": "Manual",
+            "description": "Was the order manually created by the seller company?",
+            "type": "boolean"
+          },
+          "discount": {
+            "description": "Discount value applied to the order",
+            "type": "number",
+            "format": "decimal"
+          },
+          "discount_type": {
+            "description": "Type of discount: % or $",
+            "type": "string",
+            "minLength": 1
+          },
+          "tax_amount": {
+            "title": "Tax amount",
+            "description": "Tax amount applied to the order",
+            "type": "number",
+            "format": "decimal"
+          },
+          "tax_type": {
+            "title": "Tax type",
+            "description": "Type of tax: % or $",
+            "type": "string",
+            "minLength": 1
+          },
+          "final_tax": {
+            "description": "Tax total for the order",
+            "type": "string"
+          },
+          "shipping_charge": {
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "total": {
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "payment_term": {
+            "title": "Payment term",
+            "description": "Payment term for the order Deprecated field, please use payment_option instead",
+            "type": "string",
+            "readOnly": true,
+            "nullable": true
+          },
+          "payment_methods": {
+            "title": "Payment methods",
+            "description": "Payment methods for the order Deprecated field, please use payment_option instead",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "nullable": true
+          },
+          "selected_payment_option": {
+            "id": 1732313,
+            "is_default": false,
+            "payment_program": "flexible",
+            "payment_strategy": "reverse_factored",
+            "payment_method": {
+              "id": 4,
+              "method": "ACH"
+            },
+            "payment_term": {
+              "id": 3,
+              "term": "Net 15",
+              "days": 15,
+              "code": "net15"
+            }
+          },
+          "payment_due_date": {
+            "title": "Payment Due Date",
+            "description": "Date that the Payment is due",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paid": {
+            "title": "Is paid?",
+            "description": "If this order has been paid for",
+            "type": "boolean"
+          },
+          "paid_date": {
+            "title": "Paid date",
+            "description": "Date the order was paid",
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "ship_date": {
+            "title": "Ship date",
+            "description": "Date and time the order was shipped",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "shipping_details": {
+            "title": "Shipping details",
+            "description": "Shipping details included on an order",
+            "type": "string",
+            "minLength": 1,
+            "nullable": true
+          },
+          "notes": {
+            "title": "Order Notes",
+            "description": "Additional notes for an Order",
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "internal_notes": {
+            "title": "Order Notes",
+            "description": "Internal notes for an Order",
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "delivery_preferences": {
+            "title": "Delivery Preferences",
+            "description": "Customer Delivery Preferences",
+            "type": "string",
+            "nullable": true
+          },
+          "sales_reps": {
+            "description": "Sales representatives associated with the order.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LightCompanyStaff"
+            },
+            "readOnly": true
+          },
+          "classification": {
+            "title": "Classification",
+            "description": "Classification of the license-type associated to the order",
+            "type": "string",
+            "minLength": 1
+          },
+          "payment_balance": {
+            "title": "Payment balance",
+            "description": "The outstanding balance on the order",
+            "type": "string",
+            "readOnly": true
+          },
+          "available_transitions": {
+            "title": "Available transitions",
+            "description": "States that the order can transition to",
+            "type": "string",
+            "readOnly": true
+          },
+          "modified": {
+            "title": "Modified",
+            "description": "Date and time that the order was last modified",
+            "type": "string",
+            "format": "date-time"
+          },
+          "has_special_requests": {
+            "title": "Has special requests",
+            "description": "Does the order have special requests?",
+            "type": "boolean"
+          },
+          "delivery_provider": {
+            "title": "Delivery provider",
+            "description": "The company delivering this order.",
+            "type": "integer",
+            "nullable": true
+          },
+          "order_taxes": {
+            "description": "Details about the taxes applied to the order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LightOrderTax"
+            }
+          },
+          "delivery_info": {
+            "$ref": "#/components/schemas/DeliveryProviderOrderInformation"
+          },
+          "is_combination": {
+            "title": "Is combination",
+            "type": "string",
+            "readOnly": true
+          },
+          "llf_payment_method": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "credits": {
+            "type": "string",
+            "readOnly": true,
+            "description": "Total dollar value of credits applied to the order"
+          },
+          "facility_id": {
+            "type": "integer",
+            "readOnly": true,
+            "description": "Facility ID related to an order"
+          },
+          "order_number": {
+            "title": "Order number",
+            "description": "Read only alias of number.",
+            "type": "string",
+            "readOnly": true,
+            "minLength": 1
+          },
+          "order_seller_number": {
+            "title": "Order seller number",
+            "description": "Read only alias of external_id_seller.If external_id_seller is missing, short_id will be provided.",
+            "type": "string",
+            "readOnly": true
+          },
+          "order_buyer_number": {
+            "title": "Order buyer number",
+            "description": "Read only alias of external_id_buyer.  If external_id_buyer is missing, short_id will be provided.",
+            "type": "string",
+            "readOnly": true
+          },
+          "order_short_number": {
+            "title": "Order short number",
+            "description": "Read only alias of short_id.",
+            "type": "string",
+            "readOnly": true,
+            "minLength": 1
+          },
+          "distributor": {
+            "title": "Distributor",
+            "description": "id of the distributor delivering this order",
+            "type": "string",
+            "readOnly": true
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          },
+          "corporate_address": {
+            "title": "Corporate Address",
+            "description": "Read only corporate address as provided during order creation.",
+            "type": "object",
+            "readOnly": true,
+            "properties": {
+              "address": {
+                "title": "Address",
+                "type": "string"
+              },
+              "city": {
+                "title": "City",
+                "type": "string"
+              },
+              "state": {
+                "title": "State",
+                "type": "string"
+              },
+              "unit_number": {
+                "title": "Unit Number",
+                "type": "string"
+              },
+              "zipcode": {
+                "title": "Zip Code",
+                "type": "string"
+              }
+            }
+          },
+          "delivery_address": {
+            "title": "Delivery Address",
+            "description": "Read only delivery address as provided during order creation.",
+            "type": "object",
+            "readOnly": true,
+            "properties": {
+              "address": {
+                "title": "Address",
+                "type": "string"
+              },
+              "city": {
+                "title": "City",
+                "type": "string"
+              },
+              "state": {
+                "title": "State",
+                "type": "string"
+              },
+              "unit_number": {
+                "title": "Unit Number",
+                "type": "string"
+              },
+              "zipcode": {
+                "title": "Zip Code",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "number": "aec108ac-a1f4-40fa-966e-a12ga9bf6e2f",
+          "short_id": "a9bf6e2f",
+          "external_id_seller": null,
+          "external_id_buyer": null,
+          "ext_acct_id": null,
+          "created_on": "2020-06-10T15:15:03.776119-06:00",
+          "user": "james.g",
+          "buyer": 6109,
+          "seller": 1,
+          "customer": {
+            "id": 148515,
+            "display_name": "Good Vibrations Dispensary",
+            "ext_acct_id": null,
+            "delinquent": false
+          },
+          "brand": null,
+          "status": "Accepted",
+          "manual": false,
+          "discount": 0,
+          "discount_type": "%",
+          "tax_amount": 0,
+          "tax_type": "%",
+          "final_tax": "0.00",
+          "shipping_charge": {
+            "amount": 0,
+            "currency": "USD"
+          },
+          "total": {
+            "amount": 594,
+            "currency": "USD"
+          },
+          "payment_term": "Net 7",
+          "payment_methods": [
+            "Cash",
+            "Check"
+          ],
+          "available_payment_options": [
+            {
+              "id": 216377,
+              "is_default": true,
+              "payment_program": "flexible",
+              "payment_strategy": "reverse_factored",
+              "payment_method": {
+                "id": 4,
+                "method": "ACH"
+              },
+              "payment_term": {
+                "id": 3,
+                "term": "Net 15",
+                "days": 15,
+                "code": "net15"
+              }
+            },
+            {
+              "id": 216375,
+              "is_default": false,
+              "payment_program": null,
+              "payment_strategy": null,
+              "payment_method": {
+                "id": 1,
+                "method": "Cash"
+              },
+              "payment_term": {
+                "id": 20,
+                "term": "COD",
+                "days": null,
+                "code": "cod"
+              }
+            }
+          ],
+          "selected_payment_option": {
+            "id": 1732313,
+            "is_default": true,
+            "payment_program": "flexible",
+            "payment_strategy": "reverse_factored",
+            "payment_method": {
+              "id": 4,
+              "method": "ACH"
+            },
+            "payment_term": {
+              "id": 3,
+              "term": "Net 15",
+              "days": 15,
+              "code": "net15"
+            }
+          },
+          "payment_due_date": null,
+          "paid": false,
+          "paid_date": null,
+          "ship_date": null,
+          "shipping_details": null,
+          "notes": "",
+          "internal_notes": null,
+          "delivery_preferences": "Monday - Wednesday Only Please",
+          "sales_reps": [
+            {
+              "id": 13,
+              "user": "John Doe"
+            }
+          ],
+          "classification": "Adult Use",
+          "payment_balance": 594,
+          "available_transitions": [
+            "fulfilled",
+            "rejected"
+          ],
+          "modified": "2020-06-10T16:14:49.494713-06:00",
+          "has_special_requests": false,
+          "delivery_provider": null,
+          "order_taxes": [],
+          "delivery_info": null,
+          "is_combination": false,
+          "credits": "420.10",
+          "facility_id": 123,
+          "order_number": "aec108ac-a1f4-40fa-966e-a12ga9bf6e2f",
+          "order_seller_number": "a9bf6e2f",
+          "order_buyer_number": "a9bf6e2f",
+          "order_short_number": "a9bf6e2f",
+          "distributor": "",
+          "external_ids": {
+            "system-name": "45897"
+          },
+          "corporate_address": {
+            "address": "17034 Highway 10",
+            "city": "Moffat",
+            "state": "CO",
+            "unit_number": "1A",
+            "zipcode": "81143"
+          },
+          "delivery_address": {
+            "address": "17034 Highway 17",
+            "city": "Moffat",
+            "state": "CO",
+            "unit_number": "1A",
+            "zipcode": "81143"
+          }
+        }
+      },
+      "LightCompanyCustomer": {
+        "$ref": "./openapi-shared.json#/components/schemas/LightCompanyCustomer"
+      },
+      "LightCompanyStaff": {
+        "$ref": "./openapi-shared.json#/components/schemas/LightCompanyStaff"
+      },
+      "LightOrderTax": {
+        "$ref": "./openapi-shared.json#/components/schemas/LightOrderTax"
+      },
+      "DeliveryProviderOrderInformation": {
+        "$ref": "./openapi-shared.json#/components/schemas/DeliveryProviderOrderInformation"
+      },
+      "ExternalIds": {
+        "$ref": "./openapi-shared.json#/components/schemas/ExternalIds"
+      },
+      "OrderCreate": {
+        "type": "object",
+        "required": [
+          "seller",
+          "customer",
+          "status",
+          "line_items"
+        ],
+        "properties": {
+          "seller": {
+            "description": "Seller company for this order",
+            "type": "integer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/LightCompanyCustomerId"
+          },
+          "status": {
+            "description": "Order status",
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Submitted"
+            ]
+          },
+          "line_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LineItemCreate"
+            }
+          },
+          "brand": {
+            "description": "Brand for this order. Only applicable if the seller has the \"Separate Orders by Brand\" setting enabled.",
+            "type": "integer"
+          },
+          "external_id_seller": {
+            "description": "Number assigned to the order by the seller company",
+            "type": "string"
+          },
+          "ext_acct_id": {
+            "description": "External account id.",
+            "type": "string"
+          },
+          "discount": {
+            "description": "Discount value applied to the order",
+            "type": "number",
+            "format": "decimal"
+          },
+          "discount_type": {
+            "title": "Discount type",
+            "description": "Type of discount: % or $",
+            "type": "string",
+            "minLength": 1
+          },
+          "tax_amount": {
+            "title": "Tax amount",
+            "description": "Tax amount applied to the order",
+            "type": "number",
+            "format": "decimal"
+          },
+          "tax_type": {
+            "title": "Tax type",
+            "description": "Type of tax: % or $",
+            "type": "string",
+            "minLength": 1
+          },
+          "shipping_charge": {
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "payment_term": {
+            "title": "Payment term",
+            "description": "Payment term for the order",
+            "type": "string",
+            "nullable": true
+          },
+          "payment_due_date": {
+            "title": "Payment Due Date",
+            "description": "Date that the Payment is due",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paid": {
+            "title": "Is paid?",
+            "description": "If this order has been paid for",
+            "type": "boolean"
+          },
+          "paid_date": {
+            "title": "Paid date",
+            "description": "Date the order was paid",
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "ship_date": {
+            "title": "Ship date",
+            "description": "Date and time the order was shipped",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "shipping_details": {
+            "title": "Shipping details",
+            "description": "Shipping details included on an order",
+            "type": "string",
+            "minLength": 1,
+            "nullable": true
+          },
+          "notes": {
+            "title": "Order Notes",
+            "description": "Additional notes for an Order",
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "internal_notes": {
+            "title": "Order Notes",
+            "description": "Internal notes for an Order",
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "delivery_preferences": {
+            "title": "Delivery Preferences",
+            "description": "Customer Delivery Preferences",
+            "type": "string",
+            "nullable": true
+          },
+          "sales_reps": {
+            "description": "Sales representatives associated with the order.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LightCompanyStaffId"
+            }
+          },
+          "delivery_provider": {
+            "title": "Delivery provider",
+            "description": "The company delivering this order.",
+            "type": "integer",
+            "nullable": true
+          },
+          "delivery_info": {
+            "$ref": "#/components/schemas/DeliveryProviderOrderInformation"
+          },
+          "facility_id": {
+            "title": "Facility",
+            "description": "The facility fulfilling this order.",
+            "type": "integer",
+            "nullable": true
+          }
+        }
+      },
+      "LightCompanyCustomerId": {
+        "$ref": "./openapi-shared.json#/components/schemas/LightCompanyCustomerId"
+      },
+      "LightCompanyStaffId": {
+        "$ref": "./openapi-shared.json#/components/schemas/LightCompanyStaffId"
+      },
+      "OrderUpdate": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "title": "Number",
+            "description": "<uuid> Order number generated by LeafLink",
+            "type": "string",
+            "readOnly": true,
+            "minLength": 1
+          },
+          "discount": {
+            "description": "Discount value applied to the order",
+            "type": "number",
+            "format": "decimal"
+          },
+          "discount_type": {
+            "title": "Discount type",
+            "description": "Type of discount: % or $",
+            "type": "string",
+            "minLength": 1
+          },
+          "tax_amount": {
+            "title": "Tax amount",
+            "description": "Tax amount applied to the order",
+            "type": "number",
+            "format": "decimal"
+          },
+          "tax_type": {
+            "title": "Tax type",
+            "description": "Type of tax: % or $",
+            "type": "string",
+            "minLength": 1
+          },
+          "shipping_charge": {
+            "required": [
+              "amount",
+              "currency"
+            ],
+            "type": "object",
+            "properties": {
+              "amount": {
+                "title": "Amount",
+                "type": "string",
+                "format": "decimal"
+              },
+              "currency": {
+                "title": "Currency",
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "payment_term": {
+            "title": "Payment term",
+            "description": "Payment term for the order Deprecated field, please use payment_option instead",
+            "type": "string",
+            "nullable": true
+          },
+          "selected_payment_option": {
+            "title": "Selected payment option",
+            "description": "Payment option that was selected for an order",
+            "type": "object",
+            "required": [
+              "payment_term_id",
+              "payment_method_id"
+            ],
+            "properties": {
+              "id": {
+                "title": "Id",
+                "description": "id for payment option",
+                "type": "integer",
+                "readOnly": true
+              },
+              "payment_method_id": {
+                "title": "Payment method id for payment option",
+                "type": "integer"
+              },
+              "payment_term_id": {
+                "title": "Payment term id for payment option",
+                "type": "integer"
+              },
+              "payment_program": {
+                "title": "Payment program for payment option",
+                "type": "string"
+              },
+              "payment_strategy": {
+                "title": "Payment strategy for payment option",
+                "type": "string"
+              }
+            }
+          },
+          "payment_methods": {
+            "title": "Payment methods",
+            "description": "Payment methods for the order",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "readOnly": true,
+            "nullable": true
+          },
+          "payment_due_date": {
+            "title": "Payment Due Date",
+            "description": "Date that the Payment is due",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paid": {
+            "title": "Is paid?",
+            "description": "If this order has been paid for",
+            "type": "boolean"
+          },
+          "paid_date": {
+            "title": "Paid date",
+            "description": "Date the order was paid",
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "ship_date": {
+            "title": "Ship date",
+            "description": "Date and time the order was shipped",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "shipping_details": {
+            "title": "Shipping details",
+            "description": "Shipping details included on an order",
+            "type": "string",
+            "minLength": 1,
+            "nullable": true
+          },
+          "notes": {
+            "title": "Order Notes",
+            "description": "Additional notes for an Order",
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "internal_notes": {
+            "title": "Order Notes",
+            "description": "Internal notes for an Order",
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "delivery_preferences": {
+            "title": "Delivery Preferences",
+            "description": "Customer Delivery Preferences",
+            "type": "string",
+            "nullable": true
+          },
+          "sales_reps": {
+            "description": "Sales representatives associated with the order.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LightCompanyStaff"
+            },
+            "readOnly": true
+          },
+          "classification": {
+            "title": "Classification",
+            "description": "Classification of the license-type associated to the order",
+            "type": "string",
+            "minLength": 1
+          },
+          "payment_balance": {
+            "title": "Payment balance",
+            "description": "The outstanding balance on the order",
+            "type": "string",
+            "readOnly": true
+          },
+          "available_transitions": {
+            "title": "Available transitions",
+            "description": "States that the order can transition to",
+            "type": "string",
+            "readOnly": true
+          },
+          "delivery_provider": {
+            "title": "Delivery provider",
+            "description": "The company delivering this order.",
+            "type": "integer",
+            "nullable": true
+          },
+          "delivery_info": {
+            "$ref": "#/components/schemas/DeliveryProviderOrderInformation"
+          },
+          "is_combination": {
+            "title": "Is combination",
+            "type": "string",
+            "readOnly": true
+          },
+          "distributor": {
+            "title": "Distributor",
+            "description": "id of the distributor delivering this order",
+            "type": "string",
+            "readOnly": true
+          },
+          "external_ids": {
+            "$ref": "#/components/schemas/ExternalIds"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "$ref": "./openapi-shared.json#/components/securitySchemes/Token"
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,1100 @@
+{
+  "info": {
+    "name": "Metrc Packages API v2",
+    "description": "Metrc API v2 endpoints for Packages",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetPackageById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetPackageAdjustments",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "adjustments"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetPackageSourceHarvestById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "{{id}}",
+            "source",
+            "harvests"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetPackageByLabel",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "{{label}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetOnHold",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "onhold"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetIntransit",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "intransit"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetLabSamples",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "labsamples"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "types"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetAdjustmentReasons",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "adjust",
+            "reasons"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020201\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"Quantity\": 16.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"Note\": \"This is a note.\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsDonation\": false,\r\n    \"IsTradeSample\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"UseSameItem\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010041\",\r\n        \"Quantity\": 8.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      },\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010042\",\r\n        \"Quantity\": 8.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      }\r\n    ],\r\n    \"RequiredLabTestBatches\": null,\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"Quantity\": 16.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"Note\": null,\r\n    \"IsProductionBatch\": true,\r\n    \"ProductionBatchNumber\": \"PB-2015-12-15\",\r\n    \"IsDonation\": false,\r\n    \"IsTradeSample\": true,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"UseSameItem\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010043\",\r\n        \"Quantity\": 8.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      },\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010044\",\r\n        \"Quantity\": 8.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      }\r\n    ],\r\n    \"RequiredLabTestBatches\": null,\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": null,\r\n    \"Quantity\": 16.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"Note\": null,\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsDonation\": false,\r\n    \"IsTradeSample\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"UseSameItem\": true,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010043\",\r\n        \"Quantity\": 8.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      },\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010044\",\r\n        \"Quantity\": 8.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      }\r\n    ],\r\n    \"RequiredLabTestBatches\": null,\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreateForTesting",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "testing"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020201\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"Quantity\": 2.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"Note\": \"Note\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsDonation\": false,\r\n    \"IsTradeSample\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"UseSameItem\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010041\",\r\n        \"Quantity\": 2.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      }\r\n    ],\r\n    \"RequiredLabTestBatches\": [\r\n      \"Usable Marijuana for Retail\"\r\n    ],\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null\r\n  },\r\n  {\r\n    \"Tag\": \"ABCDEF012345670000020202\",\r\n    \"Location\": null,\r\n    \"Sublocation\": null,\r\n    \"Item\": \"Buds\",\r\n    \"Quantity\": 2.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"PatientLicenseNumber\": null,\r\n    \"Note\": \"Note\",\r\n    \"IsProductionBatch\": false,\r\n    \"ProductionBatchNumber\": null,\r\n    \"IsDonation\": false,\r\n    \"IsTradeSample\": false,\r\n    \"ProductRequiresRemediation\": false,\r\n    \"UseSameItem\": false,\r\n    \"ActualDate\": \"2015-12-15\",\r\n    \"ExpirationDate\": null,\r\n    \"SellByDate\": null,\r\n    \"UseByDate\": null,\r\n    \"Ingredients\": [\r\n      {\r\n        \"Package\": \"ABCDEF012345670000010041\",\r\n        \"Quantity\": 2.0,\r\n        \"UnitOfMeasure\": \"Ounces\"\r\n      }\r\n    ],\r\n    \"RequiredLabTestBatches\": null,\r\n    \"ProcessingJobTypeId\": null,\r\n    \"LabTestStageId\": null\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreatePlantings",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "plantings"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010041\",\r\n    \"PackageAdjustmentAmount\": 2.0,\r\n    \"PackageAdjustmentUnitOfMeasureName\": \"Ounces\",\r\n    \"PlantBatchName\": \"AK-47 Clone 1/31/2017\",\r\n    \"PlantBatchType\": \"Clone\",\r\n    \"PlantCount\": 1,\r\n    \"LocationName\": \"Plant Batch Location1\",\r\n    \"SublocationName\": \"Plant Batch Sublocation1\",\r\n    \"StrainName\": \"AK-47\",\r\n    \"PatientLicenseNumber\": \"X00001\",\r\n    \"PlantedDate\": \"2017-01-31T00:00:00Z\",\r\n    \"UnpackagedDate\": \"2017-01-31T00:00:00Z\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010042\",\r\n    \"PackageAdjustmentAmount\": 4.0,\r\n    \"PackageAdjustmentUnitOfMeasureName\": \"Ounces\",\r\n    \"PlantBatchName\": \"Flo Seed 1/31/2017\",\r\n    \"PlantBatchType\": \"Seed\",\r\n    \"PlantCount\": 2,\r\n    \"LocationName\": \"Plant Batch Location2\",\r\n    \"SublocationName\": \"Plant Batch Sublocation2\",\r\n    \"StrainName\": \"Flo\",\r\n    \"PatientLicenseNumber\": \"X00002\",\r\n    \"PlantedDate\": \"2017-01-31T00:00:00Z\",\r\n    \"UnpackagedDate\": \"2017-01-31T00:00:00Z\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010043\",\r\n    \"PackageAdjustmentAmount\": null,\r\n    \"PackageAdjustmentUnitOfMeasureName\": null,\r\n    \"PlantBatchName\": \"Blue Dream Plants 1/31/2017\",\r\n    \"PlantBatchType\": \"Clone\",\r\n    \"PlantCount\": 10,\r\n    \"LocationName\": \"Plant Batch Location3\",\r\n    \"SublocationName\": \"Plant Batch Sublocation3\",\r\n    \"StrainName\": \"Blue Dream\",\r\n    \"PatientLicenseNumber\": \"X00003\",\r\n    \"PlantedDate\": \"2017-01-31T00:00:00Z\",\r\n    \"UnpackagedDate\": \"2017-01-31T00:00:00Z\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "FlagDonation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "donation",
+            "flag"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UnflagDonation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "donation",
+            "unflag"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeShelfLifeDates",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "usebydate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"ExpirationDate\": \"2015-11-15\",\r\n    \"SellByDate\": \"2015-11-15\",\r\n    \"UseByDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\",\r\n    \"ExpirationDate\": \"2015-11-15\",\r\n    \"SellByDate\": \"2015-11-15\",\r\n    \"UseByDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeItem",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "item"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"Item\": \"Shake\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\",\r\n    \"Item\": \"Shake\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeNote",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "note"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010041\",\r\n    \"Note\": \"Package note here.\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010042\",\r\n    \"Note\": \"\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeLocations",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "location"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"Location\": \"Back Location\",\r\n    \"Sublocation\": \"Back Sublocation\",\r\n    \"MoveDate\": \"0001-01-01\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\",\r\n    \"Location\": \"Storage Closet\",\r\n    \"Sublocation\": \"Shelf 2\",\r\n    \"MoveDate\": \"2018-03-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeRequiredLabTestBatches",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "labtests",
+            "required"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"RequiredLabTestBatches\": [\r\n      \"Usable Marijuana for Retail\"\r\n    ]\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"RequiredLabTestBatches\": [\r\n      \"Usable Marijuana for Retail\"\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "ChangeExternalId",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "externalid"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010041\",\r\n    \"ExternalId\": \"1234567890123456.\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000010042\",\r\n    \"ExternalId\": \"\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "FlagTradeSample",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "tradesample",
+            "flag"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UnflagTradeSample",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "tradesample",
+            "unflag"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "AdjustQuantity",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "adjust"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"Quantity\": -2.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"AdjustmentReason\": \"Drying\",\r\n    \"AdjustmentDate\": \"2015-12-15\",\r\n    \"ReasonNote\": null\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\",\r\n    \"Quantity\": 1.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"AdjustmentReason\": \"Scale Variance\",\r\n    \"AdjustmentDate\": \"2015-12-15\",\r\n    \"ReasonNote\": \"We are obtaining a new certified scale\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Adjust",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "adjust"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"Quantity\": -2.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"AdjustmentReason\": \"Drying\",\r\n    \"AdjustmentDate\": \"2015-12-15\",\r\n    \"ReasonNote\": null\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\",\r\n    \"Quantity\": 1.0,\r\n    \"UnitOfMeasure\": \"Ounces\",\r\n    \"AdjustmentReason\": \"Scale Variance\",\r\n    \"AdjustmentDate\": \"2015-12-15\",\r\n    \"ReasonNote\": \"We are obtaining a new certified scale\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "RemediateProducts",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "remediate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000020201\",\r\n    \"RemediationMethodName\": \"Further Drying\",\r\n    \"RemediationDate\": \"2016-10-17\",\r\n    \"RemediationSteps\": \"Used hair dryer\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000020201\",\r\n    \"RemediationMethodName\": \"Further Drying\",\r\n    \"RemediationDate\": \"2016-10-17\",\r\n    \"RemediationSteps\": \"Used natural sunlight\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Finish",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "finish"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\",\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Unfinish",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "unfinish"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010041\"\r\n  },\r\n  {\r\n    \"Label\": \"ABCDEF012345670000010042\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Discontinue",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "DecontaminateProducts",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "decontaminate"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000020201\",\r\n    \"DecontaminationMethodName\": \"Further Drying\",\r\n    \"DecontaminationDate\": \"2016-10-17\",\r\n    \"DecontaminationSteps\": \"Used hair dryer\"\r\n  },\r\n  {\r\n    \"PackageLabel\": \"ABCDEF012345670000020201\",\r\n    \"DecontaminationMethodName\": \"Further Drying\",\r\n    \"DecontaminationDate\": \"2016-10-17\",\r\n    \"DecontaminationSteps\": \"Used natural sunlight\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetTransferred",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/packages/v2"
+          ],
+          "path": [
+            "transferred"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

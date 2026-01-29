@@ -1,0 +1,31 @@
+{
+  "info": {
+    "name": "Metrc Sandbox API v2",
+    "description": "Metrc API v2 endpoints for Sandbox",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "IntegratorSetup",
+      "request": {
+        "method": "POST",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sandbox/v2"
+          ],
+          "path": [
+            "integrator",
+            "setup"
+          ],
+          "query": [
+            {
+              "key": "userKey",
+              "value": "{{userKey}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,403 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LeafLink Marketplace V2 API - Shared Components",
+    "description": "Shared schemas, parameters, and security schemes used across all LeafLink API categories",
+    "version": ""
+  },
+  "components": {
+    "parameters": {
+      "PaymentTerm": {
+        "name": "payment_term",
+        "title": "Payment Term",
+        "description": "Deprecated field, please use payment_option instead<br>\nCustomer's payment terms<br>\nEnum: <code>\"llf\"</code> <code>\"cod\"</code> <code>\"net3\"</code> <code>\"net7\"</code>\n<code>\"net10\"</code> <code>\"net14\"</code> <code>\"net15\"</code> <code>\"net20\"</code>\n<code>\"net30\"</code> <code>\"net60\"</code> <code>\"net90\"</code> <code>\"prepay\"</code> <code>\"consign\"</code><br>\nDeprecated values (will be mapped appropriately):<br>\n(1, \"Cash\") replaced with \"cod\"<br>\n(2, \"Net 7\") replaced with \"net7\"<br>\n(3, \"Net 15\") replaced with \"net15\",<br>\n(4, \"Net 30\") replaced with \"net30\"<br>\n(5, \"Net 10\") replaced with \"net10\"<br>\n(6, \"Net 20\") replaced with \"net20<br>\n(7, \"Net 60\") replaced with \"net60\"<br>\n(8, \"Net 3\") replaced with \"net3\"<br>\n(9, \"Net 14\") replaced with \"net14\"<br>\n(10, \"Pre-Payment\") replaced with \"prepay\"<br>\n(11, \"LeafLink Financial - Net 30\") replaced with \"llf\" with payment_methods [\"ach\"]<br>\n(12, \"Consignment\") replaced with \"consign\"<br>\n(13, \"LeafLink Financial - Net 15\") replaced with \"llf\" with payment_methods [\"ach\"]<br>\n(14, \"Net 90\") replaced with \"net90\"<br>\n(15, \"Wire on Delivery\") replaced with \"cod\" with payment_methods [\"wire\"]<br>\n(20, \"COD\") replaced with \"cod\"<br>\n(21, \"LeafLink Financial\") replaced with \"llf\" with payment_methods [\"ach\"]<br>",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "PaymentMethods": {
+        "name": "payment_methods",
+        "title": "Payment Methods",
+        "description": "Deprecated field, please use payment_option instead<br>\nCustomer's payment method<br>\nEnum: <code>\"cash\"</code> <code>\"check\"</code> <code>\"wire\"</code> <code>\"ach\"</code>",
+        "schema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentMethod": {
+        "name": "payment_method",
+        "tile": "Payment Method",
+        "Description": "Payment method chosen for payment option",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "AvailablePaymentOptionsCustomer": {
+        "name": "available_payment_options",
+        "title": "Customer Payment Option",
+        "required": [
+          "payment_term_id",
+          "payment_method_id"
+        ],
+        "description": "Payment option available for customer",
+        "schema": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "id": {
+                "title": "Id test for Customer",
+                "description": "id for payment option",
+                "type": "integer",
+                "readOnly": true
+              },
+              "is_default": {
+                "title": "Is that payment option a deafult one",
+                "type": "bool",
+                "default": false
+              },
+              "payment_method": {
+                "$ref": "#/components/parameters/PaymentMethod"
+              },
+              "payment_method_id": {
+                "title": "Payment method id for payment option",
+                "type": "integer"
+              },
+              "payment_program": {
+                "title": "Payment program for payment option",
+                "type": "object"
+              },
+              "payment_strategy": {
+                "title": "Payment strategy for payment option",
+                "type": "object"
+              },
+              "payment_term": {
+                "$ref": "#/components/parameters/PaymentTerm"
+              },
+              "payment_term_id": {
+                "title": "Payment term id for payment option",
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "AvailablePaymentOptions": {
+        "name": "available_payment_options",
+        "title": "Customer Payment Option",
+        "required": [
+          "payment_term_id",
+          "payment_method_id"
+        ],
+        "description": "Payment option available for customer",
+        "schema": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "id": {
+                "title": "Id",
+                "description": "id for payment option",
+                "type": "integer",
+                "readOnly": true
+              },
+              "is_default": {
+                "title": "Is that payment option a deafult one",
+                "type": "bool",
+                "default": false
+              },
+              "payment_method": {
+                "$ref": "#/components/parameters/PaymentMethod"
+              },
+              "payment_method_id": {
+                "title": "Payment method id for payment option",
+                "type": "integer"
+              },
+              "payment_program": {
+                "title": "Payment program for payment option",
+                "type": "object"
+              },
+              "payment_strategy": {
+                "title": "Payment strategy for payment option",
+                "type": "object"
+              },
+              "payment_term": {
+                "$ref": "#/components/parameters/PaymentTerm"
+              },
+              "payment_term_id": {
+                "title": "Payment term id for payment option",
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      "SelectedPaymentOption": {
+        "name": "selected_payment_option",
+        "title": "Order Payment Option",
+        "description": "Payment option selected for an order",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for payment option",
+            "type": "integer",
+            "readOnly": true
+          },
+          "is_default": {
+            "title": "Is that payment option a deafult one",
+            "type": "bool"
+          }
+        },
+        "schema": {
+          "type": "object"
+        }
+      },
+      "PaymentTermFilter": {
+        "name": "payment_term",
+        "in": "query",
+        "description": "Filter by the customer's payment term",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "PaymentMethodFilter": {
+        "name": "payment_method",
+        "in": "query",
+        "description": "Filter by the customer's payment method",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "securitySchemes": {
+      "Token": {
+        "description": "You must authenticate your requests by including your API key in each request header as described below.\n\nRequests should include a header named `Authorization`, with the value `App {MY_API_KEY}`. Note the single space in the header value.\n\nExample: `Authorization: App MY_API_KEY`\n\n[Learn more about generating your key](https://developer.leaflink.com/brands/api/getting-started/)\n\n**Legacy API keys:** If you are not using an Application API key, your authorization header should include the string `Token` and access will be scoped to all companies under which the user exists as a companystaff.\n\nExample: `Authorization: Token MY_API_KEY`\n",
+        "in": "header",
+        "name": "Authorization",
+        "type": "apiKey"
+      }
+    },
+    "schemas": {
+      "Address": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "title": "Address",
+            "type": "string"
+          },
+          "unit_number": {
+            "title": "Unit Number",
+            "type": "string"
+          },
+          "city": {
+            "title": "City",
+            "type": "string"
+          },
+          "county": {
+            "title": "County",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "description": "State abbreviation",
+            "type": "string"
+          },
+          "zipcode": {
+            "title": "Zip Code",
+            "type": "string"
+          }
+        }
+      },
+      "ExternalIds": {
+        "type": "object",
+        "description": "Set of key-value pairs for storing external system IDs.  Key value can be up to 36 characters long."
+      },
+      "UnitDenomination": {
+        "required": [
+          "value",
+          "name",
+          "label"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "id for the unit denomination.",
+            "type": "integer"
+          },
+          "value": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "label": {
+            "description": "\"1\", \"1/2\", \"1/4\", \"1/8\", \"3/4\", \"2\", \"3 1/2\", \"7\", \"14\", \"6\", \"28\", \"5 1/4\", \"4\", \"2 1/2\", \"8\", \"3 3/4\", \"1/10\", \"6/5\", \"3/2\", \"2/10\", \"1/5\", \"1/3\", \"1/6\", \"3/10\", or \"4/10\"",
+            "type": "string"
+          }
+        }
+      },
+      "DeliveryProviderOrderInformation": {
+        "title": "Delivery info",
+        "type": "object",
+        "properties": {
+          "acquire_date": {
+            "title": "Acquire date",
+            "description": "Date the Trusted Delivery Provider will either `Pick Up` or get `Drop Off` the order. Must be `null` for `In Storage` type.",
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "acquire_type": {
+            "title": "Acquire type",
+            "description": "1 = Drop Off; 2 = Pick Up; 3 = In Storage. 4 = Will Call",
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "nullable": true
+          },
+          "get_acquire_type_display": {
+            "title": "Get acquire type display",
+            "type": "string",
+            "readOnly": true
+          },
+          "manifest_number": {
+            "title": "Manifest number",
+            "description": "An identifier for the order's manifest document.",
+            "type": "string",
+            "maxLength": 50,
+            "nullable": true
+          }
+        }
+      },
+      "LightOrderTax": {
+        "description": "Details about the taxes applied to the order",
+        "required": [
+          "order",
+          "tax"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for the tax type",
+            "type": "integer",
+            "readOnly": true
+          },
+          "order": {
+            "title": "Order",
+            "type": "integer"
+          },
+          "tax": {
+            "title": "Tax",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "readOnly": true
+          },
+          "rate": {
+            "title": "Rate",
+            "type": "string",
+            "readOnly": true
+          },
+          "state": {
+            "title": "State",
+            "type": "string",
+            "readOnly": true
+          },
+          "auto_apply": {
+            "title": "Auto apply",
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "LightCompanyStaff": {
+        "description": "Sales representatives associated with the order.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for the company staff user assigned to this order",
+            "type": "integer",
+            "readOnly": true
+          },
+          "user": {
+            "title": "User",
+            "description": "Concatenated string that contains the first name + last name of the company staff user",
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      },
+      "LightCompanyStaffId": {
+        "description": "Sales representatives associated with the order.",
+        "type": "object",
+        "title": "CompanyStaff",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for the company staff user assigned to this order",
+            "type": "integer"
+          }
+        }
+      },
+      "LightCompanyCustomer": {
+        "title": "Customer",
+        "description": "Seller's customer record for the company on the buyer side of the order",
+        "required": [
+          "id",
+          "delinquent"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for the customer",
+            "type": "integer"
+          },
+          "display_name": {
+            "title": "Display name",
+            "description": "Customer nickname if one exists, else the customer name",
+            "type": "string",
+            "readOnly": true
+          },
+          "ext_acct_id": {
+            "title": "Accounting Service External ID",
+            "description": "ID of Customer in 3rd party accouting software",
+            "type": "string",
+            "maxLength": 255,
+            "nullable": true
+          },
+          "delinquent": {
+            "title": "Delinquent",
+            "description": "Is this account marked delinquent?",
+            "type": "boolean"
+          }
+        }
+      },
+      "LightCompanyCustomerId": {
+        "title": "Customer",
+        "description": "Seller's customer record for the company on the buyer side of the order",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "description": "id for the customer",
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

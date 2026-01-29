@@ -1,0 +1,170 @@
+{
+  "info": {
+    "name": "Metrc AdditivesTemplates API v2",
+    "description": "Metrc API v2 endpoints for AdditivesTemplates",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetAdditivesTemplateById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/additivestemplates/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/additivestemplates/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetInactive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/additivestemplates/v2"
+          ],
+          "path": [
+            "inactive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/additivestemplates/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"Additive 1\",\r\n    \"AdditiveType\": \"Fertilizer\",\r\n    \"ApplicationDevice\": \"Sprayer\",\r\n    \"EpaRegistrationNumber\": \"123456\",\r\n    \"Note\": \"This is a note\",\r\n    \"ProductSupplier\": \"Supplier\",\r\n    \"ProductTradeName\": \"Trade Name\",\r\n    \"RestrictiveEntryIntervalQuantityDescription\": \"1\",\r\n    \"RestrictiveEntryIntervalTimeDescription\": \"1 day\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Ingredient 1 1\",\r\n        \"Percentage\": 1.1\r\n      },\r\n      {\r\n        \"Name\": \"Ingredient 1 2\",\r\n        \"Percentage\": 1.2\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    \"Name\": \"Additive 2\",\r\n    \"AdditiveType\": \"Pesticide\",\r\n    \"ApplicationDevice\": \"Dropper\",\r\n    \"EpaRegistrationNumber\": \"654321\",\r\n    \"Note\": \"This is a note\",\r\n    \"ProductSupplier\": \"Supplier\",\r\n    \"ProductTradeName\": \"Trade Name\",\r\n    \"RestrictiveEntryIntervalQuantityDescription\": \"2\",\r\n    \"RestrictiveEntryIntervalTimeDescription\": \"2 days\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Ingredient 2 1\",\r\n        \"Percentage\": 2.1\r\n      },\r\n      {\r\n        \"Name\": \"Ingredient 2 2\",\r\n        \"Percentage\": 2.2\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/additivestemplates/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Id\": 201,\r\n    \"Name\": \"Additive 1\",\r\n    \"AdditiveType\": \"Fertilizer\",\r\n    \"ApplicationDevice\": \"Sprayer\",\r\n    \"EpaRegistrationNumber\": \"123456\",\r\n    \"Note\": \"This is a note\",\r\n    \"ProductSupplier\": \"Supplier\",\r\n    \"ProductTradeName\": \"Trade Name\",\r\n    \"RestrictiveEntryIntervalQuantityDescription\": \"1\",\r\n    \"RestrictiveEntryIntervalTimeDescription\": \"1 day\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Ingredient 1 1\",\r\n        \"Percentage\": 1.1\r\n      },\r\n      {\r\n        \"Name\": \"Ingredient 1 2\",\r\n        \"Percentage\": 1.2\r\n      }\r\n    ]\r\n  },\r\n  {\r\n    \"Id\": 202,\r\n    \"Name\": \"Additive 2\",\r\n    \"AdditiveType\": \"Pesticide\",\r\n    \"ApplicationDevice\": \"Dropper\",\r\n    \"EpaRegistrationNumber\": \"654321\",\r\n    \"Note\": \"This is a note\",\r\n    \"ProductSupplier\": \"Supplier\",\r\n    \"ProductTradeName\": \"Trade Name\",\r\n    \"RestrictiveEntryIntervalQuantityDescription\": \"2\",\r\n    \"RestrictiveEntryIntervalTimeDescription\": \"2 days\",\r\n    \"ActiveIngredients\": [\r\n      {\r\n        \"Name\": \"Ingredient 2 1\",\r\n        \"Percentage\": 2.1\r\n      },\r\n      {\r\n        \"Name\": \"Ingredient 2 2\",\r\n        \"Percentage\": 2.2\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

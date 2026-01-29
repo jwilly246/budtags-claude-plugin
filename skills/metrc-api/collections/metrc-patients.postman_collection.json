@@ -1,0 +1,154 @@
+{
+  "info": {
+    "name": "Metrc Patients API v2",
+    "description": "Metrc API v2 endpoints for Patients",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetPatientById",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patients/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetActive",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patients/v2"
+          ],
+          "path": [
+            "active"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Add",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patients/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"LicenseNumber\": \"000001\",\r\n    \"LicenseEffectiveStartDate\": \"2015-06-21\",\r\n    \"LicenseEffectiveEndDate\": \"2016-06-15\",\r\n    \"RecommendedPlants\": 6,\r\n    \"RecommendedSmokableQuantity\": 2.0,\r\n    \"FlowerOuncesAllowed\": null,\r\n    \"ThcOuncesAllowed\": null,\r\n    \"ConcentrateOuncesAllowed\": null,\r\n    \"InfusedOuncesAllowed\": null,\r\n    \"MaxFlowerThcPercentAllowed\": null,\r\n    \"MaxConcentrateThcPercentAllowed\": null,\r\n    \"HasSalesLimitExemption\": false,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"LicenseNumber\": \"000002\",\r\n    \"LicenseEffectiveStartDate\": \"2015-06-21\",\r\n    \"LicenseEffectiveEndDate\": \"2016-06-15\",\r\n    \"RecommendedPlants\": 6,\r\n    \"RecommendedSmokableQuantity\": 2.0,\r\n    \"FlowerOuncesAllowed\": null,\r\n    \"ThcOuncesAllowed\": null,\r\n    \"ConcentrateOuncesAllowed\": null,\r\n    \"InfusedOuncesAllowed\": null,\r\n    \"MaxFlowerThcPercentAllowed\": null,\r\n    \"MaxConcentrateThcPercentAllowed\": null,\r\n    \"HasSalesLimitExemption\": false,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patients/v2"
+          ],
+          "path": [
+            ""
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"LicenseNumber\": \"000001\",\r\n    \"NewLicenseNumber\": null,\r\n    \"LicenseEffectiveStartDate\": \"2015-06-21\",\r\n    \"LicenseEffectiveEndDate\": \"2016-06-15\",\r\n    \"RecommendedPlants\": 7,\r\n    \"RecommendedSmokableQuantity\": 2.0,\r\n    \"FlowerOuncesAllowed\": null,\r\n    \"ThcOuncesAllowed\": null,\r\n    \"ConcentrateOuncesAllowed\": null,\r\n    \"InfusedOuncesAllowed\": null,\r\n    \"MaxFlowerThcPercentAllowed\": null,\r\n    \"MaxConcentrateThcPercentAllowed\": null,\r\n    \"HasSalesLimitExemption\": false,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  },\r\n  {\r\n    \"LicenseNumber\": \"000002\",\r\n    \"NewLicenseNumber\": \"000003\",\r\n    \"LicenseEffectiveStartDate\": \"2015-06-21\",\r\n    \"LicenseEffectiveEndDate\": \"2016-06-15\",\r\n    \"RecommendedPlants\": 6,\r\n    \"RecommendedSmokableQuantity\": 1.0,\r\n    \"FlowerOuncesAllowed\": null,\r\n    \"ThcOuncesAllowed\": null,\r\n    \"ConcentrateOuncesAllowed\": null,\r\n    \"InfusedOuncesAllowed\": null,\r\n    \"MaxFlowerThcPercentAllowed\": null,\r\n    \"MaxConcentrateThcPercentAllowed\": null,\r\n    \"HasSalesLimitExemption\": false,\r\n    \"ActualDate\": \"2015-12-15\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Remove",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/patients/v2"
+          ],
+          "path": [
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

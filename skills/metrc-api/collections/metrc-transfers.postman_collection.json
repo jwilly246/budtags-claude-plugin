@@ -1,0 +1,901 @@
+{
+  "info": {
+    "name": "Metrc Transfers API v2",
+    "description": "Metrc API v2 endpoints for Transfers",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GetManifestHtml",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "manifest",
+            "{{id}}",
+            "html"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTransferHubs",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "hub"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetIncoming",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "incoming"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetOutgoing",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "outgoing"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetRejected",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "rejected"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveries",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "{{id}}",
+            "deliveries"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDestinationTransporters",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "deliveries",
+            "{{id}}",
+            "transporters"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTransporterDetails",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "deliveries",
+            "{{id}}",
+            "transporters",
+            "details"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveryPackages",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "deliveries",
+            "{{id}}",
+            "packages"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveryPackagesWholesale",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "deliveries",
+            "{{id}}",
+            "packages",
+            "wholesale"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetDeliveryPackageRequiredLabTestBatches",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "deliveries",
+            "package",
+            "{{id}}",
+            "requiredlabtestbatches"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "deliveries",
+            "packages",
+            "states"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetTemplates",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "lastModifiedStart",
+              "value": "{{lastModifiedStart}}"
+            },
+            {
+              "key": "lastModifiedEnd",
+              "value": "{{lastModifiedEnd}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTemplateDeliveries",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing",
+            "{{id}}",
+            "deliveries"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTemplateTransporters",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing",
+            "deliveries",
+            "{{id}}",
+            "transporters"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTemplateTransportersDetails",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing",
+            "deliveries",
+            "{{id}}",
+            "transporters",
+            "details"
+          ],
+          "query": []
+        }
+      }
+    },
+    {
+      "name": "GetTemplateDeliveryPackages",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing",
+            "deliveries",
+            "{{id}}",
+            "packages"
+          ],
+          "query": [
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetTransferTypes",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "types"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            },
+            {
+              "key": "pageNumber",
+              "value": "{{pageNumber}}"
+            },
+            {
+              "key": "pageSize",
+              "value": "{{pageSize}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetManifestPdf",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "manifest",
+            "{{id}}",
+            "pdf"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "CreateExternalIncoming",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "external",
+            "incoming"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"ShipperLicenseNumber\": \"123-ABC\",\r\n    \"ShipperName\": \"Lofty Med-Cultivation B\",\r\n    \"ShipperMainPhoneNumber\": \"123-456-7890\",\r\n    \"ShipperAddress1\": \"123 Real Street\",\r\n    \"ShipperAddress2\": null,\r\n    \"ShipperAddressCity\": \"Somewhere\",\r\n    \"ShipperAddressState\": \"CO\",\r\n    \"ShipperAddressPostalCode\": null,\r\n    \"TransporterFacilityLicenseNumber\": null,\r\n    \"DriverOccupationalLicenseNumber\": null,\r\n    \"DriverName\": null,\r\n    \"DriverLicenseNumber\": null,\r\n    \"PhoneNumberForQuestions\": null,\r\n    \"VehicleMake\": null,\r\n    \"VehicleModel\": null,\r\n    \"VehicleLicensePlateNumber\": null,\r\n    \"Destinations\": [\r\n      {\r\n        \"RecipientLicenseNumber\": \"123-XYZ\",\r\n        \"InvoiceNumber\": \"INV-001-0236521\",\r\n        \"TransferTypeName\": \"Transfer\",\r\n        \"PlannedRoute\": \"I will drive down the road to the place.\",\r\n        \"EstimatedDepartureDateTime\": \"2018-03-06T09:15:00.000\",\r\n        \"EstimatedArrivalDateTime\": \"2018-03-06T12:24:00.000\",\r\n        \"GrossWeight\": null,\r\n        \"GrossUnitOfWeightId\": null,\r\n        \"Transporters\": [\r\n          {\r\n            \"TransporterFacilityLicenseNumber\": \"123-ABC\",\r\n            \"DriverOccupationalLicenseNumber\": \"50\",\r\n            \"DriverName\": \"X\",\r\n            \"DriverLicenseNumber\": \"5\",\r\n            \"DriverLayoverLeg\": \"FromAndToLayover\",\r\n            \"PhoneNumberForQuestions\": \"18005555555\",\r\n            \"VehicleMake\": \"X\",\r\n            \"VehicleModel\": \"X\",\r\n            \"VehicleLicensePlateNumber\": \"X\",\r\n            \"IsLayover\": false,\r\n            \"EstimatedDepartureDateTime\": \"2018-03-06T12:00:00.000\",\r\n            \"EstimatedArrivalDateTime\": \"2018-03-06T21:00:00.000\",\r\n            \"TransporterDetails\": [\r\n              {\r\n                \"DriverOccupationalLicenseNumber\": \"50\",\r\n                \"DriverName\": \"X\",\r\n                \"DriverLicenseNumber\": \"5\",\r\n                \"DriverLayoverLeg\": \"FromLayover\",\r\n                \"VehicleMake\": \"X\",\r\n                \"VehicleModel\": \"X\",\r\n                \"VehicleLicensePlateNumber\": \"X\"\r\n              }\r\n            ]\r\n          }\r\n        ],\r\n        \"Packages\": [\r\n          {\r\n            \"ItemName\": \"Buds\",\r\n            \"Quantity\": 10.0,\r\n            \"UnitOfMeasureName\": \"Ounces\",\r\n            \"PackagedDate\": \"2018-02-04T00:00:00Z\",\r\n            \"ExpirationDate\": null,\r\n            \"SellByDate\": null,\r\n            \"UseByDate\": null,\r\n            \"GrossWeight\": 20.1,\r\n            \"GrossUnitOfWeightName\": \"Grams\",\r\n            \"WholesalePrice\": null,\r\n            \"ExternalId\": \"123456789\"\r\n          },\r\n          {\r\n            \"ItemName\": \"Buds\",\r\n            \"Quantity\": 9.5,\r\n            \"UnitOfMeasureName\": \"Ounces\",\r\n            \"PackagedDate\": \"2018-03-06T00:00:00Z\",\r\n            \"ExpirationDate\": null,\r\n            \"SellByDate\": null,\r\n            \"UseByDate\": null,\r\n            \"GrossWeight\": 30.7,\r\n            \"GrossUnitOfWeightName\": \"Milligrams\",\r\n            \"WholesalePrice\": null,\r\n            \"ExternalId\": null\r\n          },\r\n          {\r\n            \"ItemName\": \"Buds\",\r\n            \"Quantity\": 8.5,\r\n            \"UnitOfMeasureName\": \"Ounces\",\r\n            \"PackagedDate\": \"2018-03-06T00:00:00Z\",\r\n            \"ExpirationDate\": null,\r\n            \"SellByDate\": null,\r\n            \"UseByDate\": null,\r\n            \"GrossWeight\": 30.7,\r\n            \"GrossUnitOfWeightName\": \"Milligrams\",\r\n            \"WholesalePrice\": null,\r\n            \"ExternalId\": \"010203040506\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CreateTemplates",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"Name\": \"Template 1\",\r\n    \"TransporterFacilityLicenseNumber\": null,\r\n    \"DriverOccupationalLicenseNumber\": null,\r\n    \"DriverName\": null,\r\n    \"DriverLicenseNumber\": null,\r\n    \"PhoneNumberForQuestions\": null,\r\n    \"VehicleMake\": null,\r\n    \"VehicleModel\": null,\r\n    \"VehicleLicensePlateNumber\": null,\r\n    \"Destinations\": [\r\n      {\r\n        \"RecipientLicenseNumber\": \"123-XYZ\",\r\n        \"InvoiceNumber\": \"INV-001-0236521\",\r\n        \"TransferTypeName\": \"Transfer\",\r\n        \"PlannedRoute\": \"I will drive down the road to the place.\",\r\n        \"EstimatedDepartureDateTime\": \"2018-03-06T09:15:00.000\",\r\n        \"EstimatedArrivalDateTime\": \"2018-03-06T12:24:00.000\",\r\n        \"Transporters\": [\r\n          {\r\n            \"TransporterFacilityLicenseNumber\": \"123-ABC\",\r\n            \"DriverOccupationalLicenseNumber\": \"50\",\r\n            \"DriverName\": \"X\",\r\n            \"DriverLicenseNumber\": \"5\",\r\n            \"DriverLayoverLeg\": \"FromAndToLayover\",\r\n            \"PhoneNumberForQuestions\": \"18005555555\",\r\n            \"VehicleMake\": \"X\",\r\n            \"VehicleModel\": \"X\",\r\n            \"VehicleLicensePlateNumber\": \"X\",\r\n            \"IsLayover\": false,\r\n            \"EstimatedDepartureDateTime\": \"2018-03-06T12:00:00.000\",\r\n            \"EstimatedArrivalDateTime\": \"2018-03-06T21:00:00.000\",\r\n            \"TransporterDetails\": [\r\n              {\r\n                \"DriverOccupationalLicenseNumber\": \"50\",\r\n                \"DriverName\": \"X\",\r\n                \"DriverLicenseNumber\": \"5\",\r\n                \"DriverLayoverLeg\": \"FromLayover\",\r\n                \"VehicleMake\": \"X\",\r\n                \"VehicleModel\": \"X\",\r\n                \"VehicleLicensePlateNumber\": \"X\"\r\n              }\r\n            ]\r\n          }\r\n        ],\r\n        \"Packages\": [\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000010026\",\r\n            \"WholesalePrice\": null,\r\n            \"GrossWeight\": 20.5,\r\n            \"GrossUnitOfWeightName\": \"Grams\"\r\n          },\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000010027\",\r\n            \"WholesalePrice\": null,\r\n            \"GrossWeight\": 30.6,\r\n            \"GrossUnitOfWeightName\": \"Milligrams\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateExternalIncoming",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "external",
+            "incoming"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"TransferId\": 1,\r\n    \"ShipperLicenseNumber\": \"123-ABC\",\r\n    \"ShipperName\": \"Lofty Med-Cultivation B\",\r\n    \"ShipperMainPhoneNumber\": null,\r\n    \"ShipperAddress1\": null,\r\n    \"ShipperAddress2\": null,\r\n    \"ShipperAddressCity\": null,\r\n    \"ShipperAddressState\": null,\r\n    \"ShipperAddressPostalCode\": null,\r\n    \"TransporterFacilityLicenseNumber\": null,\r\n    \"DriverOccupationalLicenseNumber\": null,\r\n    \"DriverName\": null,\r\n    \"DriverLicenseNumber\": null,\r\n    \"PhoneNumberForQuestions\": null,\r\n    \"VehicleMake\": null,\r\n    \"VehicleModel\": null,\r\n    \"VehicleLicensePlateNumber\": null,\r\n    \"Destinations\": [\r\n      {\r\n        \"TransferDestinationId\": null,\r\n        \"RecipientLicenseNumber\": \"123-XYZ\",\r\n        \"InvoiceNumber\": \"INV-001-0236521\",\r\n        \"TransferTypeName\": \"Transfer\",\r\n        \"PlannedRoute\": \"I will drive down the road to the place.\",\r\n        \"EstimatedDepartureDateTime\": \"2018-03-06T09:15:00.000\",\r\n        \"EstimatedArrivalDateTime\": \"2018-03-06T12:24:00.000\",\r\n        \"GrossWeight\": null,\r\n        \"GrossUnitOfWeightId\": null,\r\n        \"Transporters\": [\r\n          {\r\n            \"TransporterFacilityLicenseNumber\": \"123-ABC\",\r\n            \"DriverOccupationalLicenseNumber\": \"50\",\r\n            \"DriverName\": \"X\",\r\n            \"DriverLicenseNumber\": \"5\",\r\n            \"DriverLayoverLeg\": \"FromAndToLayover\",\r\n            \"PhoneNumberForQuestions\": \"18005555555\",\r\n            \"VehicleMake\": \"X\",\r\n            \"VehicleModel\": \"X\",\r\n            \"VehicleLicensePlateNumber\": \"X\",\r\n            \"IsLayover\": false,\r\n            \"EstimatedDepartureDateTime\": \"2018-03-06T12:00:00.000\",\r\n            \"EstimatedArrivalDateTime\": \"2018-03-06T21:00:00.000\",\r\n            \"TransporterDetails\": [\r\n              {\r\n                \"DriverOccupationalLicenseNumber\": \"50\",\r\n                \"DriverName\": \"X\",\r\n                \"DriverLicenseNumber\": \"5\",\r\n                \"DriverLayoverLeg\": \"FromLayover\",\r\n                \"VehicleMake\": \"X\",\r\n                \"VehicleModel\": \"X\",\r\n                \"VehicleLicensePlateNumber\": \"X\"\r\n              }\r\n            ]\r\n          }\r\n        ],\r\n        \"Packages\": [\r\n          {\r\n            \"ItemName\": \"Buds\",\r\n            \"Quantity\": 10.0,\r\n            \"UnitOfMeasureName\": \"Ounces\",\r\n            \"PackagedDate\": \"2018-02-04T00:00:00Z\",\r\n            \"ExpirationDate\": null,\r\n            \"SellByDate\": null,\r\n            \"UseByDate\": null,\r\n            \"GrossWeight\": 20.1,\r\n            \"GrossUnitOfWeightName\": \"Grams\",\r\n            \"WholesalePrice\": null,\r\n            \"ExternalId\": \"123456789\"\r\n          },\r\n          {\r\n            \"ItemName\": \"Buds\",\r\n            \"Quantity\": 9.5,\r\n            \"UnitOfMeasureName\": \"Ounces\",\r\n            \"PackagedDate\": \"2018-03-06T00:00:00Z\",\r\n            \"ExpirationDate\": null,\r\n            \"SellByDate\": null,\r\n            \"UseByDate\": null,\r\n            \"GrossWeight\": 30.7,\r\n            \"GrossUnitOfWeightName\": \"Milligrams\",\r\n            \"WholesalePrice\": null,\r\n            \"ExternalId\": null\r\n          },\r\n          {\r\n            \"ItemName\": \"Buds\",\r\n            \"Quantity\": 8.5,\r\n            \"UnitOfMeasureName\": \"Ounces\",\r\n            \"PackagedDate\": \"2018-03-06T00:00:00Z\",\r\n            \"ExpirationDate\": null,\r\n            \"SellByDate\": null,\r\n            \"UseByDate\": null,\r\n            \"GrossWeight\": 30.7,\r\n            \"GrossUnitOfWeightName\": \"Milligrams\",\r\n            \"WholesalePrice\": null,\r\n            \"ExternalId\": \"010203040506\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "UpdateTemplates",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"TransferTemplateId\": 1,\r\n    \"Name\": \"Template 1\",\r\n    \"TransporterFacilityLicenseNumber\": null,\r\n    \"DriverOccupationalLicenseNumber\": null,\r\n    \"DriverName\": null,\r\n    \"DriverLicenseNumber\": null,\r\n    \"PhoneNumberForQuestions\": null,\r\n    \"VehicleMake\": null,\r\n    \"VehicleModel\": null,\r\n    \"VehicleLicensePlateNumber\": null,\r\n    \"Destinations\": [\r\n      {\r\n        \"TransferDestinationId\": 0,\r\n        \"RecipientLicenseNumber\": \"123-XYZ\",\r\n        \"InvoiceNumber\": \"INV-001-0236521\",\r\n        \"TransferTypeName\": \"Transfer\",\r\n        \"PlannedRoute\": \"I will drive down the road to the place.\",\r\n        \"EstimatedDepartureDateTime\": \"2018-03-06T09:15:00.000\",\r\n        \"EstimatedArrivalDateTime\": \"2018-03-06T12:24:00.000\",\r\n        \"Transporters\": [\r\n          {\r\n            \"TransporterFacilityLicenseNumber\": \"123-ABC\",\r\n            \"DriverOccupationalLicenseNumber\": \"50\",\r\n            \"DriverName\": \"X\",\r\n            \"DriverLicenseNumber\": \"5\",\r\n            \"DriverLayoverLeg\": \"FromAndToLayover\",\r\n            \"PhoneNumberForQuestions\": \"18005555555\",\r\n            \"VehicleMake\": \"X\",\r\n            \"VehicleModel\": \"X\",\r\n            \"VehicleLicensePlateNumber\": \"X\",\r\n            \"IsLayover\": false,\r\n            \"EstimatedDepartureDateTime\": \"2018-03-06T12:00:00.000\",\r\n            \"EstimatedArrivalDateTime\": \"2018-03-06T21:00:00.000\",\r\n            \"TransporterDetails\": [\r\n              {\r\n                \"DriverOccupationalLicenseNumber\": \"50\",\r\n                \"DriverName\": \"X\",\r\n                \"DriverLicenseNumber\": \"5\",\r\n                \"DriverLayoverLeg\": \"FromLayover\",\r\n                \"VehicleMake\": \"X\",\r\n                \"VehicleModel\": \"X\",\r\n                \"VehicleLicensePlateNumber\": \"X\"\r\n              }\r\n            ]\r\n          }\r\n        ],\r\n        \"Packages\": [\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000010026\",\r\n            \"WholesalePrice\": null,\r\n            \"GrossWeight\": 20.5,\r\n            \"GrossUnitOfWeightName\": \"Grams\"\r\n          },\r\n          {\r\n            \"PackageLabel\": \"ABCDEF012345670000010027\",\r\n            \"WholesalePrice\": null,\r\n            \"GrossWeight\": 30.6,\r\n            \"GrossUnitOfWeightName\": \"Milligrams\"\r\n          }\r\n        ]\r\n      }\r\n    ]\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "VoidExternalIncoming",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "external",
+            "incoming",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ArchiveTemplate",
+      "request": {
+        "method": "DELETE",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "templates",
+            "outgoing",
+            "{{id}}"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "ArriveTransferHub",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "hub",
+            "arrive"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Return\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 112,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CheckInTransferHub",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "hub",
+            "checkin"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Return\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 112,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "CheckOutTransferHub",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "hub",
+            "checkout"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Return\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 112,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "DepartTransferHub",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "name": "Content-Type",
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/transfers/v2"
+          ],
+          "path": [
+            "hub",
+            "depart"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "[\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 111,\r\n    \"TransporterDirection\": \"Return\"\r\n  },\r\n  {\r\n    \"ShipmentDeliveryId\": 112,\r\n    \"TransporterDirection\": \"Outbound\"\r\n  }\r\n]",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

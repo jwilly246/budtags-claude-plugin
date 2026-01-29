@@ -1,0 +1,167 @@
+{
+  "info": {
+    "name": "Metrc Webhooks API v2",
+    "description": "Metrc API v2 endpoints for Webhooks",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "SetSubscription",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "X-Metrc-Auth",
+            "key": "X-Metrc-Auth",
+            "value": null,
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Connect.api.server}}/webhooks/v2"
+          ],
+          "path": [],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"objectType\": \"\",\r\n  \"url\": \"\",\r\n  \"verb\": \"\",\r\n  \"status\": \"\",\r\n  \"userApiKey\": \"\",\r\n  \"tpiApiKey\": \"\",\r\n  \"serverPublicKeyFingerprint\": \"\",\r\n  \"template\": \"\",\r\n  \"errorResponseJsonTemplate\": \"\",\r\n  \"facilityLicenseNumbers\": \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "GetSubscription",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "name": "X-Metrc-Auth",
+            "key": "X-Metrc-Auth",
+            "value": null,
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Connect.api.server}}/webhooks/v2"
+          ],
+          "path": [],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "EnableSubscription",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "X-Metrc-Auth",
+            "key": "X-Metrc-Auth",
+            "value": null,
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Connect.api.server}}/webhooks/v2"
+          ],
+          "path": [
+            "enable",
+            "{{subscriptionId}}"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "DisableSubscription",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "name": "X-Metrc-Auth",
+            "key": "X-Metrc-Auth",
+            "value": null,
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Connect.api.server}}/webhooks/v2"
+          ],
+          "path": [
+            "disable",
+            "{{subscriptionId}}"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "DeleteSubscription",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "name": "X-Metrc-Auth",
+            "key": "X-Metrc-Auth",
+            "value": null,
+            "type": "text"
+          }
+        ],
+        "url": {
+          "host": [
+            "{{Connect.api.server}}/webhooks/v2"
+          ],
+          "path": [
+            "{{subscriptionId}}"
+          ],
+          "query": []
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

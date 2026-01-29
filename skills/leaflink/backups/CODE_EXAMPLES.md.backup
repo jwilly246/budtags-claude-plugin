@@ -1,0 +1,718 @@
+# LeafLink Code Examples
+
+Real code examples from the BudTags codebase showing LeafLink API integration patterns.
+
+## Table of Contents
+
+1. [Authentication & Setup](#authentication--setup)
+2. [Fetching Orders](#fetching-orders)
+3. [Transitioning Orders](#transitioning-orders)
+4. [Product Catalog](#product-catalog)
+5. [Customer Management](#customer-management)
+6. [Inventory Sync](#inventory-sync)
+7. [Error Handling](#error-handling)
+8. [Caching Patterns](#caching-patterns)
+9. [Frontend Integration](#frontend-integration)
+
+---
+
+## Authentication & Setup
+
+### Basic API Instance
+
+```php
+// app/Services/Api/LeafLinkApi.php
+
+namespace App\Services\Api;
+
+use Exception;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
+
+class LeafLinkApi {
+    private ?string $api_key = null;
+    const DEFAULT_CACHE_TIME = 300; // 5 minutes
+
+    public function set_key(string $api_key) {
+        $this->api_key = $api_key;
+        return $this;
+    }
+
+    public function headers() {
+        $secret = $this->api_key ?? request()->user()->leaf_link_key?->part1 ?? null;
+
+        if (!$secret) {
+            throw new Exception('no active leaf-link key found for current user');
+        }
+
+        return [
+            'Authorization' => 'App ' . $secret,
+            'Accept' => 'application/json',
+        ];
+    }
+
+    public function url(string $path): string {
+        return config('budtags.leaf_link_base_url') . $path;
+    }
+}
+```
+
+### Using API in Controller
+
+```php
+// app/Http/Controllers/LeafLinkController.php
+
+use App\Services\Api\LeafLinkApi;
+use App\Services\LogService;
+
+class LeafLinkController extends Controller
+{
+    public function fetch_orders()
+    {
+        $api = new LeafLinkApi();
+
+        // API key automatically retrieved from current user's active org
+        try {
+            $orders = $api->get_orders(
+                page: 1,
+                status: 'confirmed',
+                path: route('leaflink.orders'),
+                extraParams: [
+                    'created_date__gte' => now()->subDays(30)->toDateString()
+                ]
+            );
+
+            LogService::store(
+                'LeafLink Orders Fetched',
+                "Found {$orders->total()} orders"
+            );
+
+            return Inertia::render('Leaflink/Orders', [
+                'orders' => $orders
+            ]);
+        } catch (Exception $e) {
+            LogService::store('LeafLink Error', $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to fetch orders');
+        }
+    }
+}
+```
+
+---
+
+## Fetching Orders
+
+### Simple Order List
+
+```php
+// Get confirmed orders from the last 30 days
+$orders = $api->get_orders(
+    page: 1,
+    status: 'confirmed',
+    path: '/leaflink/orders',
+    extraParams: [
+        'created_date__gte' => now()->subDays(30)->toDateString(),
+        'created_date__lte' => now()->toDateString()
+    ]
+);
+
+// Iterate through paginated results
+foreach ($orders as $order) {
+    echo "Order #{$order['number']}: \${$order['total']}\n";
+}
+```
+
+### Get Single Order with Details
+
+```php
+$response = $api->get_order('12345');
+
+if ($response->successful()) {
+    $order = $response->json();
+
+    // Get line items for this order
+    $lineItems = $api->get_order_line_items($order['id']);
+
+    LogService::store(
+        'LeafLink Order Retrieved',
+        "Order #{$order['number']}\n" .
+        "Customer: {$order['customer']['name']}\n" .
+        "Total: \${$order['total']}\n" .
+        "Line Items: " . count($lineItems)
+    );
+}
+```
+
+### Advanced Filtering
+
+```php
+// Complex order query
+$response = $api->get('/orders-received/', [
+    // Date range
+    'created_date__gte' => '2025-01-01',
+    'created_date__lte' => '2025-01-31',
+
+    // Status filter (multiple)
+    'status__in' => 'confirmed,shipped',
+
+    // Customer filter
+    'customer' => 123,
+
+    // Delivery date range
+    'delivery_date__gte' => '2025-02-01',
+
+    // Pagination
+    'limit' => 100,
+    'offset' => 0
+]);
+
+$orders = $response->json('results');
+$totalCount = $response->json('count');
+
+echo "Found {$totalCount} orders matching criteria\n";
+```
+
+---
+
+## Transitioning Orders
+
+### Accept Order
+
+```php
+$response = $api->transition_order('12345', 'accept');
+
+if ($response->successful()) {
+    $order = $response->json();
+
+    LogService::store(
+        'LeafLink Order Accepted',
+        "Order #{$order['number']} accepted\n" .
+        "Customer: {$order['customer']['name']}\n" .
+        "New Status: {$order['status']}"
+    );
+
+    return redirect()->back()->with('success', 'Order accepted successfully');
+} else {
+    $error = $response->json('detail') ?? 'Failed to accept order';
+
+    LogService::store(
+        'LeafLink Order Transition Error',
+        "Order #12345\n" .
+        "Action: accept\n" .
+        "Error: {$error}"
+    );
+
+    return redirect()->back()->with('error', $error);
+}
+```
+
+### Complete Order Lifecycle
+
+```php
+// Order lifecycle controller method
+public function transition(Request $request)
+{
+    $orderId = $request->input('order_id');
+    $action = $request->input('action');  // 'accept', 'confirm', 'ship', 'deliver'
+
+    $api = new LeafLinkApi();
+    $response = $api->transition_order($orderId, $action);
+
+    if ($response->successful()) {
+        $order = $response->json();
+
+        // Log the transition
+        LogService::store(
+            'LeafLink Order Transitioned',
+            "Order #{$order['number']}: {$action}"
+        );
+
+        // Send notification if needed
+        if ($action === 'ship') {
+            // Notify customer of shipment
+            // Mail::to($order['customer']['email'])->send(...)
+        }
+
+        return response()->json([
+            'success' => true,
+            'order' => $order
+        ]);
+    }
+
+    return response()->json([
+        'success' => false,
+        'error' => $response->json('detail')
+    ], $response->status());
+}
+```
+
+---
+
+## Product Catalog
+
+### Fetch Inventory with Auto-Pagination
+
+```php
+// app/Services/Api/LeafLinkApi.php
+
+public function get_inventory_items(): array
+{
+    $endpoints = [
+        '/products/',   // Primary endpoint
+        '/batches/',    // Fallback
+    ];
+
+    foreach ($endpoints as $endpoint) {
+        try {
+            // Test endpoint
+            $response = $this->get($endpoint, [
+                'limit' => 50,
+                'offset' => 0,
+            ]);
+
+            if ($response->status() === 200 && !empty($response->json('results'))) {
+                // Paginate through all results
+                $allItems = [];
+                $limit = 50;
+                $offset = 0;
+                $maxPages = 20;  // Safety limit
+
+                do {
+                    $response = $this->get($endpoint, [
+                        'limit' => $limit,
+                        'offset' => $offset,
+                    ]);
+
+                    $results = $response->json('results') ?? [];
+                    $allItems = array_merge($allItems, $results);
+
+                    $hasMore = !empty($response->json('next'));
+                    $offset += $limit;
+                    $maxPages--;
+                } while ($hasMore && $maxPages > 0);
+
+                return $allItems;
+            }
+        } catch (Exception $e) {
+            continue;  // Try next endpoint
+        }
+    }
+
+    throw new Exception('Unable to fetch LeafLink inventory');
+}
+```
+
+### Enriched Inventory with Metadata
+
+```php
+public function get_inventory_items_enriched(string $orgId): array
+{
+    return $this->fetch_from_cache_or_api(
+        "leaflink:enriched-inventory:{$orgId}",
+        function () use ($orgId) {
+            // Fetch main inventory
+            $inventory = $this->get_inventory_items();
+
+            // Get company ID from first product
+            $companyId = $inventory[0]['seller'] ?? null;
+
+            if (!$companyId) {
+                return $inventory;
+            }
+
+            // Fetch enrichment data
+            $brands = collect($this->get_brands($companyId))->keyBy('id')->pluck('name', 'id');
+            $categories = collect($this->get_categories())->keyBy('id')->pluck('name', 'id');
+            $subcategories = collect($this->get_subcategories())->keyBy('id')->pluck('name', 'id');
+            $product_lines = collect($this->get_product_lines($companyId))->keyBy('id')->pluck('name', 'id');
+
+            // Enrich inventory with names
+            $enriched = array_map(function ($item) use ($brands, $categories, $subcategories, $product_lines) {
+                $item['brand_name'] = $brands[$item['brand']] ?? null;
+                $item['category_name'] = $categories[$item['category']] ?? null;
+                $item['subcategory_name'] = $subcategories[$item['sub_category']] ?? null;
+                $item['product_line_name'] = $product_lines[$item['product_line']] ?? null;
+                return $item;
+            }, $inventory);
+
+            return $enriched;
+        },
+        null,
+        false,
+        self::DEFAULT_CACHE_TIME
+    );
+}
+```
+
+### Using Enriched Inventory in Controller
+
+```php
+public function sync_products()
+{
+    $api = new LeafLinkApi();
+    $orgId = request()->user()->active_org->id;
+
+    // Get enriched inventory (with caching)
+    $inventory = $api->get_inventory_items_enriched($orgId);
+
+    LogService::store(
+        'LeafLink Products Synced',
+        "Fetched " . count($inventory) . " products with metadata"
+    );
+
+    return Inertia::render('Leaflink/Products', [
+        'products' => $inventory
+    ]);
+}
+```
+
+---
+
+## Customer Management
+
+### Get Customer by ID
+
+```php
+$response = $api->get_customer_by_id(123);
+
+if ($response->successful()) {
+    $customer = $response->json();
+
+    echo "Customer: {$customer['name']}\n";
+    echo "Email: {$customer['email']}\n";
+    echo "Licenses: " . count($customer['licenses']) . "\n";
+}
+```
+
+### Bulk Fetch Customers
+
+```php
+$customerIds = [123, 456, 789];
+$fields = ['id', 'name', 'email', 'licenses', 'city', 'state'];
+
+$response = $api->get_customers(
+    ids: $customerIds,
+    fields: $fields
+);
+
+$customers = $response->json('results');
+
+foreach ($customers as $customer) {
+    echo "{$customer['name']} - {$customer['city']}, {$customer['state']}\n";
+}
+```
+
+### Advanced Customer Filtering
+
+```php
+// Find all active retail customers in Colorado
+$response = $api->get('/customers/', [
+    'license_types__in' => 'retail',
+    'state' => 'CO',
+    'status' => 'active',
+    'created_date__gte' => '2024-01-01',
+    'name__icontains' => 'dispensary',
+    'limit' => 100
+]);
+
+$customers = $response->json('results');
+$totalCount = $response->json('count');
+
+LogService::store(
+    'LeafLink Customer Search',
+    "Found {$totalCount} Colorado retail dispensaries"
+);
+```
+
+---
+
+## Inventory Sync
+
+### Sync Inventory from LeafLink to BudTags
+
+```php
+public function sync_inventory()
+{
+    $api = new LeafLinkApi();
+    $orgId = request()->user()->active_org->id;
+
+    try {
+        // Fetch LeafLink inventory
+        $leaflinkProducts = $api->get_inventory_items_enriched($orgId);
+
+        $synced = 0;
+        $failed = 0;
+
+        foreach ($leaflinkProducts as $product) {
+            try {
+                // Create or update local product
+                \App\Models\Product::updateOrCreate(
+                    [
+                        'leaflink_id' => $product['id'],
+                        'org_id' => $orgId
+                    ],
+                    [
+                        'name' => $product['display_name'],
+                        'sku' => $product['sku'],
+                        'price' => $product['unit_price'],
+                        'quantity' => $product['inventory_quantity'],
+                        'brand_name' => $product['brand_name'],
+                        'category_name' => $product['category_name'],
+                        'last_synced_at' => now()
+                    ]
+                );
+
+                $synced++;
+            } catch (Exception $e) {
+                $failed++;
+                LogService::store(
+                    'LeafLink Product Sync Error',
+                    "Product ID: {$product['id']}\nError: {$e->getMessage()}"
+                );
+            }
+        }
+
+        // Clear cache after sync
+        $api->clearCache($orgId);
+
+        LogService::store(
+            'LeafLink Inventory Sync Complete',
+            "Synced: {$synced}\nFailed: {$failed}"
+        );
+
+        return redirect()->back()->with('success', "Synced {$synced} products");
+    } catch (Exception $e) {
+        LogService::store('LeafLink Sync Error', $e->getMessage());
+        return redirect()->back()->with('error', 'Sync failed');
+    }
+}
+```
+
+---
+
+## Error Handling
+
+### Comprehensive Error Handling
+
+```php
+public function api_request_with_error_handling()
+{
+    $api = new LeafLinkApi();
+
+    try {
+        $response = $api->get('/orders-received/');
+
+        // Check HTTP status
+        if (!$response->successful()) {
+            $statusCode = $response->status();
+            $body = $response->body();
+
+            // Log the error
+            LogService::store(
+                'LeafLink API Error',
+                "Status: {$statusCode}\nBody: {$body}"
+            );
+
+            // Handle specific errors
+            if ($statusCode === 401) {
+                return redirect()->route('settings.secrets')
+                    ->with('error', 'LeafLink API key is invalid. Please update your credentials.');
+            }
+
+            if ($statusCode === 429) {
+                return redirect()->back()
+                    ->with('error', 'Rate limit exceeded. Please try again in a few moments.');
+            }
+
+            if ($statusCode === 400) {
+                $detail = $response->json('detail') ?? 'Bad request';
+                return redirect()->back()->with('error', $detail);
+            }
+
+            // Generic error
+            return redirect()->back()->with('error', 'API request failed');
+        }
+
+        // Success - process data
+        $data = $response->json('results');
+        return $data;
+
+    } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        // Network error
+        LogService::store('LeafLink Connection Error', $e->getMessage());
+        return redirect()->back()->with('error', 'Unable to connect to LeafLink');
+
+    } catch (Exception $e) {
+        // Other errors
+        LogService::store('LeafLink Exception', $e->getMessage());
+        return redirect()->back()->with('error', 'An unexpected error occurred');
+    }
+}
+```
+
+---
+
+## Caching Patterns
+
+### Generic Cache Wrapper
+
+```php
+protected function fetch_from_cache_or_api(
+    string $key,
+    callable $call,
+    ?callable $each = null,
+    bool $force_fetch = false,
+    int $seconds_to_cache = self::DEFAULT_CACHE_TIME
+): array {
+    if ($force_fetch) {
+        $data = $call();
+        Cache::put($key, $data, $seconds_to_cache);
+        return $data;
+    }
+
+    return Cache::remember($key, $seconds_to_cache, function () use ($call, $each, $seconds_to_cache) {
+        $data = $call();
+
+        // Optionally cache individual items
+        if ($each) {
+            foreach ($data as $item) {
+                Cache::set($each($item), $item, $seconds_to_cache);
+            }
+        }
+
+        return $data;
+    });
+}
+```
+
+### Clear Cache After Updates
+
+```php
+public function clearCache(string $orgId): void
+{
+    Cache::forget("leaflink:enriched-inventory:{$orgId}");
+}
+
+// Usage after bulk product updates:
+public function bulk_update()
+{
+    // ... update products ...
+
+    $api = new LeafLinkApi();
+    $api->clearCache(request()->user()->active_org->id);
+
+    return redirect()->back()->with('success', 'Products updated');
+}
+```
+
+---
+
+## Frontend Integration
+
+### React Component with LeafLink Data
+
+```typescript
+// resources/js/Pages/Leaflink/Orders.tsx
+
+import { LeafLinkOrder, LeafLinkPaginatedResponse } from '@/Types/types-leaflink';
+import { usePage } from '@inertiajs/react';
+import { useState } from 'react';
+
+export default function Orders() {
+    const { orders } = usePage<{
+        orders: LeafLinkPaginatedResponse<LeafLinkOrder>
+    }>().props;
+
+    const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+
+    const handleTransition = (orderId: number, action: string) => {
+        router.post('/leaflink/orders/transition', {
+            order_id: orderId,
+            action: action
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(`Order transitioned to ${action}`);
+            },
+            onError: (errors) => {
+                toast.error('Failed to transition order');
+            }
+        });
+    };
+
+    return (
+        <div>
+            <h1>LeafLink Orders ({orders.count})</h1>
+
+            {orders.results.map(order => (
+                <div key={order.id} className="order-card">
+                    <h3>Order #{order.number}</h3>
+                    <p>Customer: {order.customer.name}</p>
+                    <p>Status: {order.status}</p>
+                    <p>Total: ${order.total.toFixed(2)}</p>
+
+                    {order.status === 'draft' && (
+                        <button onClick={() => handleTransition(order.id, 'accept')}>
+                            Accept Order
+                        </button>
+                    )}
+
+                    {order.status === 'confirmed' && (
+                        <button onClick={() => handleTransition(order.id, 'ship')}>
+                            Mark as Shipped
+                        </button>
+                    )}
+                </div>
+            ))}
+        </div>
+    );
+}
+```
+
+### Modal for Product Sync
+
+```typescript
+// resources/js/Components/Leaflink/ProductSyncModal.tsx
+
+import { useForm } from '@inertiajs/react';
+import { toast } from 'react-toastify';
+
+export default function ProductSyncModal({ isOpen, onClose }: Props) {
+    const { post, processing } = useForm({});
+
+    const handleSync = () => {
+        post('/leaflink/products/sync', {
+            preserveScroll: true,
+            onSuccess: (page) => {
+                const flashSuccess = (page.props as any).flash?.success;
+                if (flashSuccess) {
+                    toast.success(flashSuccess);
+                }
+                onClose();
+            },
+            onError: (errors) => {
+                toast.error('Product sync failed');
+            }
+        });
+    };
+
+    return (
+        <Modal show={isOpen} onClose={onClose}>
+            <h2>Sync Products from LeafLink</h2>
+            <p>This will fetch all products from LeafLink and update the local database.</p>
+
+            <button onClick={handleSync} disabled={processing}>
+                {processing ? 'Syncing...' : 'Start Sync'}
+            </button>
+        </Modal>
+    );
+}
+```
+
+---
+
+**See Also:**
+- `OPERATIONS_CATALOG.md` - Complete API reference
+- `ERROR_HANDLING.md` - Error troubleshooting
+- `WORKFLOWS/` - Step-by-step workflows
+- `LeafLinkApi.php` - Full implementation at `app/Services/Api/LeafLinkApi.php`
