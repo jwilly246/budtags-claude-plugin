@@ -3,114 +3,133 @@
     {
       "id": "budtags-testing",
       "name": "BudTags Testing",
+      "version": "2.3.0",
       "description": "PHPUnit test patterns, Mockery mocking, multi-tenancy test helpers",
       "default": true
     },
     {
       "id": "create-plan",
       "name": "Create Plan",
+      "version": "1.0.0",
       "description": "Research-driven feature planning with codebase discovery",
       "default": true
     },
     {
       "id": "decompose-plan",
       "name": "Decompose Plan",
+      "version": "3.0.0",
       "description": "Break plans into context-window-sized work units",
       "default": true
     },
     {
       "id": "inertia",
       "name": "Inertia",
+      "version": "1.0.0",
       "description": "Inertia.js v2 patterns for Laravel + React full-stack development",
       "default": true
     },
     {
       "id": "inertia-react-development",
       "name": "Inertia React Dev",
+      "version": "1.0.0",
       "description": "Inertia.js v2 React client-side development patterns",
       "default": true
     },
     {
       "id": "labelary-help",
       "name": "Labelary Help",
+      "version": "1.0.0",
       "description": "ZPL label preview and conversion via Labelary API",
       "default": false
     },
     {
       "id": "leaflink",
       "name": "LeafLink",
+      "version": "1.0.0",
       "description": "LeafLink wholesale marketplace API integration",
       "default": true
     },
     {
       "id": "metrc-api",
       "name": "Metrc API",
+      "version": "2.0.0",
       "description": "Cannabis compliance tracking API integration",
       "default": true
     },
     {
       "id": "quickbooks",
       "name": "QuickBooks",
+      "version": "2.0.0",
       "description": "QuickBooks Online OAuth, invoices, customers, payments",
       "default": true
     },
     {
       "id": "quill",
       "name": "Quill",
+      "version": "1.0.0",
       "description": "Quill.js rich text editor API and configuration",
       "default": false
     },
     {
       "id": "react-19",
       "name": "React 19",
+      "version": "1.0.0",
       "description": "React 19 new hooks, Actions, and migration guides",
       "default": true
     },
     {
       "id": "run-plan",
       "name": "Run Plan",
+      "version": "1.0.0",
       "description": "Autonomously execute decomposed work units",
       "default": true
     },
     {
       "id": "skill-builder",
       "name": "Skill Builder",
+      "version": "1.0.0",
       "description": "Create new Claude Code skills following patterns",
       "default": false
     },
     {
       "id": "tailwindcss-development",
       "name": "Tailwind CSS",
+      "version": "1.0.0",
       "description": "Tailwind CSS v4 styling patterns and utilities",
       "default": true
     },
     {
       "id": "tanstack-query",
       "name": "TanStack Query",
+      "version": "1.0.0",
       "description": "React Query v5 data fetching, caching, mutations",
       "default": true
     },
     {
       "id": "tanstack-table",
       "name": "TanStack Table",
+      "version": "1.0.0",
       "description": "Headless table components with sorting, filtering, pagination",
       "default": true
     },
     {
       "id": "tanstack-virtual",
       "name": "TanStack Virtual",
+      "version": "1.0.0",
       "description": "Virtualized list rendering for large datasets",
       "default": false
     },
     {
       "id": "verify-alignment",
       "name": "Verify Alignment",
+      "version": "3.0.0",
       "description": "Verify code against BudTags coding standards",
       "default": true
     },
     {
       "id": "zpl",
       "name": "ZPL",
+      "version": "1.0.0",
       "description": "Zebra Programming Language for label printing",
       "default": false
     }

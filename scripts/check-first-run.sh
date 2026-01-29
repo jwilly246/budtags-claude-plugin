@@ -1,8 +1,7 @@
 #!/bin/bash
 # SessionStart hook - checks if setup has run
 #
-# This script runs on every Claude Code session start.
-# If the plugin hasn't been configured yet, it launches the setup wizard.
+# If the plugin hasn't been configured yet, prompts the user to run /budtags-setup
 
 # Get the plugin directory (parent of scripts directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,9 +10,16 @@ PLUGIN_DIR="${PLUGIN_DIR:-$(dirname "$SCRIPT_DIR")}"
 CONFIG_FLAG="$PLUGIN_DIR/.budtags-configured"
 
 if [ ! -f "$CONFIG_FLAG" ]; then
-    # First run - launch wizard
-    exec "$PLUGIN_DIR/scripts/setup-wizard.sh"
+    # First run - prompt user to run setup
+    echo ""
+    echo "══════════════════════════════════════════════════════════════"
+    echo "  🌿 BudTags Plugin - First Run Setup"
+    echo "══════════════════════════════════════════════════════════════"
+    echo ""
+    echo "  Run /budtags-setup to configure which features to enable."
+    echo ""
+    echo "══════════════════════════════════════════════════════════════"
+    echo ""
 fi
 
-# Already configured - exit silently
 exit 0
