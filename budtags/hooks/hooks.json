@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$PLUGIN_DIR/scripts/check-first-run.sh\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/check-first-run.sh\""
           }
         ]
       }
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$PLUGIN_DIR/hooks/scripts/auto-approve-reads.py\""
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/auto-approve-reads.py\""
           }
         ]
       },
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$PLUGIN_DIR/hooks/scripts/pre-commit-gate.py\""
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-commit-gate.py\""
           }
         ]
       },
@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$PLUGIN_DIR/hooks/scripts/file-protection.py\""
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/file-protection.py\""
           }
         ]
       }
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$PLUGIN_DIR/hooks/scripts/post-edit-tests.py\"",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-edit-tests.py\"",
             "timeout": 120000
           }
         ]
@@ -67,7 +67,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$PLUGIN_DIR/hooks/scripts/skill-forced-eval-hook.sh\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/skill-forced-eval-hook.sh\""
           }
         ]
       }

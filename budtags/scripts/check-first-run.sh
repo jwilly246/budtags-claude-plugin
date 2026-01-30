@@ -3,11 +3,12 @@
 #
 # If the plugin hasn't been configured yet, prompts the user to run /budtags-setup
 
-# Get the plugin directory (parent of scripts directory)
+# Get the plugin directory from Claude's environment variable
+# Falls back to determining from script location if not set
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_DIR="${PLUGIN_DIR:-$(dirname "$SCRIPT_DIR")}"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(dirname "$SCRIPT_DIR")}"
 
-CONFIG_FLAG="$PLUGIN_DIR/.budtags-configured"
+CONFIG_FLAG="$PLUGIN_ROOT/.budtags-configured"
 
 if [ ! -f "$CONFIG_FLAG" ]; then
     # First run - prompt user to run setup
