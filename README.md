@@ -1,5 +1,7 @@
 # BudTags Claude Plugin
 
+**Version 1.1.0**
+
 A comprehensive Claude Code plugin for BudTags development - includes cannabis compliance integrations (Metrc, LeafLink), accounting (QuickBooks), modern frontend tooling, planning workflows, and specialized agents.
 
 ## Installation
