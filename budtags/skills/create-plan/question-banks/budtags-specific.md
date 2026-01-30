@@ -195,10 +195,10 @@ const handleSubmit = (e: React.FormEvent) => {
 };
 
 // Input binding
-<TextInput
+<InputText
     value={data.name}
     onChange={(e) => setData('name', e.target.value)}
-    error={errors.name}
+    errors={errors.name}
 />
 ```
 

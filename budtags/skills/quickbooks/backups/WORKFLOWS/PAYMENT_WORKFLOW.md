@@ -234,12 +234,12 @@ public function recordPayment(Request $request)
     // Verify invoice balance
     $invoice = $qbo->get_invoice($validated['invoice_id']);
     if ($validated['amount'] > $invoice->Balance) {
-        return back()->withErrors(['amount' => 'Payment exceeds invoice balance']);
+        return redirect()->back()->withErrors(['amount' => 'Payment exceeds invoice balance']);
     }
 
     $payment = $qbo->create_payment($validated);
 
-    return redirect()->back()->with('success', 'Payment recorded');
+    return redirect()->back()->with('message', 'Payment recorded');
 }
 ```
 

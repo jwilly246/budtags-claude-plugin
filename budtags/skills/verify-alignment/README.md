@@ -543,6 +543,11 @@ For questions or improvements, reference:
 
 ## 📝 Version History
 
+**Version 3.0.1** (2025-01-29):
+- Fixed `error` → `errors` prop in input component examples
+- Fixed `_ref` → `ref` for React 19 compatibility
+- Removed `type` attribute from Button component examples
+
 **Version 3.0** (2025-12-13):
 - Major database schema update (BOM→recipe, new lab_companies, lab_facilities)
 - Added Lab/Transporter company integration patterns (5 new patterns)

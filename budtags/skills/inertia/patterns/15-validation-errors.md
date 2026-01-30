@@ -89,11 +89,11 @@ function TextInput({ label, name, value, error, onChange }: InputProps) {
 }
 
 // Usage
-<TextInput
+<InputText
   label="Email"
   name="email"
   value={data.email}
-  error={errors.email}
+  errors={errors.email}
   onChange={e => setData('email', e.target.value)}
 />
 ```

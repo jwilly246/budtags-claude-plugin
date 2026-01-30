@@ -1,7 +1,7 @@
 ---
 name: decompose-plan
 description: Decomposes a plan file into context-window-sized work units with dependency tracking. FILE CREATION ONLY - does NOT implement or execute any code.
-version: 3.0.0
+version: 3.0.1
 category: workflow
 auto_activate:
   keywords:

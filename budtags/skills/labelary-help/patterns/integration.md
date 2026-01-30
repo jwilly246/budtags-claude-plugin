@@ -176,7 +176,7 @@ const LabelaryPreviewModal: React.FC<LabelaryPreviewModalProps> = ({
     }, [show, zplCode, widthInches, heightInches, dpi]);
 
     return (
-        <Modal show={show} onClose={onClose} maxWidth="4xl">
+        <Modal show={show} onClose={onClose} size="3xl">
             <div className="p-6">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                     ZPL Label Preview ({widthInches}" × {heightInches}" @ {dpi} DPI)

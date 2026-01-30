@@ -1,7 +1,7 @@
 ---
 name: verify-alignment
 description: Use this skill to verify that code aligns with BudTags coding standards, architectural patterns, and conventions before or after implementation.
-version: 3.0.0
+version: 3.0.1
 category: project
 agent: budtags-specialist
 auto_activate:

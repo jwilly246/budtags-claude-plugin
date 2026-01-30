@@ -143,10 +143,10 @@ const MyModal: React.FC<MyModalProps> = ({ isOpen, onClose, items }) => {
                 <InputText
                     value={data.name}
                     onChange={(e) => setData('name', e.target.value)}
-                    error={errors.name}
+                    errors={errors.name}
                 />
-                <Button type="button" _ref={cancelButtonRef}>Cancel</Button>
-                <Button type="submit" disabled={processing}>Save</Button>
+                <Button ref={cancelButtonRef}>Cancel</Button>
+                <Button primary disabled={processing}>Save</Button>
             </form>
         </Modal>
     );

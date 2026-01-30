@@ -189,7 +189,7 @@ return redirect()
 ### Redirect Back
 
 ```php
-return back()->with('message', 'Settings updated.');
+return redirect()->back()->with('message', 'Settings updated.');
 ```
 
 ### External Redirect

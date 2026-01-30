@@ -1,7 +1,7 @@
 ---
 name: create-plan
 description: Thorough, question-driven feature planning. Asks questions you haven't thought of. Fills gaps with questions, not assumptions. Produces comprehensive plan documents ready for decomposition.
-version: 1.0.0
+version: 1.0.1
 category: workflow
 auto_activate:
   keywords:

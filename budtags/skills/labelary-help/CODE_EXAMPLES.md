@@ -283,7 +283,7 @@ const LabelaryPreviewModal: React.FC<LabelaryPreviewModalProps> = ({
 
             {/* Footer */}
             <div className="flex justify-end gap-2 mt-4 pt-4 border-t">
-                <Button secondary onClick={onClose} _ref={cancelButtonRef}>
+                <Button secondary onClick={onClose} ref={cancelButtonRef}>
                     Close
                 </Button>
             </div>

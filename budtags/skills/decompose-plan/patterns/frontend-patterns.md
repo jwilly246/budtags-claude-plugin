@@ -11,10 +11,10 @@ Essential patterns for frontend work in BudTags.
 | Need | Use This File | Components |
 |------|---------------|------------|
 | Buttons | `Components/Button.tsx` | `<Button>`, `<Button primary>` |
-| Text inputs | `Components/Inputs.tsx` | `<TextInput>` |
-| Textareas | `Components/Inputs.tsx` | `<TextArea>` |
-| Selects | `Components/Inputs.tsx` | `<Select>` |
-| Checkboxes | `Components/Inputs.tsx` | `<Checkbox>` |
+| Text inputs | `Components/Inputs.tsx` | `<InputText>` |
+| Textareas | `Components/Inputs.tsx` | `<InputTextArea>` |
+| Selects | `Components/Inputs.tsx` | `<InputSelect>` |
+| Checkboxes | `Components/Inputs.tsx` | `<InputCheckbox>` |
 | Toggles | `Components/ToggleSwitch.tsx` | `<ToggleSwitch>` |
 | Tables | `Components/DataTable.tsx` | `<DataTable>` |
 | Badges | `Components/Badge.tsx` | `<Badge>` |
@@ -87,20 +87,20 @@ delete_(route('items-delete', item.id), { onSuccess: () => onClose() });
 
 ### Input Binding Pattern
 ```tsx
-<TextInput
+<InputText
     label="Name"
     value={data.name}
     onChange={(e) => setData('name', e.target.value)}
-    error={errors.name}
+    errors={errors.name}
     required
 />
 
-<Select
+<InputSelect
     label="Category"
     value={data.category_id}
     onChange={(e) => setData('category_id', e.target.value)}
-    error={errors.category_id}
-    options={categories.map(c => ({ value: c.id, label: c.name }))}
+    errors={errors.category_id}
+    options={categories.map(c => ({ id: c.id, name: c.name }))}
 />
 
 <ToggleSwitch
@@ -115,8 +115,8 @@ delete_(route('items-delete', item.id), { onSuccess: () => onClose() });
 // Errors come from useForm automatically from Laravel validation
 {errors.name && <InputError message={errors.name} />}
 
-// Or use the error prop on input components
-<TextInput error={errors.name} />
+// Or use the errors prop on input components
+<InputText errors={errors.name} />
 ```
 
 ### ⛔ FORBIDDEN - Never Do These
@@ -187,3 +187,14 @@ export const CreateModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
 - **Self-contained modals** - modal owns its form state
 - **MainLayout handles flash** - don't manually show toasts for redirects
 - Use **Inertia** for forms/CRUD, **React Query** for polling/real-time
+
+## PageProps Import Pattern
+
+When using `usePage<PageProps>()`, ALWAYS include the import:
+
+```tsx
+import { usePage } from '@inertiajs/react';
+import { PageProps } from '@/Types/types';
+
+const { auth } = usePage<PageProps>().props;
+```

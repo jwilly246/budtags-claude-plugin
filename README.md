@@ -39,13 +39,13 @@ Domain-specific knowledge that Claude can reference during development.
 ### Accounting & Business
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **QuickBooks** | 2.0.0 | QuickBooks Online OAuth, invoices, customers, payments |
+| **QuickBooks** | 2.0.1 | QuickBooks Online OAuth, invoices, customers, payments |
 
 ### Frontend Development
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **React 19** | 1.0.0 | React 19 new hooks, Actions, and migration guides |
-| **Inertia** | 1.0.0 | Inertia.js v2 patterns for Laravel + React full-stack development |
+| **Inertia** | 1.0.1 | Inertia.js v2 patterns for Laravel + React full-stack development |
 | **Inertia React Dev** | 1.0.0 | Inertia.js v2 React client-side development patterns |
 | **Tailwind CSS** | 1.0.0 | Tailwind CSS v4 styling patterns and utilities |
 | **TanStack Query** | 1.0.0 | React Query v5 data fetching, caching, mutations |
@@ -57,20 +57,20 @@ Domain-specific knowledge that Claude can reference during development.
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **BudTags Testing** | 2.3.0 | PHPUnit test patterns, Mockery mocking, multi-tenancy test helpers |
-| **Verify Alignment** | 3.0.0 | Verify code against BudTags coding standards |
+| **Verify Alignment** | 3.0.1 | Verify code against BudTags coding standards |
 
 ### Planning & Workflow
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **Create Plan** | 1.0.0 | Research-driven feature planning with codebase discovery |
-| **Decompose Plan** | 3.0.0 | Break plans into context-window-sized work units |
-| **Run Plan** | 1.0.0 | Autonomously execute decomposed work units |
+| **Create Plan** | 1.0.1 | Research-driven feature planning with codebase discovery |
+| **Decompose Plan** | 3.0.1 | Break plans into context-window-sized work units |
+| **Run Plan** | 1.0.1 | Autonomously execute decomposed work units |
 
 ### Label Printing
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **ZPL** | 1.0.0 | Zebra Programming Language for label printing |
-| **Labelary Help** | 1.0.0 | ZPL label preview and conversion via Labelary API |
+| **Labelary Help** | 1.0.1 | ZPL label preview and conversion via Labelary API |
 
 ### Meta
 | Skill | Version | Description |

@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked.
-version: 1.0.0
+version: 1.0.1
 category: workflow
 auto_activate:
   keywords:

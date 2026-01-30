@@ -1,7 +1,7 @@
 ---
 name: inertia
 description: Inertia.js v2 patterns for Laravel + React full-stack development, including useForm, routing, shared data, and server-side integration
-version: 1.0.0
+version: 1.0.1
 category: project
 agent: react-specialist
 auto_activate:

@@ -1,6 +1,7 @@
 ---
 name: labelary-help
 description: Use this skill when working with the Labelary ZPL rendering API for converting ZPL to images/PDFs, implementing ZPL preview functionality, or converting images/fonts to ZPL format.
+version: 1.0.1
 ---
 
 # Labelary API Skill

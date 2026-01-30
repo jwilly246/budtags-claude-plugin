@@ -474,18 +474,18 @@ try {
 // Check if customer exists
 $customer = $qbo->get_customer($customerId);
 if (!$customer) {
-    return back()->withErrors(['customer_id' => 'Customer not found in QuickBooks']);
+    return redirect()->back()->withErrors(['customer_id' => 'Customer not found in QuickBooks']);
 }
 
 // Check if customer is active
 if (!$customer->Active) {
-    return back()->withErrors(['customer_id' => 'Customer is inactive in QuickBooks']);
+    return redirect()->back()->withErrors(['customer_id' => 'Customer is inactive in QuickBooks']);
 }
 
 // Check invoice balance before payment
 $invoice = $qbo->get_invoice($invoiceId);
 if ($paymentAmount > $invoice->Balance) {
-    return back()->withErrors(['amount' => 'Payment exceeds invoice balance']);
+    return redirect()->back()->withErrors(['amount' => 'Payment exceeds invoice balance']);
 }
 
 // Now safe to proceed
@@ -551,7 +551,7 @@ public function createInvoice(Request $request)
         // Verify customer exists
         $customer = $qbo->get_customer($validated['customer_id']);
         if (!$customer) {
-            return back()->withErrors(['customer_id' => 'Customer not found']);
+            return redirect()->back()->withErrors(['customer_id' => 'Customer not found']);
         }
 
         $invoice = $qbo->create_invoice($validated);
@@ -568,7 +568,7 @@ public function createInvoice(Request $request)
             "Customer ID: {$validated['customer_id']}\nError: {$e->getMessage()}"
         );
 
-        return back()->with('error', 'Failed to create invoice: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Failed to create invoice: ' . $e->getMessage());
     }
 }
 ```

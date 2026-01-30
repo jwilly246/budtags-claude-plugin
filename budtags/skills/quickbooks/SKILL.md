@@ -6,7 +6,7 @@ agent: quickbooks-specialist
 
 # QuickBooks API Reference Skill
 
-**Version:** 2.0 - Progressive Disclosure  
+**Version:** 2.0.1 - Progressive Disclosure  
 **Last Updated:** 2025-11-14
 
 You are now equipped with comprehensive knowledge of the complete QuickBooks Online integration via **modular category files**, **scenario templates**, and **pattern guides**. This skill uses **progressive disclosure** to load only the information relevant to your task.

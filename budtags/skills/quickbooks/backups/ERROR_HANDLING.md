@@ -102,7 +102,7 @@ $validator = Validator::make($request->all(), [
 ]);
 
 if ($validator->fails()) {
-    return back()->withErrors($validator);
+    return redirect()->back()->withErrors($validator);
 }
 ```
 
@@ -193,7 +193,7 @@ try {
 } catch (\Exception $e) {
     if (str_contains($e->getMessage(), 'timeout') || str_contains($e->getMessage(), 'connection')) {
         LogService::store('QBO Connection Error', $e->getMessage());
-        return back()->with('error', 'QuickBooks is temporarily unavailable. Please try again.');
+        return redirect()->back()->with('error', 'QuickBooks is temporarily unavailable. Please try again.');
     }
 
     throw $e;
@@ -273,11 +273,11 @@ try {
 // Validate locally before expensive API call
 $customer = $qbo->get_customer($customerId);
 if (!$customer) {
-    return back()->withErrors(['customer_id' => 'Customer not found in QuickBooks']);
+    return redirect()->back()->withErrors(['customer_id' => 'Customer not found in QuickBooks']);
 }
 
 if (!$customer->Active) {
-    return back()->withErrors(['customer_id' => 'Customer is inactive']);
+    return redirect()->back()->withErrors(['customer_id' => 'Customer is inactive']);
 }
 
 // Now safe to create invoice

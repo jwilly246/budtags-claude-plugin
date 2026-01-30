@@ -56,8 +56,8 @@ const MyModal: React.FC<{ isOpen: boolean; onClose: () => void; items: Item[] }>
         <Modal show={isOpen} onClose={onClose}>
             <form onSubmit={handleSubmit}>
                 <InputSelect value={data.name} onChange={(e) => setData('name', e.target.value)} />
-                <Button type="button" _ref={cancelButtonRef}>Cancel</Button>
-                <Button type="submit">Save</Button>
+                <Button ref={cancelButtonRef}>Cancel</Button>
+                <Button primary>Save</Button>
             </form>
         </Modal>
     );
@@ -90,7 +90,7 @@ const { data, setData, post, processing, errors } = useForm({
 <InputText
     value={data.name}
     onChange={(e) => setData('name', e.target.value)}
-    error={errors.name}
+    errors={errors.name}
 />
 ```
 

@@ -175,10 +175,10 @@ export const CreateItemModal: React.FC<{ isOpen: boolean; onClose: () => void }>
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <form onSubmit={handleSubmit}>
-                <TextInput
+                <InputText
                     value={data.name}
                     onChange={(e) => setData('name', e.target.value)}
-                    error={errors.name}
+                    errors={errors.name}
                 />
                 <Button primary disabled={processing}>Save</Button>
             </form>
