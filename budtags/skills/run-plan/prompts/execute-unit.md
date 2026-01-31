@@ -13,14 +13,46 @@ WORK UNIT FILE: {directory}/WU-{N}-{slug}.md
 
 INSTRUCTIONS:
 1. Read the work unit file completely before starting any work
-2. Read the Context section to understand what you're building
-3. Check the Dependencies section - required units must be DONE
-4. **COMPLETE ALL MANDATORY CONTEXT EXPLORATION (below) before writing code**
-5. Execute each task in the Tasks section, in order
-6. Create/modify all files listed in the Files section
-7. Follow all patterns referenced in the work unit
-8. Write tests as specified (use PHPUnit, not Pest)
-9. Update the "Decisions Made" section with any choices you made
+2. **READ {directory}/SHARED_CONTEXT.md** - follow patterns established by previous work units
+3. Read the Context section to understand what you're building
+4. Check the Dependencies section - required units must be DONE
+5. **COMPLETE ALL MANDATORY CONTEXT EXPLORATION (below) before writing code**
+6. Execute each task in the Tasks section, in order
+7. Create/modify all files listed in the Files section
+8. Follow all patterns referenced in the work unit
+9. Write tests as specified (use PHPUnit, not Pest)
+10. Update the "Decisions Made" section with any choices you made
+11. **UPDATE {directory}/SHARED_CONTEXT.md** with your additions (see below)
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  SHARED CONTEXT - CROSS-AGENT CONTINUITY (CRITICAL)                          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+You are NOT the first agent. Research and patterns have been pre-populated.
+
+**BEFORE writing any code**, read `{directory}/SHARED_CONTEXT.md` and:
+- Use the SAME cache key naming pattern
+- Use the SAME route naming pattern
+- Use EXISTING TypeScript types (don't recreate them)
+- Use EXISTING services (don't recreate them)
+- Use EXISTING UI components (they're documented - don't search for them)
+- Follow ANY naming conventions already established
+
+**AFTER completing your work**, update `{directory}/SHARED_CONTEXT.md` with:
+- Cache keys you created (table: Cache Keys)
+- TypeScript types you created (table: TypeScript Types & Interfaces)
+- PHP services/classes you created (table: PHP Services & Classes)
+- Routes you added (table: Routes Added)
+- Any naming conventions you established (table: Naming Conventions)
+- Implementation decisions you made (table: Implementation Decisions)
+
+Format: Add rows to the appropriate table with "WU-{N}" in the "Set By" column.
+
+Example addition to Cache Keys table:
+| `campaigns_active_list` | Active campaigns for dropdown | 5min | WU-02 |
+
+⚠️ CONSISTENCY IS MANDATORY. If WU-01 used `feature_entity_action` for cache keys,
+you MUST use the same pattern. Do NOT invent a different pattern.
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║  ZERO TOLERANCE FOR STUBS - COMPLETE IMPLEMENTATIONS ONLY                    ║
@@ -92,12 +124,35 @@ If functionality is out of scope for this work unit:
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║  MANDATORY CONTEXT EXPLORATION - DO THIS BEFORE WRITING ANY CODE             ║
+║  CONTEXT EXPLORATION - CHECK SHARED_CONTEXT FIRST                             ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
-You are starting with ZERO knowledge of this codebase. Before writing ANY code,
-you MUST explore and understand what already exists. NEVER recreate something
-that already exists - ALWAYS use existing components, types, services, and patterns.
+⚡ SKIP EXPLORATION IF SHARED_CONTEXT.md HAS THE RESEARCH
+
+If `{directory}/SHARED_CONTEXT.md` already documents:
+- Available UI Components (from create-plan) section is populated → SKIP Steps 1, 3, 4, 5
+- Existing TypeScript Types (from create-plan) section is populated → SKIP Step 2
+- Existing PHP Services (from create-plan) section is populated → SKIP Steps 6, 7, 8
+
+ONLY do targeted exploration for things SPECIFIC to your work unit that aren't
+documented in SHARED_CONTEXT. Don't re-glob the entire codebase.
+
+If SHARED_CONTEXT sections are empty, then do the full exploration below.
+
+───────────────────────────────────────────────────────────────────────────────
+WHEN TO EXPLORE vs WHEN TO SKIP
+───────────────────────────────────────────────────────────────────────────────
+
+| SHARED_CONTEXT Has | Action |
+|--------------------|--------|
+| UI Components table populated | Trust it. Don't glob resources/js/Components/ |
+| TypeScript Types table populated | Trust it. Don't glob resources/js/types/ |
+| PHP Services table populated | Trust it. Don't glob app/Services/ |
+| Routes (existing) table populated | Trust it. Don't read route files for discovery |
+| Section empty or minimal | Do targeted exploration for that section only |
+
+⚠️ NEVER recreate something that already exists - check SHARED_CONTEXT first,
+then explore only if needed. ALWAYS use existing components, types, services.
 
 ───────────────────────────────────────────────────────────────────────────────
 STEP 1: FRONTEND COMPONENTS (if work unit has frontend tasks)
@@ -365,7 +420,8 @@ WHEN COMPLETE, report:
 2. List of files modified
 3. Tasks completed (reference by number)
 4. Any decisions made (also update the work unit file)
-5. Any issues or concerns encountered
+5. SHARED_CONTEXT.md updates made (what you added)
+6. Any issues or concerns encountered
 ```
 
 ---
@@ -389,7 +445,7 @@ WORK UNIT FILE: ADVERTISING/WU-01-database-models.md
 
 ## Context the Agent Receives
 
-The Task agent with `fullstack-developer` type has access to:
+The Task agent (regardless of specialist type) has access to:
 - All tools (Read, Edit, Write, Bash, Glob, Grep, etc.)
 - MCP tools (database-schema, tinker, search-docs, etc.)
 - Full codebase access
@@ -404,18 +460,22 @@ This is intentional - each work unit is self-contained.
 
 ## Agent Type Selection
 
-Use `subagent_type: fullstack-developer` because:
-- Work units span frontend and backend
-- Need access to all tools
-- Complex implementation tasks
-- Multi-file changes
+Use the agent type specified in the work unit's `**Agent**:` field:
 
-Alternative considerations:
-- `php-developer` - if work unit is backend-only
-- `typescript-developer` - if work unit is frontend-only
-- `test-engineer` - if work unit is test-focused
+| Agent | When Used | Auto-Loaded Skills |
+|-------|-----------|-------------------|
+| `metrc-specialist` | Metrc API work | metrc-api (258 endpoints), verify-alignment |
+| `quickbooks-specialist` | QuickBooks integration | quickbooks (OAuth, invoices), verify-alignment |
+| `leaflink-specialist` | LeafLink marketplace | leaflink (117 endpoints), verify-alignment |
+| `tanstack-specialist` | TanStack Query/Table/Virtual | 6 tanstack-* skills, verify-alignment |
+| `react-specialist` | React components, modals, forms | verify-alignment |
+| `php-developer` | Backend controllers, services, migrations | (none - reads patterns) |
+| `typescript-developer` | Pure TypeScript/Node work | (none - reads patterns) |
+| `fullstack-developer` | Mixed frontend + backend | (none - fallback) |
 
-Default to `fullstack-developer` for safety.
+The specialist agent will have domain knowledge pre-loaded via skills, reducing context gathering overhead.
+
+**Fallback:** If the work unit has no `**Agent**:` field, default to `fullstack-developer`.
 
 ---
 

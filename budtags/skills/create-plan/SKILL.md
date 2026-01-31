@@ -1,7 +1,7 @@
 ---
 name: create-plan
 description: Thorough, question-driven feature planning. Asks questions you haven't thought of. Fills gaps with questions, not assumptions. Produces comprehensive plan documents ready for decomposition.
-version: 1.0.1
+version: 1.1.0
 category: workflow
 auto_activate:
   keywords:
@@ -693,6 +693,23 @@ Feature: AdvertisingSellerController
 | Area | Requirements |
 |------|-------------|
 | ... | ... |
+
+## Integration Domains
+
+Identifies which specialist agents should handle different parts of the implementation.
+
+| Domain | Agent Required | Reason |
+|--------|----------------|--------|
+| Metrc sync | metrc-specialist | Has metrc-api skill (258 endpoints) |
+| QuickBooks invoices | quickbooks-specialist | Has OAuth and invoice patterns |
+| LeafLink orders | leaflink-specialist | Has marketplace API patterns |
+| TanStack tables/queries | tanstack-specialist | Has all 6 tanstack-* skills |
+| React components | react-specialist | Has verify-alignment skill |
+| Backend CRUD | php-developer | Backend focused, reads patterns |
+| Database/migrations | php-developer | Backend focused |
+| Mixed frontend+backend | fullstack-developer | Fallback for spanning work |
+
+{Fill in only domains relevant to this feature}
 
 ## Database Schema
 {Tables, columns, relationships, indexes}

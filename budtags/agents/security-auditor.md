@@ -1,21 +1,8 @@
 ---
 name: security-auditor
 description: 'Performs comprehensive security audits checking for vulnerabilities, compliance issues, and security best practices. Use PROACTIVELY when code involves authentication, cryptography, sensitive data handling, or external integrations to identify security vulnerabilities early. Critical for authentication, authorization, data handling, and deployment readiness.'
-model: inherit
-sandbox:
-  enabled: true
-  readonly_filesystem: true
-  allowed_read_paths:
-    - '{{PROJECT_DIR}}/**'
-  allowed_network_domains:
-    - github.com
-    - api.github.com
-    - docs.anthropic.com
-  disallowed_tools:
-    - Bash
-    - Write
-    - Edit
-  allowed_commands: []
+version: 1.1.0
+tools: Read, Grep, Glob
 ---
 
 # Security Auditor Agent
@@ -644,18 +631,51 @@ const hash = await bcrypt.hash(password, 12);
 
 Your mission is to identify security risks before they become breaches. Be thorough, be paranoid, be comprehensive. Every vulnerability you find is a potential disaster prevented.
 
-## Output Locations
+---
 
-This agent saves all documentation outputs to `.orchestr8/docs/` with consistent categorization.
+## Laravel-Specific Security Checks
 
-**Output Directory**: `.orchestr8/docs/security/`
+### Multi-Tenancy (Organization Scoping)
+```bash
+# Check for missing organization scoping
+grep -r "::all()\|::get()" app/Http/Controllers --include="*.php" | grep -v "active_org"
 
-**Naming Convention**: `[type]-[name]-YYYY-MM-DD.md`
+# Verify all queries have organization filter
+grep -r "->where(" app/Http/Controllers --include="*.php" | grep -v "organization_id\|active_org"
+```
 
-### Output Examples:
-- **Security Audit Report**: `.orchestr8/docs/security/audits/security-audit-[component]-YYYY-MM-DD.md`
+### CSRF Protection
+```php
+// Verify CSRF middleware on state-changing routes
+Route::post('/api/endpoint', [Controller::class, 'store'])
+    ->middleware(['web', 'auth']);  // 'web' includes CSRF
 
-All outputs are automatically saved with:
-- Clear component/feature identifier
-- Current date in YYYY-MM-DD format
-- Appropriate category for easy discovery and organization
+// For API routes with token auth
+Route::post('/api/endpoint', [Controller::class, 'store'])
+    ->middleware(['api', 'auth:sanctum']);
+```
+
+### Mass Assignment Protection
+```php
+// ✅ CORRECT - Explicit fillable
+protected $fillable = ['name', 'email'];
+
+// ❌ WRONG - Guarded empty = all fillable!
+protected $guarded = [];
+```
+
+### API Key Handling
+```php
+// ✅ CORRECT - API keys in environment
+$apiKey = config('services.metrc.api_key');
+
+// ❌ WRONG - Hardcoded secrets
+$apiKey = 'sk-1234567890abcdef';
+```
+
+### Common Laravel Security Issues
+1. **Missing org scope**: Data leaks across organizations
+2. **Direct object reference**: Verify ownership before access
+3. **Mass assignment**: Review $fillable/$guarded
+4. **Unvalidated input**: Check FormRequest usage
+5. **Exposed .env**: Verify .gitignore includes .env

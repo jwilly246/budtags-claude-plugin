@@ -1,7 +1,7 @@
 ---
 name: decompose-plan
 description: Decomposes a plan file into context-window-sized work units with dependency tracking. FILE CREATION ONLY - does NOT implement or execute any code.
-version: 3.0.1
+version: 3.2.0
 category: workflow
 auto_activate:
   keywords:
@@ -45,6 +45,7 @@ Takes a plan file and creates a **subdirectory** with context-window-sized work 
 ```
 {FEATURE}/
 ├── MANIFEST.md                      (Index, dependencies, progress)
+├── SHARED_CONTEXT.md                (Pre-populated research from create-plan)
 ├── WU-01-{description}.md           (~150-250 lines)
 ├── WU-02-{description}.md           (~150-250 lines)
 ├── WU-03-{description}.md           (~150-250 lines)
@@ -77,6 +78,37 @@ Read the entire plan file to understand:
 - Frontend work (pages, components)
 - Integration work (external APIs, Metrc, QuickBooks)
 - What needs testing
+- **Phase 0 research** (component inventory, type inventory, service inventory, patterns)
+
+### Step 1.5: Extract Research into SHARED_CONTEXT.md
+
+If the plan contains **Phase 0 Research** (component inventory, type inventory, service inventory, naming patterns), create `{FEATURE}/SHARED_CONTEXT.md` and pre-populate it.
+
+Use the template from `prompts/shared-context-template.md` and fill in:
+
+| Plan Section | SHARED_CONTEXT Section |
+|--------------|------------------------|
+| Component inventory | Available UI Components (from create-plan) |
+| Type inventory | Existing TypeScript Types (from create-plan) |
+| Service inventory | Existing PHP Services (from create-plan) |
+| Naming patterns | Naming Conventions |
+| Existing routes | Routes (existing) |
+
+**Example pre-population:**
+
+```markdown
+## Available UI Components (from create-plan)
+
+| Component | Location | Key Props |
+|-----------|----------|-----------|
+| Button | resources/js/Components/Button.tsx | primary, secondary, disabled, loading |
+| TextInput | resources/js/Components/Inputs.tsx | value, onChange, errors |
+| DataTable | resources/js/Components/DataTable.tsx | columns, data, pagination |
+```
+
+**Why this matters:** Work unit executors will READ this file instead of re-discovering these components. This eliminates 30-50 redundant exploration tool calls per agent.
+
+If the plan has NO Phase 0 research, create SHARED_CONTEXT.md with empty tables (using the template) so agents can populate it as they work.
 
 ### Step 2: Identify Work Domains
 
@@ -105,6 +137,30 @@ Each work unit should be **5-10 actionable tasks** completable in one context wi
 | Integration | 1 integration endpoint/flow + tests |
 
 **Include tests WITH each work unit, not as separate units.**
+
+### Step 3.5: Assign Agent Type to Each Work Unit
+
+Based on work unit content, assign the best specialist agent. The agent type determines which skills are auto-loaded when the work unit is executed.
+
+| Work Content | Agent Type | Auto-Loaded Skills |
+|--------------|------------|-------------------|
+| Metrc API calls, sync logic | `metrc-specialist` | metrc-api, verify-alignment |
+| QuickBooks integration | `quickbooks-specialist` | quickbooks, verify-alignment |
+| LeafLink marketplace | `leaflink-specialist` | leaflink, verify-alignment |
+| TanStack Query/Table/Virtual | `tanstack-specialist` | 6 tanstack-* skills, verify-alignment |
+| React components, modals, forms | `react-specialist` | verify-alignment |
+| Backend controllers, services | `php-developer` | (none - reads patterns) |
+| Database migrations, models | `php-developer` | (none - reads patterns) |
+| Mixed frontend + backend | `fullstack-developer` | (none - fallback) |
+
+**Selection Priority:**
+1. If work involves a specific integration (Metrc, QuickBooks, LeafLink), use that specialist
+2. If work is TanStack-heavy (Query, Table, Virtual), use `tanstack-specialist`
+3. If work is frontend-only (React/Inertia), use `react-specialist`
+4. If work is backend-only (Laravel), use `php-developer`
+5. If work spans frontend and backend, use `fullstack-developer`
+
+Add `**Agent**:` and `**Skills**:` fields to each work unit's frontmatter.
 
 ### Step 4: Determine Dependencies
 
@@ -135,8 +191,9 @@ For each work unit, include ONLY:
 
 Create all files in `{FEATURE}/` subdirectory:
 
-1. **MANIFEST.md** - Using `MANIFEST_TEMPLATE.md`
-2. **WU-{N}-{description}.md** - Using `WORK_UNIT_TEMPLATE.md` for each unit
+1. **SHARED_CONTEXT.md** - Using `prompts/shared-context-template.md`, pre-populated with research from Step 1.5
+2. **MANIFEST.md** - Using `MANIFEST_TEMPLATE.md`
+3. **WU-{N}-{description}.md** - Using `WORK_UNIT_TEMPLATE.md` for each unit
 
 ### Step 7: Output File List and STOP
 
@@ -144,6 +201,7 @@ Create all files in `{FEATURE}/` subdirectory:
 ## Files Created
 
 📁 ADVERTISING/
+  ├── ✅ SHARED_CONTEXT.md (pre-populated with research)
   ├── ✅ MANIFEST.md
   ├── ✅ WU-01-database-models.md
   ├── ✅ WU-02-admin-controller.md
@@ -152,7 +210,7 @@ Create all files in `{FEATURE}/` subdirectory:
   ├── ✅ WU-05-seller-ui.md
   └── ✅ WU-06-analytics-integration.md
 
-Decomposition complete. 6 work units created.
+Decomposition complete. 6 work units + SHARED_CONTEXT created.
 ```
 
 **THEN STOP. DO NOT OFFER TO IMPLEMENT. DO NOT ASK ABOUT NEXT STEPS.**
@@ -215,6 +273,7 @@ Pattern files are in `.claude/skills/decompose-plan/patterns/`:
 
 - `MANIFEST_TEMPLATE.md` - Template for manifest file
 - `WORK_UNIT_TEMPLATE.md` - Template for work units
+- `prompts/shared-context-template.md` - Template for SHARED_CONTEXT.md (from run-plan skill)
 - `patterns/*.md` - Lightweight pattern references
 
 ---

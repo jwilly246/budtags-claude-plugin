@@ -7,6 +7,8 @@ Use this template when creating individual work unit files.
 # {FEATURE} - Work Unit {N}: {Description}
 
 **Status**: PENDING
+**Agent**: {agent_type}
+**Skills**: {List skills agent will have auto-loaded}
 **Estimated Tasks**: {5-10}
 **Patterns**: {Link to relevant pattern files}
 
@@ -23,13 +25,17 @@ Use this template when creating individual work unit files.
 ### Constraints
 {Any constraints to follow - org scoping, naming conventions, etc.}
 
-### Required Context Exploration
+### Required Context
 Before writing code, the executor MUST:
-- Search and READ existing components in `resources/js/Components/`
-- Search and READ existing types in `resources/js/types/`
-- Search and READ existing hooks in `resources/js/Hooks/`
-- READ sibling files in the same directory as files being created
-- NEVER recreate buttons, inputs, toggles, tables, badges, or any existing component
+1. **READ `{FEATURE}/SHARED_CONTEXT.md`** for pre-discovered:
+   - Available UI components (don't search, they're documented)
+   - Existing TypeScript types (don't search, they're documented)
+   - Existing PHP services (don't search, they're documented)
+   - Naming conventions already established by previous work units
+2. **Only explore further** if building something NOT documented in SHARED_CONTEXT
+3. **UPDATE SHARED_CONTEXT.md** with any new discoveries (components, types, services, patterns)
+4. READ sibling files in the same directory as files being created
+5. NEVER recreate buttons, inputs, toggles, tables, badges, or any existing component
 
 ---
 

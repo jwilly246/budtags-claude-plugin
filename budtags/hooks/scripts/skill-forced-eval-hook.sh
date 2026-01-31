@@ -1,32 +1,46 @@
 #!/bin/bash
-# skill-forced-eval-hook.sh
-# Forced evaluation hook for Claude Code skill activation
-# Based on Scott Spence's research showing 84% activation vs 20% with simple hooks
-# Reference: https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably
+# skill-forced-eval-hook.sh v2
+# Agent-first routing hook - routes tasks to specialist agents with auto-loaded skills
+# Replaces skill-eval v1 which had reliability issues with Skill() tool activation
 
 # Plain text output is injected directly into Claude's context
 cat << 'EOF'
-MANDATORY SKILL EVALUATION PROTOCOL
+MANDATORY DOMAIN EVALUATION PROTOCOL
 
-Before proceeding with ANY implementation, you MUST complete this evaluation:
+Before proceeding with implementation, evaluate which specialist agent to use:
 
-## Step 1 - EVALUATE each skill below:
+## Step 1 - IDENTIFY the primary domain:
 
-1. **metrc-api** - Metrc cannabis tracking API, plants, packages, harvests, transfers, sales receipts, lab tests, plant batches, package tags
-2. **verify-alignment** - BudTags coding standards, organization scoping, LogService, flash messages, React Query patterns, code review
-3. **tanstack-query** - React Query, useQuery, useMutation, queryClient, query invalidation, optimistic updates, server state, stale time, prefetch
-4. **tanstack-table** - Data tables, useReactTable, sorting, filtering, pagination, row selection, column visibility, column pinning
-5. **tanstack-virtual** - Virtual scrolling, useVirtualizer, large lists, performance optimization, virtualized rendering, overscan
-6. **leaflink** - LeafLink wholesale marketplace, orders, products, inventory sync, customers, companies, seller/buyer workflows
+| Domain | Indicators | Specialist Agent | Auto-Loaded Skills |
+|--------|------------|------------------|-------------------|
+| Metrc API | plants, packages, harvests, transfers, sales, lab tests, license types | `budtags:metrc-specialist` | metrc-api, verify-alignment |
+| QuickBooks | invoices, customers, payments, OAuth, SyncToken | `budtags:quickbooks-specialist` | quickbooks, verify-alignment |
+| LeafLink | orders, products, inventory sync, wholesale | `budtags:leaflink-specialist` | leaflink, verify-alignment |
+| TanStack | useQuery, useMutation, useReactTable, useVirtualizer | `budtags:tanstack-specialist` | tanstack-*, verify-alignment |
+| React/Inertia | modals, forms, toasts, TypeScript components | `budtags:react-specialist` | verify-alignment |
+| Backend Laravel | controllers, services, migrations (no integration) | `budtags:php-developer` | (reads patterns) |
+| Mixed/Unclear | spans frontend + backend, multiple domains | `budtags:fullstack-developer` | (generic fallback) |
 
-For EACH skill, state: "SKILL_NAME: YES/NO - [brief reason]"
+## Step 2 - ROUTE to specialist:
 
-## Step 2 - ACTIVATE matched skills:
-For each YES above, use Skill(budtags:skill-name) tool NOW before implementing.
-(If installed via symlink, use Skill(skill-name) without the budtags: prefix)
+If task matches a domain above, use Task tool with that specialist:
 
-## Step 3 - IMPLEMENT:
-Only after activation, proceed with the user's task.
+```
+Task(subagent_type: "budtags:metrc-specialist", prompt: "...")
+```
 
-CRITICAL: The evaluation is WORTHLESS unless you ACTIVATE the skills with the Skill() tool.
+The specialist agent will have domain skills AUTO-LOADED via its `skills:` frontmatter.
+
+## Step 3 - ALWAYS use an agent:
+
+Even for simple tasks, spawn the appropriate specialist agent. This ensures:
+- Skills are ALWAYS loaded (no forgetting)
+- Consistent workflow for all tasks
+- Agents can handle simple tasks quickly
+
+For quick fixes without a clear domain:
+- Backend fix → `budtags:php-developer`
+- Frontend fix → `budtags:react-specialist`
+
+CRITICAL: Specialist agents have skills built-in. Using the right agent = automatic skill loading. NEVER skip the agent step.
 EOF

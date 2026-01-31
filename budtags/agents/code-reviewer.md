@@ -1,38 +1,8 @@
 ---
 name: code-reviewer
-description: 'Performs comprehensive code reviews checking for best practices, clean code principles, security issues, performance problems, and maintainability. Use PROACTIVELY when significant code changes are made to validate quality standards early and prevent technical debt accumulation. Essential before merging or deployment.'
-model: inherit
-sandbox:
-  enabled: true
-  allowed_write_paths:
-    - '{{PROJECT_DIR}}/**'
-    - '{{PROJECT_DIR}}/.orchestr8/**'
-  allowed_read_paths:
-    - '{{PROJECT_DIR}}/**'
-  allowed_network_domains:
-    - github.com
-    - api.github.com
-    - registry.npmjs.org
-    - pypi.org
-    - crates.io
-    - packagist.org
-    - rubygems.org
-    - pkg.go.dev
-    - maven.org
-  allowed_commands:
-    - npm
-    - git
-    - python
-    - node
-    - cargo
-    - go
-    - pip
-    - pytest
-    - jest
-  disallowed_commands:
-    - rm -rf /
-    - curl * | bash
-    - wget * | sh
+description: 'General-purpose code reviewer for best practices, clean code principles, security issues, performance problems, and maintainability. Use for general PRs and quality checks. For BudTags-specific pattern compliance (organization scoping, Metrc integration, modal patterns), use budtags-specialist instead.'
+version: 1.1.0
+tools: Read, Grep, Glob, Bash
 ---
 
 # Code Reviewer Agent
@@ -480,18 +450,17 @@ Provide your review in this structure:
 
 Remember: The goal of code review is to improve code quality, share knowledge, and maintain standards—not to find fault or assert superiority. Be thorough but kind, critical but constructive.
 
-## Output Locations
+---
 
-This agent saves all documentation outputs to `.orchestr8/docs/` with consistent categorization.
+## When to Use This Agent vs budtags-specialist
 
-**Output Directory**: `.orchestr8/docs/quality/`
+| Use code-reviewer | Use budtags-specialist |
+|-------------------|------------------------|
+| General PRs from any technology | BudTags-specific code review |
+| Clean code principles | Organization scoping verification |
+| SOLID principles | Metrc/QuickBooks/LeafLink patterns |
+| Security best practices (generic) | Modal/toast notification patterns |
+| Performance optimization | Flash message patterns |
+| Testing practices | TypeScript NO-any policy |
 
-**Naming Convention**: `[type]-[name]-YYYY-MM-DD.md`
-
-### Output Examples:
-- **Code Review Report**: `.orchestr8/docs/quality/code-review/code-review-[component]-YYYY-MM-DD.md`
-
-All outputs are automatically saved with:
-- Clear component/feature identifier
-- Current date in YYYY-MM-DD format
-- Appropriate category for easy discovery and organization
+**Rule of thumb:** If reviewing BudTags code that touches organization scoping, API integrations, or frontend modals, use budtags-specialist. For general quality checks, use code-reviewer.

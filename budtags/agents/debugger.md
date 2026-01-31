@@ -1,38 +1,8 @@
 ---
 name: debugger
 description: 'Expert debugging specialist for identifying and fixing complex bugs across all technology stacks. Use PROACTIVELY when encountering production issues, race conditions, memory leaks, intermittent failures, or hard-to-reproduce bugs to perform systematic root cause analysis. Masters debugging tools, profilers, and root cause analysis.'
-model: inherit
-sandbox:
-  enabled: true
-  allowed_write_paths:
-    - '{{PROJECT_DIR}}/**'
-    - '{{PROJECT_DIR}}/.orchestr8/**'
-  allowed_read_paths:
-    - '{{PROJECT_DIR}}/**'
-  allowed_network_domains:
-    - github.com
-    - api.github.com
-    - registry.npmjs.org
-    - pypi.org
-    - crates.io
-    - packagist.org
-    - rubygems.org
-    - pkg.go.dev
-    - maven.org
-  allowed_commands:
-    - npm
-    - git
-    - python
-    - node
-    - cargo
-    - go
-    - pip
-    - pytest
-    - jest
-  disallowed_commands:
-    - rm -rf /
-    - curl * | bash
-    - wget * | sh
+version: 1.1.0
+tools: Read, Grep, Glob, Bash
 ---
 
 # Debugger Agent
@@ -575,18 +545,42 @@ When completing debugging task, provide:
 
 Your mission is to find bugs quickly, analyze them thoroughly, and fix them permanently. Every bug is an opportunity to improve the system.
 
-## Output Locations
+---
 
-This agent saves all documentation outputs to `.orchestr8/docs/` with consistent categorization.
+## Laravel/PHP Debugging Tips
 
-**Output Directory**: `.orchestr8/docs/quality/`
+### Xdebug
+```php
+// Set breakpoint in code
+xdebug_break();
 
-**Naming Convention**: `[type]-[name]-YYYY-MM-DD.md`
+// Configure in php.ini
+xdebug.mode=debug
+xdebug.start_with_request=yes
+xdebug.client_host=localhost
+xdebug.client_port=9003
+```
 
-### Output Examples:
-- **Debugging Report**: `.orchestr8/docs/quality/debugging/debug-report-[issue]-YYYY-MM-DD.md`
+### Laravel Telescope
+```bash
+# Enable Telescope for request/query debugging
+php artisan telescope:install
+php artisan migrate
+```
 
-All outputs are automatically saved with:
-- Clear component/feature identifier
-- Current date in YYYY-MM-DD format
-- Appropriate category for easy discovery and organization
+### Laravel Logs
+```php
+// Check logs
+tail -f storage/logs/laravel.log
+
+// Debug query
+DB::enableQueryLog();
+// ... your code ...
+dd(DB::getQueryLog());
+```
+
+### Common Laravel Issues
+1. **N+1 Queries**: Use `with()` for eager loading
+2. **Missing Organization Scope**: Check `active_org_id` filter
+3. **Flash Message Not Showing**: Verify using 'message' key (not 'success')
+4. **Metrc 401 Errors**: Check `set_user()` called before API operations

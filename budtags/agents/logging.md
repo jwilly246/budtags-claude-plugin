@@ -1,6 +1,7 @@
 ---
 name: logging
 description: Use only during context compaction or task completion. Consolidates and organizes work logs into the task's Work Log section.
+version: 1.0.0
 tools: Read, Edit, MultiEdit, LS, Glob
 ---
 

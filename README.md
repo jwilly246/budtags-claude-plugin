@@ -1,8 +1,22 @@
 # BudTags Claude Plugin
 
-**Version 1.1.0**
+**Version 1.3.0**
 
 A comprehensive Claude Code plugin for BudTags development - includes cannabis compliance integrations (Metrc, LeafLink), accounting (QuickBooks), modern frontend tooling, planning workflows, and specialized agents.
+
+## CLAUDE.md - Passive Context Index
+
+This plugin includes a compressed `CLAUDE.md` file that provides **passive context** to Claude Code. Unlike skills that require explicit invocation, CLAUDE.md is automatically loaded at session start and always available.
+
+**Why?** [Vercel's research](https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals) found that passive context (AGENTS.md) achieved 100% task completion vs 53% with on-demand skills - because agents often don't invoke skills even when available.
+
+**What it contains:**
+- Compressed index pointing to all skill documentation (~3.6KB)
+- Critical pattern reminders (org scoping, MetrcApi, flash messages)
+- License type restrictions for Metrc API
+- Directive: "Prefer retrieval-led reasoning over pre-training-led reasoning"
+
+The model reads this index and retrieves relevant skill files directly, without needing skill invocation decisions.
 
 ## Installation
 
@@ -62,9 +76,9 @@ Domain-specific knowledge that Claude can reference during development.
 ### Planning & Workflow
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **Create Plan** | 1.0.1 | Research-driven feature planning with codebase discovery |
-| **Decompose Plan** | 3.0.1 | Break plans into context-window-sized work units |
-| **Run Plan** | 1.0.1 | Autonomously execute decomposed work units |
+| **Create Plan** | 1.1.0 | Research-driven feature planning with codebase discovery |
+| **Decompose Plan** | 3.2.0 | Break plans into context-window-sized work units |
+| **Run Plan** | 1.3.0 | Autonomously execute decomposed work units |
 
 ### Label Printing
 | Skill | Version | Description |
@@ -84,48 +98,48 @@ Domain-specific knowledge that Claude can reference during development.
 Specialized subagents for the Task tool that handle specific domains.
 
 ### Core Development
-| Agent | Description |
-|-------|-------------|
-| **PHP Developer** | Laravel, PHPUnit, Composer, and modern PHP 8+ |
-| **TypeScript Developer** | TypeScript/Node.js backend and React frontend |
-| **Fullstack Developer** | End-to-end feature implementation (Laravel + React) |
-| **React Specialist** | React 19 + Inertia + TypeScript frontend expertise |
+| Agent | Version | Description |
+|-------|---------|-------------|
+| **PHP Developer** | 1.1.0 | Laravel 11+, PHPUnit, modern PHP 8+, auto-loads verify-alignment |
+| **TypeScript Developer** | 2.0.0 | React + Inertia + TypeScript frontend, auto-loads verify-alignment |
+| **Fullstack Developer** | 2.0.0 | Laravel + Inertia + React end-to-end, auto-loads verify-alignment |
+| **React Specialist** | 1.0.0 | React 19 + Inertia + TypeScript frontend expertise |
 
 ### Industry Specialists
-| Agent | Description |
-|-------|-------------|
-| **Metrc Specialist** | Metrc cannabis tracking API expertise |
-| **LeafLink Specialist** | LeafLink marketplace API integration expertise |
-| **QuickBooks Specialist** | QuickBooks Online OAuth and API integration |
+| Agent | Version | Description |
+|-------|---------|-------------|
+| **Metrc Specialist** | 1.0.0 | Metrc cannabis tracking API expertise |
+| **LeafLink Specialist** | 1.0.0 | LeafLink marketplace API integration expertise |
+| **QuickBooks Specialist** | 1.0.0 | QuickBooks Online OAuth and API integration |
 
 ### Infrastructure & Data
-| Agent | Description |
-|-------|-------------|
-| **MySQL Specialist** | MySQL performance tuning and query optimization |
-| **Redis Specialist** | Redis caching, pub/sub, and performance optimization |
-| **Terraform Specialist** | Infrastructure as code and multi-cloud provisioning |
+| Agent | Version | Description |
+|-------|---------|-------------|
+| **MySQL Specialist** | 1.0.0 | MySQL performance tuning and query optimization |
+| **Redis Specialist** | 1.0.0 | Redis caching, pub/sub, and performance optimization |
+| **Terraform Specialist** | 1.0.0 | Infrastructure as code and multi-cloud provisioning |
 
 ### Frontend Libraries
-| Agent | Description |
-|-------|-------------|
-| **TanStack Specialist** | TanStack Query, Table, Virtual, Form, Router expertise |
+| Agent | Version | Description |
+|-------|---------|-------------|
+| **TanStack Specialist** | 1.0.0 | TanStack Query, Table, Virtual, Form, Router expertise |
 
 ### Quality & Review
-| Agent | Description |
-|-------|-------------|
-| **BudTags Specialist** | Code review for BudTags patterns and security |
-| **Code Reviewer** | General code review for best practices and clean code |
-| **Security Auditor** | Security vulnerability audits and compliance checks |
-| **Debugger** | Systematic debugging and root cause analysis |
-| **Mutation Testing** | Mutation testing to measure and improve test quality |
+| Agent | Version | Description |
+|-------|---------|-------------|
+| **BudTags Specialist** | 1.1.0 | BudTags patterns + test review (verify-alignment + budtags-testing) |
+| **Code Reviewer** | 1.1.0 | General PRs and quality checks (use budtags-specialist for BudTags code) |
+| **Security Auditor** | 1.1.0 | Security vulnerability audits with Laravel-specific checks |
+| **Debugger** | 1.1.0 | Systematic debugging with Laravel/PHP patterns |
+| **Mutation Testing** | 1.0.0 | Mutation testing to measure and improve test quality |
 
 ### Context & Planning
-| Agent | Description |
-|-------|-------------|
-| **Context Gathering** | Gather comprehensive context for new tasks |
-| **Context Refinement** | Update task context with session discoveries |
-| **Knowledge Researcher** | Search and synthesize organizational knowledge |
-| **Logging** | Consolidate and organize work logs for tasks |
+| Agent | Version | Description |
+|-------|---------|-------------|
+| **Context Gathering** | 1.0.0 | Gather comprehensive context for new tasks |
+| **Context Refinement** | 1.0.0 | Update task context with session discoveries |
+| **Knowledge Researcher** | 1.0.0 | Search and synthesize organizational knowledge |
+| **Logging** | 1.0.0 | Consolidate and organize work logs for tasks |
 
 ---
 
@@ -229,6 +243,17 @@ Then enable in `~/.claude/settings.json`:
   }
 }
 ```
+
+### Updating CLAUDE.md
+
+When adding new skills, update `CLAUDE.md` to include them in the compressed index:
+
+```
+|new-skill:{README.md,SKILL.md}
+|new-skill/patterns:{pattern1.md,pattern2.md}
+```
+
+Keep the file under 8KB for optimal performance.
 
 ### Optional Dependency
 

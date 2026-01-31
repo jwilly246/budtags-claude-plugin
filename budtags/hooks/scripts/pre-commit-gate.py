@@ -3,7 +3,7 @@
 PreToolUse Hook: Block Git Commit Without Validation
 
 Blocks `git commit` commands unless /pre-commit has been run recently.
-Checks for .claude/.pre-commit-passed state file with a 10-minute validity window.
+Checks for .claude/.pre-commit-passed state file with a 2-minute validity window.
 """
 
 import json
@@ -14,7 +14,7 @@ import time
 
 
 # How long the pre-commit pass is valid (in seconds)
-VALIDITY_WINDOW = 600  # 10 minutes
+VALIDITY_WINDOW = 120  # 2 minutes
 
 STATE_FILE = ".claude/.pre-commit-passed"
 

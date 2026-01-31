@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked.
-version: 1.0.1
+version: 1.3.0
 category: workflow
 auto_activate:
   keywords:
@@ -45,7 +45,8 @@ Orchestrator (this skill - lightweight, runs in main context)
             │
             FOR each READY work unit:
             ├─→ Update MANIFEST: status → IN PROGRESS
-            ├─→ Spawn Task agent (fullstack-developer)
+            ├─→ Parse work unit for Agent type
+            ├─→ Spawn Task agent (specialist per Agent field)
             │      └─→ Fresh context, reads WU file, executes tasks
             ├─→ Run verification commands (from WU file)
             ├─→ Gate Check:
@@ -61,6 +62,91 @@ Orchestrator (this skill - lightweight, runs in main context)
 ```
 /run-plan <directory>              # Run all READY units
 /run-plan <directory> WU-03        # Run specific unit only
+```
+
+---
+
+## Shared Context (Cross-Agent Continuity)
+
+Each Task agent starts with a fresh context and no knowledge of previous work units. To maintain consistency across agents (naming conventions, cache keys, types, etc.), use a **SHARED_CONTEXT.md** file.
+
+### Purpose
+
+Prevents issues like:
+- Different cache key naming patterns across work units
+- Duplicate TypeScript types with different names
+- Inconsistent route naming conventions
+- Variable naming drift between agents
+
+### File Location
+
+```
+{directory}/SHARED_CONTEXT.md
+```
+
+### When to Create
+
+**Before executing the first work unit**, check if `SHARED_CONTEXT.md` exists. If not, create it from the template in `prompts/shared-context-template.md`.
+
+### Agent Responsibilities
+
+Each Task agent MUST:
+
+1. **READ** `SHARED_CONTEXT.md` before starting any implementation
+2. **FOLLOW** patterns and conventions already established
+3. **UPDATE** the file after completing their work unit with:
+   - New naming conventions used
+   - Cache keys created
+   - TypeScript types/interfaces created
+   - Services/classes created
+   - Routes added
+   - Any implementation decisions made
+
+### Orchestrator Responsibilities
+
+The orchestrator (this skill) should:
+
+1. Create `SHARED_CONTEXT.md` from template if it doesn't exist (Phase 0)
+2. Include instructions in agent prompt to read/update it
+3. Stage `SHARED_CONTEXT.md` in commits alongside work unit files
+
+### File Structure
+
+```markdown
+# Shared Context
+
+Cross-agent continuity log. READ before starting. UPDATE after completing.
+
+## Naming Conventions
+| Domain | Pattern | Example | Set By |
+|--------|---------|---------|--------|
+| Cache keys | `{feature}_{entity}_{action}` | `ads_campaign_list` | WU-01 |
+| Routes | `{feature}-{action}` | `ads-create` | WU-01 |
+
+## Cache Keys
+| Key | Purpose | Set By |
+|-----|---------|--------|
+| `ads_campaign_list` | Campaign listing cache | WU-01 |
+
+## TypeScript Types
+| Type | Location | Set By |
+|------|----------|--------|
+| `Campaign` | resources/js/types/ads.d.ts | WU-01 |
+
+## PHP Services/Classes
+| Class | Location | Set By |
+|-------|----------|--------|
+| `AdService` | app/Services/AdService.php | WU-01 |
+
+## Routes Added
+| Name | Method | URI | Set By |
+|------|--------|-----|--------|
+| `ads-index` | GET | `/ads` | WU-02 |
+
+## Implementation Decisions
+| Decision | Rationale | Set By |
+|----------|-----------|--------|
+| Used string column for status | Flexibility for future states | WU-01 |
 ```
 
 ---
@@ -146,10 +232,33 @@ PENDING → IN PROGRESS
 
 Use Edit tool to update the MANIFEST.md file.
 
-### 2.2 Spawn Task Agent
+### 2.2 Determine Agent Type
+
+Parse the work unit file for the `**Agent**:` field in the frontmatter:
+
+```markdown
+**Agent**: php-developer
+```
+
+**Agent Selection Table:**
+
+| Agent Field Value | subagent_type | Auto-Loaded Skills |
+|-------------------|---------------|-------------------|
+| `metrc-specialist` | `budtags:metrc-specialist` | metrc-api, verify-alignment |
+| `quickbooks-specialist` | `budtags:quickbooks-specialist` | quickbooks, verify-alignment |
+| `leaflink-specialist` | `budtags:leaflink-specialist` | leaflink, verify-alignment |
+| `tanstack-specialist` | `budtags:tanstack-specialist` | 6 tanstack-* skills, verify-alignment |
+| `react-specialist` | `budtags:react-specialist` | verify-alignment |
+| `php-developer` | `budtags:php-developer` | (none) |
+| `typescript-developer` | `budtags:typescript-developer` | (none) |
+| `fullstack-developer` | `budtags:fullstack-developer` | (none) |
+
+**Fallback:** If no Agent field is present, default to `budtags:fullstack-developer`.
+
+### 2.3 Spawn Task Agent
 
 Use the Task tool with:
-- **subagent_type**: `fullstack-developer`
+- **subagent_type**: From step 2.2 (based on work unit's Agent field)
 - **prompt**: Built from `prompts/execute-unit.md` template
 
 The agent will:
@@ -161,7 +270,7 @@ The agent will:
 6. NOT run verification (orchestrator handles this)
 7. NOT commit (orchestrator handles this)
 
-### 2.3 Run Stub Detection (MANDATORY)
+### 2.4 Run Stub Detection (MANDATORY)
 
 **Before running any other verification**, scan ALL files created/modified for stubs:
 
@@ -201,7 +310,7 @@ grep -rn --include="*.php" --include="*.tsx" --include="*.ts" -iE "(placeholder|
 | `return null;` (in non-nullable context) | PHP | Deferred implementation |
 | `any` type | TS | Type escape hatch |
 
-### 2.4 Run Form Pattern Check (if frontend files exist)
+### 2.5 Run Form Pattern Check (if frontend files exist)
 
 **For any .tsx files created/modified**, check for wrong patterns:
 
@@ -237,7 +346,7 @@ grep -rn --include="*.tsx" -E "Modal.*formData=|Modal.*setFormData=" {tsx_files}
 | `<Button type="submit">` | `<Button primary>` |
 | `<Modal formData={data}>` | Modal contains its own useForm |
 
-### 2.5 Run Verification Commands
+### 2.6 Run Verification Commands
 
 After stub detection AND pattern check pass, parse the work unit's Verification section:
 
@@ -256,7 +365,7 @@ For each command:
 2. Capture exit code
 3. Record result (PASS/FAIL)
 
-### 2.6 Gate Check
+### 2.7 Gate Check
 
 **If stub detection, pattern check, AND all verification commands pass:**
 1. Stage files from WU "Files" section:

@@ -1,6 +1,7 @@
 ---
 name: context-gathering
 description: Use when creating a new task OR when starting/switching to a task that lacks a context manifest. ALWAYS provide the task file path so the agent can read it and update it directly with the context manifest. Skip if task file already contains "Context Manifest" section.
+version: 1.0.0
 tools: Read, Glob, Grep, LS, Bash, Edit, MultiEdit
 ---
 

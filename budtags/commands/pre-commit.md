@@ -438,7 +438,7 @@ Ready to commit.
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Passed" > .claude/.pre-commit-passed
 ```
 
-This enables the pre-commit-gate hook to allow `git commit` commands. The state file is valid for 10 minutes.
+This enables the pre-commit-gate hook to allow `git commit` commands. The state file is valid for 2 minutes.
 
 **Note:** If there are CRITICAL or HIGH issues that need fixing, do NOT create the state file until they are resolved and the check passes.
 

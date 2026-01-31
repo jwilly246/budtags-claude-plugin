@@ -39,7 +39,19 @@ Execute work units from a decomposed plan autonomously.
 | Commits | **LOCAL ONLY** - never pushes to remote |
 | On failure | Stops immediately, preserves state |
 | Context | Fresh agent context per work unit |
+| Continuity | SHARED_CONTEXT.md maintains naming/patterns across agents |
 | Verification | Gate check with PHPStan/tests/Pint |
+
+## Shared Context (v1.1.0)
+
+Each agent starts fresh, but `SHARED_CONTEXT.md` maintains continuity:
+- Cache key naming patterns
+- TypeScript types created
+- PHP services created
+- Route naming conventions
+- Implementation decisions
+
+Agents READ this file before starting and UPDATE it after completing.
 
 ## Instructions
 
@@ -119,3 +131,4 @@ Commits are local. When ready: git push -u origin advertising-feature
 
 - `.claude/skills/run-plan/skill.md` - Full orchestration logic
 - `.claude/skills/run-plan/prompts/execute-unit.md` - Task agent prompt
+- `.claude/skills/run-plan/prompts/shared-context-template.md` - SHARED_CONTEXT template
