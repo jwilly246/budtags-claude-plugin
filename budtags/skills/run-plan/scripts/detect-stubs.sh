@@ -94,10 +94,11 @@ check_file() {
             file_stubs+="$matches"$'\n'
         fi
 
-        # 'any' type (often used as stub escape)
-        matches=$(grep -n -E ":\s*any\b" "$file" 2>/dev/null || true)
+        # 'any' type - but exclude common valid uses like catch(e: any) or event handlers
+        # Only flag standalone `: any` that looks like a lazy type escape
+        matches=$(grep -n -E ":\s*any\s*[;,\)]" "$file" 2>/dev/null | grep -v -E "(catch|error|err|event|e|evt).*:\s*any" || true)
         if [[ -n "$matches" ]]; then
-            file_stubs+="$matches"$'\n'
+            file_stubs+="[any type] $matches"$'\n'
         fi
 
         # Placeholder comments (in code comments only, not HTML/JSX attributes)

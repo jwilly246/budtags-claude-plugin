@@ -1,48 +1,42 @@
 # Shared Context
 
-Cross-agent continuity log for work unit execution. **READ before starting. UPDATE after completing.**
+Cross-agent continuity log for work unit execution.
 
-**Pre-populated by decompose-plan from create-plan's Phase 0 research.** Agents should trust this research and skip redundant exploration.
+**READ before starting. UPDATE after completing. TRUST this completely - do not re-explore the codebase.**
+
+Pre-populated by decompose-plan from create-plan's research.
 
 ---
 
 ## Available UI Components (from create-plan)
 
-Pre-discovered components from the codebase. **USE THESE - don't search for them again.**
-
 | Component | Location | Key Props | Notes |
 |-----------|----------|-----------|-------|
-<!-- Pre-populated by decompose-plan if plan has component inventory -->
+<!-- Pre-populated by decompose-plan -->
 
 ---
 
 ## Existing TypeScript Types (from create-plan)
 
-Pre-discovered types from the codebase. **USE THESE - don't search for them again.**
-
 | Type/Interface | Location | Description |
 |----------------|----------|-------------|
-<!-- Pre-populated by decompose-plan if plan has type inventory -->
+<!-- Pre-populated by decompose-plan -->
 
 ---
 
 ## Existing PHP Services (from create-plan)
 
-Pre-discovered services from the codebase. **USE THESE - don't search for them again.**
-
 | Service | Location | Purpose |
 |---------|----------|---------|
-<!-- Pre-populated by decompose-plan if plan has service inventory -->
+<!-- Pre-populated by decompose-plan -->
 
 ---
 
-## Routes (existing)
+## Existing Routes (from create-plan)
 
-Pre-discovered routes relevant to this feature.
-
-| Name | Method | URI | Notes |
-|------|--------|-----|-------|
-<!-- Pre-populated by decompose-plan if plan has route inventory -->
+| Method | URI | Controller@Method | Notes |
+|--------|-----|-------------------|-------|
+<!-- Pre-populated by decompose-plan -->
 
 ---
 
@@ -51,20 +45,20 @@ Pre-discovered routes relevant to this feature.
 | Domain | Pattern | Example | Set By |
 |--------|---------|---------|--------|
 | Cache keys | | | |
-| Route names | | | |
+| URL paths | | | |
 | TypeScript types | | | |
 | PHP services | | | |
 
 ---
 
-## Cache Keys
+## Cache Keys (created)
 
 | Key | Purpose | TTL | Set By |
 |-----|---------|-----|--------|
 
 ---
 
-## TypeScript Types & Interfaces (created)
+## TypeScript Types (created)
 
 | Type/Interface | Location | Description | Set By |
 |----------------|----------|-------------|--------|
@@ -87,8 +81,8 @@ Pre-discovered routes relevant to this feature.
 
 ## Routes Added
 
-| Name | Method | URI | Controller@Method | Set By |
-|------|--------|-----|-------------------|--------|
+| Method | URI | Controller@Method | Set By |
+|--------|-----|-------------------|--------|
 
 ---
 
@@ -96,13 +90,6 @@ Pre-discovered routes relevant to this feature.
 
 | Table | Column | Type | Notes | Set By |
 |-------|--------|------|-------|--------|
-
----
-
-## Constants & Config Keys
-
-| Constant/Key | Value | Location | Set By |
-|--------------|-------|----------|--------|
 
 ---
 

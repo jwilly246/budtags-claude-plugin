@@ -90,7 +90,7 @@ if [[ $VIOLATIONS_FOUND -eq 1 ]]; then
     echo -e "${RED}║  PATTERN VIOLATIONS DETECTED                                      ║${NC}"
     echo -e "${RED}╚══════════════════════════════════════════════════════════════════╝${NC}"
     echo -e "$VIOLATION_REPORT"
-    echo -e "Reference: .claude/skills/decompose-plan/patterns/frontend-patterns.md"
+    echo -e "Reference: budtags/skills/verify-alignment/patterns/frontend-critical.md"
     exit 1
 else
     echo -e "${GREEN}✓ No pattern violations detected${NC}"

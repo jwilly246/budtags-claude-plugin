@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked.
-version: 1.3.0
+version: 1.4.0
 category: workflow
 auto_activate:
   keywords:
@@ -18,17 +18,17 @@ auto_activate:
 ## CRITICAL RULES
 
 ```
-╔══════════════════════════════════════════════════════════════════╗
-║  GIT SAFETY: LOCAL COMMITS ONLY - NEVER PUSH                     ║
-║                                                                   ║
-║  ✅ git checkout -b {branch}     (create local branch)           ║
-║  ✅ git add {files}              (stage specific files)          ║
-║  ✅ git commit -m "..."          (local commit)                  ║
-║                                                                   ║
-║  ❌ git push                     (NEVER - user pushes later)     ║
-║  ❌ git push -u origin           (NEVER)                         ║
-║  ❌ Any remote operations        (NEVER)                         ║
-╚══════════════════════════════════════════════════════════════════╝
++------------------------------------------------------------------+
+|  GIT SAFETY: LOCAL COMMITS ONLY - NEVER PUSH                     |
+|                                                                   |
+|  OK: git checkout -b {branch}     (create local branch)          |
+|  OK: git add {files}              (stage specific files)         |
+|  OK: git commit -m "..."          (local commit)                 |
+|                                                                   |
+|  NEVER: git push                  (user pushes later)            |
+|  NEVER: git push -u origin                                       |
+|  NEVER: Any remote operations                                    |
++------------------------------------------------------------------+
 ```
 
 ---
@@ -37,22 +37,26 @@ auto_activate:
 
 ```
 Orchestrator (this skill - lightweight, runs in main context)
-     │
-     ├─→ Phase 0: Branch Safety Check
-     │      └─→ Create/verify feature branch
-     │
-     └─→ Phase 1-3: Execution Loop
-            │
-            FOR each READY work unit:
-            ├─→ Update MANIFEST: status → IN PROGRESS
-            ├─→ Parse work unit for Agent type
-            ├─→ Spawn Task agent (specialist per Agent field)
-            │      └─→ Fresh context, reads WU file, executes tasks
-            ├─→ Run verification commands (from WU file)
-            ├─→ Gate Check:
-            │      ├─→ PASS: git commit → MANIFEST: DONE
-            │      └─→ FAIL: MANIFEST: BLOCKED → STOP
-            └─→ Next unit (or finish)
+     |
+     +-> Phase 0: Setup
+     |      +-> Verify/create feature branch
+     |      +-> Create SHARED_CONTEXT.md if missing
+     |
+     +-> Phase 1: Execution Loop
+     |      |
+     |      FOR each READY work unit:
+     |      +-> Update MANIFEST: status -> IN PROGRESS
+     |      +-> Parse work unit for Agent type
+     |      +-> Spawn Task agent (specialist per Agent field)
+     |      |      +-> Fresh context, reads WU file, executes tasks
+     |      +-> Run verification (scripts + WU commands)
+     |      +-> Gate Check:
+     |      |      +-> PASS: git commit -> MANIFEST: DONE
+     |      |      +-> FAIL: MANIFEST: BLOCKED -> STOP
+     |      +-> Next unit (or finish)
+     |
+     +-> Phase 2: Completion
+            +-> Report summary (success or blocked)
 ```
 
 ---
@@ -66,120 +70,60 @@ Orchestrator (this skill - lightweight, runs in main context)
 
 ---
 
-## Shared Context (Cross-Agent Continuity)
+## Status Model
 
-Each Task agent starts with a fresh context and no knowledge of previous work units. To maintain consistency across agents (naming conventions, cache keys, types, etc.), use a **SHARED_CONTEXT.md** file.
+**Stored statuses** (written to MANIFEST.md):
+- `PENDING` - Not yet started
+- `IN PROGRESS` - Currently being executed
+- `DONE` - Completed and committed
+- `BLOCKED` - Failed verification, needs fix
 
-### Purpose
-
-Prevents issues like:
-- Different cache key naming patterns across work units
-- Duplicate TypeScript types with different names
-- Inconsistent route naming conventions
-- Variable naming drift between agents
-
-### File Location
-
-```
-{directory}/SHARED_CONTEXT.md
-```
-
-### When to Create
-
-**Before executing the first work unit**, check if `SHARED_CONTEXT.md` exists. If not, create it from the template in `prompts/shared-context-template.md`.
-
-### Agent Responsibilities
-
-Each Task agent MUST:
-
-1. **READ** `SHARED_CONTEXT.md` before starting any implementation
-2. **FOLLOW** patterns and conventions already established
-3. **UPDATE** the file after completing their work unit with:
-   - New naming conventions used
-   - Cache keys created
-   - TypeScript types/interfaces created
-   - Services/classes created
-   - Routes added
-   - Any implementation decisions made
-
-### Orchestrator Responsibilities
-
-The orchestrator (this skill) should:
-
-1. Create `SHARED_CONTEXT.md` from template if it doesn't exist (Phase 0)
-2. Include instructions in agent prompt to read/update it
-3. Stage `SHARED_CONTEXT.md` in commits alongside work unit files
-
-### File Structure
-
-```markdown
-# Shared Context
-
-Cross-agent continuity log. READ before starting. UPDATE after completing.
-
-## Naming Conventions
-| Domain | Pattern | Example | Set By |
-|--------|---------|---------|--------|
-| Cache keys | `{feature}_{entity}_{action}` | `ads_campaign_list` | WU-01 |
-| Routes | `{feature}-{action}` | `ads-create` | WU-01 |
-
-## Cache Keys
-| Key | Purpose | Set By |
-|-----|---------|--------|
-| `ads_campaign_list` | Campaign listing cache | WU-01 |
-
-## TypeScript Types
-| Type | Location | Set By |
-|------|----------|--------|
-| `Campaign` | resources/js/types/ads.d.ts | WU-01 |
-
-## PHP Services/Classes
-| Class | Location | Set By |
-|-------|----------|--------|
-| `AdService` | app/Services/AdService.php | WU-01 |
-
-## Routes Added
-| Name | Method | URI | Set By |
-|------|--------|-----|--------|
-| `ads-index` | GET | `/ads` | WU-02 |
-
-## Implementation Decisions
-| Decision | Rationale | Set By |
-|----------|-----------|--------|
-| Used string column for status | Flexibility for future states | WU-01 |
-```
+**Computed state** (not stored):
+- A unit is **READY** when: status is PENDING AND all dependencies are DONE
 
 ---
 
-## Phase 0: Branch Safety
+## Shared Context
 
-Before any work, ensure we're on a feature branch:
+Each Task agent starts fresh. Use `{directory}/SHARED_CONTEXT.md` for cross-agent continuity.
+
+**Setup:** If missing, create from `prompts/shared-context-template.md` in Phase 0.
+
+**Agent responsibilities:**
+1. READ before starting
+2. FOLLOW established patterns
+3. UPDATE after completing (cache keys, types, routes, decisions)
+
+**Orchestrator responsibilities:**
+1. Create from template if missing
+2. Stage in commits alongside work unit files
+
+---
+
+## Phase 0: Setup
+
+### 0.1 Branch Safety
 
 ```bash
-# Check current branch
 git branch --show-current
 ```
 
-**If on main or master:**
-1. Extract feature name from directory (e.g., `ADVERTISING` → `advertising-feature`)
-2. Create and switch to feature branch:
-   ```bash
-   git checkout -b {feature-name}
-   ```
-3. Confirm branch before proceeding
+If on main/master:
+1. Create feature branch: `git checkout -b {feature-name}`
+2. Confirm before proceeding
 
-**If already on feature branch:**
-- Continue (just verify we're not on main/master)
+### 0.2 Initialize SHARED_CONTEXT
+
+If `{directory}/SHARED_CONTEXT.md` doesn't exist, create from template.
 
 ---
 
-## Phase 1: Parse Manifest
+## Phase 1: Execution Loop
 
-Read `{directory}/MANIFEST.md` and extract:
+### 1.1 Parse Manifest
 
-### 1.1 Parse Work Unit Table
+Read `{directory}/MANIFEST.md`. Find the work unit table:
 
-Find the table that looks like:
 ```markdown
 | ID | Unit | Description | Status | Depends On |
 |----|------|-------------|--------|------------|
@@ -187,251 +131,110 @@ Find the table that looks like:
 | WU-02 | admin-controller | Admin CRUD endpoints | PENDING | WU-01 |
 ```
 
-Extract for each row:
-- **id**: WU-01, WU-02, etc.
-- **slug**: database-models, admin-controller, etc.
-- **status**: PENDING, READY, IN PROGRESS, DONE, BLOCKED
-- **depends_on**: List of WU IDs or "-" for none
+Determine READY units: status is PENDING AND all dependencies are DONE.
 
-### 1.2 Build Dependency Graph
-
-For each unit, determine if it's READY:
-- Status is PENDING
-- All dependencies have status DONE
-
-### 1.3 Determine Execution Order
-
-If specific unit requested (e.g., `WU-03`):
-- Verify its dependencies are DONE
-- Only execute that unit
-
-If no specific unit:
-- Find all READY units
-- Execute in ID order (WU-01 before WU-02)
-
-### 1.4 Handle Edge Cases
+**Edge cases:**
 
 | Scenario | Action |
 |----------|--------|
 | No READY units, not all DONE | Report blocked state, list blockers |
-| All units DONE | Report completion, final summary |
-| Requested unit not READY | Report which dependencies are missing |
+| All units DONE | Report completion |
+| Requested unit not READY | Report missing dependencies |
 
----
+### 1.2 Update Status
 
-## Phase 2: Execution Loop
+Change status in MANIFEST: `PENDING -> IN PROGRESS`
 
-For each READY work unit:
+### 1.3 Determine Agent Type
 
-### 2.1 Update Manifest Status
+Parse work unit file for `**Agent**:` field:
 
-Read the MANIFEST file, find the work unit row, change status:
-```
-PENDING → IN PROGRESS
-```
+| Agent Field Value | subagent_type |
+|-------------------|---------------|
+| `metrc-specialist` | `budtags:metrc-specialist` |
+| `quickbooks-specialist` | `budtags:quickbooks-specialist` |
+| `leaflink-specialist` | `budtags:leaflink-specialist` |
+| `tanstack-specialist` | `budtags:tanstack-specialist` |
+| `react-specialist` | `budtags:react-specialist` |
+| `php-developer` | `budtags:php-developer` |
+| `typescript-developer` | `budtags:typescript-developer` |
+| `fullstack-developer` | `budtags:fullstack-developer` (default) |
 
-Use Edit tool to update the MANIFEST.md file.
+### 1.4 Spawn Task Agent
 
-### 2.2 Determine Agent Type
+Use Task tool with prompt from `prompts/execute-unit.md`.
 
-Parse the work unit file for the `**Agent**:` field in the frontmatter:
+### 1.5 Run Verification
 
-```markdown
-**Agent**: php-developer
-```
+**Step 1: Stub Detection (MANDATORY)**
 
-**Agent Selection Table:**
-
-| Agent Field Value | subagent_type | Auto-Loaded Skills |
-|-------------------|---------------|-------------------|
-| `metrc-specialist` | `budtags:metrc-specialist` | metrc-api, verify-alignment |
-| `quickbooks-specialist` | `budtags:quickbooks-specialist` | quickbooks, verify-alignment |
-| `leaflink-specialist` | `budtags:leaflink-specialist` | leaflink, verify-alignment |
-| `tanstack-specialist` | `budtags:tanstack-specialist` | 6 tanstack-* skills, verify-alignment |
-| `react-specialist` | `budtags:react-specialist` | verify-alignment |
-| `php-developer` | `budtags:php-developer` | (none) |
-| `typescript-developer` | `budtags:typescript-developer` | (none) |
-| `fullstack-developer` | `budtags:fullstack-developer` | (none) |
-
-**Fallback:** If no Agent field is present, default to `budtags:fullstack-developer`.
-
-### 2.3 Spawn Task Agent
-
-Use the Task tool with:
-- **subagent_type**: From step 2.2 (based on work unit's Agent field)
-- **prompt**: Built from `prompts/execute-unit.md` template
-
-The agent will:
-1. Read the work unit file completely
-2. Execute each task in the Tasks section
-3. Create/modify files listed in the Files section
-4. Follow BudTags patterns (org scoping, snake_case, etc.)
-5. Update "Decisions Made" section if any choices were made
-6. NOT run verification (orchestrator handles this)
-7. NOT commit (orchestrator handles this)
-
-### 2.4 Run Stub Detection (MANDATORY)
-
-**Before running any other verification**, scan ALL files created/modified for stubs:
+Run the stub detection script on all files created/modified:
 
 ```bash
-# Scan for PHP stubs
-grep -rn --include="*.php" -E "(// ?TODO|// ?FIXME|// ?IMPLEMENT|throw new \\\\(Runtime)?Exception\('Not implemented|// \.\.\.|\{ ?\}$)" {files}
-
-# Scan for TypeScript stubs
-grep -rn --include="*.tsx" --include="*.ts" -E "(// ?TODO|// ?FIXME|throw new Error\('Not implemented|// \.\.\.|\{ ?\};?$|\(\) => \{ ?\})" {files}
-
-# Scan for empty method bodies (PHP)
-grep -Pzo "function \w+\([^)]*\)(?::\s*\w+)?\s*\{\s*\}" {php_files}
-
-# Scan for placeholder comments
-grep -rn --include="*.php" --include="*.tsx" --include="*.ts" -iE "(placeholder|stub|temporary|implement later|add logic|needs implementation)" {files}
+./budtags/skills/run-plan/scripts/detect-stubs.sh {file1} {file2} ...
 ```
 
-**If ANY stub patterns are found:**
-1. **FAIL IMMEDIATELY** - do not proceed to other verification
-2. Update MANIFEST: status → BLOCKED
-3. Report:
-   - File and line number of each stub
-   - The stub pattern found
-   - Clear message: "STUBS DETECTED - work unit incomplete"
+Exit code 1 = stubs found = FAIL IMMEDIATELY.
 
-**Stub Detection Patterns:**
-
-| Pattern | Type | Example |
-|---------|------|---------|
-| `// TODO` | Comment | `// TODO: implement validation` |
-| `// FIXME` | Comment | `// FIXME: handle edge case` |
-| `throw new Exception('Not implemented')` | PHP | Placeholder exception |
-| `throw new Error('Not implemented')` | TS | Placeholder exception |
-| `{ }` | Both | Empty method/function body |
-| `() => { }` | TS | Empty arrow function |
-| `// ...` | Both | Ellipsis placeholder |
-| `return null;` (in non-nullable context) | PHP | Deferred implementation |
-| `any` type | TS | Type escape hatch |
-
-### 2.5 Run Form Pattern Check (if frontend files exist)
-
-**For any .tsx files created/modified**, check for wrong patterns:
+**Step 2: Pattern Check (for .tsx files)**
 
 ```bash
-# Check for react-hook-form (should use Inertia useForm)
-grep -rn --include="*.tsx" "from 'react-hook-form'" {tsx_files}
-
-# Check for axios/fetch mutations in form files (should use useForm)
-grep -rn --include="*.tsx" -E "axios\.(post|put|delete)\(" {tsx_files}
-
-# Check for type attribute on Button (BudTags Button doesn't use this)
-grep -rn --include="*.tsx" '<Button.*type=' {tsx_files}
-
-# Check for form state passed to modal (modal should own its form)
-grep -rn --include="*.tsx" -E "Modal.*formData=|Modal.*setFormData=" {tsx_files}
+./budtags/skills/run-plan/scripts/detect-wrong-patterns.sh {tsx_files}
 ```
 
-**If ANY form pattern violations found:**
-1. **FAIL IMMEDIATELY** - do not proceed
-2. Update MANIFEST: status → BLOCKED
-3. Report:
-   - The wrong pattern detected
-   - Reference: `.claude/skills/decompose-plan/patterns/frontend-patterns.md`
-   - Clear instruction: "Use Inertia useForm, not useState/axios/react-hook-form"
+Exit code 1 = violations found = FAIL IMMEDIATELY.
 
-**Correct Form Patterns:**
+**Step 3: Work Unit Verification Commands**
 
-| Wrong | Correct |
-|-------|---------|
-| `useState` for form fields | `useForm` from `@inertiajs/react` |
-| `axios.post('/url', data)` | `post(route('route-name'))` from useForm |
-| `react-hook-form` | Inertia `useForm` |
-| `<Button type="submit">` | `<Button primary>` |
-| `<Modal formData={data}>` | Modal contains its own useForm |
+Parse the work unit's `## Verification` section and run each command.
 
-### 2.6 Run Verification Commands
+### 1.6 Gate Check
 
-After stub detection AND pattern check pass, parse the work unit's Verification section:
-
-```markdown
-## Verification
-
-```bash
-./vendor/bin/phpstan analyse app/Models/Ad.php --memory-limit=512M
-php artisan test --filter=AdTest
-./vendor/bin/pint app/Models/Ad.php
-```
-```
-
-For each command:
-1. Execute via Bash tool
-2. Capture exit code
-3. Record result (PASS/FAIL)
-
-### 2.7 Gate Check
-
-**If stub detection, pattern check, AND all verification commands pass:**
-1. Stage files from WU "Files" section:
-   ```bash
-   git add path/to/file1.php path/to/file2.tsx
+**If all verification passes:**
+1. Stage files: `git add {files from WU "Files" section}`
+2. Commit:
    ```
-2. Commit with structured message:
-   ```bash
-   git commit -m "WU-{N}: {Work unit title}
+   WU-{N}: {Work unit title}
 
-   {Brief 2-3 line summary of what was done}"
+   {Brief 2-3 line summary}
    ```
-3. Update MANIFEST: status → DONE
-4. Add entry to Progress Log section with date
+3. Update MANIFEST: status -> DONE
+4. Update MANIFEST Progress Log section
 5. Continue to next READY unit
 
-**If stub detection fails:**
-1. Update MANIFEST: status → BLOCKED
-2. Add stub locations to Progress Log
-3. **STOP execution immediately**
-4. Report:
-   - "STUBS DETECTED" as the failure type
-   - Each stub location (file:line)
-   - The stub content found
-   - Clear instruction: "All stubs must be replaced with complete implementations"
-
-**If ANY verification command fails:**
-1. Update MANIFEST: status → BLOCKED
-2. Add failure details to Progress Log
-3. **STOP execution immediately**
-4. Report:
-   - Which command failed
-   - Error output
-   - Which work unit was blocked
-   - What remains to be done
+**If verification fails:**
+1. Update MANIFEST: status -> BLOCKED
+2. Update MANIFEST Progress Log with failure details
+3. STOP immediately
+4. Report failure details
 
 ---
 
-## Phase 3: Completion
+## Phase 2: Completion
 
-After execution loop ends (success or blocked), report:
+### Success Report
 
-### Success Report (all units done)
-```markdown
+```
 ## Run Complete: {DIRECTORY}
 
-🎉 All work units completed successfully!
+All work units completed successfully.
 
 ### Commits Created (local)
 - abc1234: WU-01: database-models
 - def5678: WU-02: admin-controller
-- ghi9012: WU-03: admin-ui
-- jkl3456: WU-04: seller-controller
-- mno7890: WU-05: seller-ui
 
 ### Final Verification
 All tests passing, PHPStan clean, Pint formatted.
 
-📌 Commits are local. When ready: git push -u origin {branch}
+Commits are local. When ready: git push -u origin {branch}
 ```
 
 ### Blocked Report
-```markdown
+
+```
 ## Run Stopped: {DIRECTORY}
 
-🛑 BLOCKED at WU-{N}: {description}
+BLOCKED at WU-{N}: {description}
 
 ### Failure Details
 Command: ./vendor/bin/phpstan analyse app/Models/Ad.php
@@ -440,60 +243,57 @@ Output:
 {error output}
 
 ### Progress
-- ✅ WU-01: database-models (abc1234)
-- ❌ WU-02: admin-controller (BLOCKED)
-- ⏸️ WU-03: admin-ui (PENDING)
-- ⏸️ WU-04: seller-controller (PENDING)
+- [DONE] WU-01: database-models (abc1234)
+- [BLOCKED] WU-02: admin-controller
+- [PENDING] WU-03: admin-ui
 
 ### To Resume
 1. Fix the issues reported above
 2. Run: /run-plan {DIRECTORY} WU-{N}
 
-📌 Existing commits are local. Do not push until issues resolved.
+Commits are local. Do not push until issues resolved.
 ```
 
 ---
 
-## Commit Message Format
+## MANIFEST Structure
 
-```
-WU-{N}: {Work unit title}
+The MANIFEST.md should include a Progress Log section:
 
-{Brief summary of what was done - 2-3 lines max}
-```
-
-**Example:**
-```
-WU-01: Create Ad and AdPlacement models
-
-Added migrations for ads and ad_placements tables.
-Created models with organization scoping.
-Added factories and feature tests.
-```
-
-**NO** "Co-Authored-By: Claude" attribution.
-
----
-
-## MANIFEST Status Updates
-
-When updating MANIFEST.md, edit the status column:
-
-**Status Transitions:**
-```
-PENDING → READY (when dependencies complete - automatic)
-PENDING → IN PROGRESS (when starting execution)
-IN PROGRESS → DONE (when verification passes)
-IN PROGRESS → BLOCKED (when verification fails)
-```
-
-**Also update Progress Log section:**
 ```markdown
+## Progress Log
+
 ### WU-01: database-models
+- **Status**: DONE
 - **Completed**: 2026-01-27
-- **Decisions Made**: Used string column for status instead of enum
+- **Commit**: abc1234
 - **Notes**: All tests passing
+
+### WU-02: admin-controller
+- **Status**: BLOCKED
+- **Failed**: 2026-01-27
+- **Reason**: PHPStan error on line 45
 ```
+
+---
+
+## Rollback Guidance
+
+If execution fails partway through:
+
+1. **Committed work units stay committed** - they passed verification
+2. **BLOCKED unit needs manual fix** - user fixes, then resumes
+3. **To undo a committed unit** (if needed):
+   ```bash
+   git reset --soft HEAD~1  # Undo last commit, keep changes staged
+   git reset HEAD           # Unstage changes
+   ```
+4. **To restart from scratch**:
+   ```bash
+   git checkout main
+   git branch -D {feature-branch}
+   ```
+   Then update MANIFEST statuses back to PENDING.
 
 ---
 
@@ -506,22 +306,21 @@ IN PROGRESS → BLOCKED (when verification fails)
 | Git commit fails | Stop, report git error, don't update MANIFEST |
 | File not found | Report missing file, suggest resolution |
 | No READY units | Report blocked dependencies or completion |
-| Invalid work unit ID | Report error, list valid IDs |
 
 ---
 
 ## Files Section Parsing
 
-Work units have a Files section like:
+Work units have a Files section:
+
 ```markdown
 ## Files
 
 ### Create
 - `app/Models/Ad.php` - Ad model
-- `database/migrations/2026_01_27_000001_create_ads_table.php` - Migration
+- `database/migrations/2026_01_27_000001_create_ads_table.php`
 
 ### Modify
-- `routes/web.php` - Add ad routes
 - `app/Models/Organization.php` - Add ads relationship
 ```
 
@@ -532,75 +331,27 @@ Use this to:
 
 ---
 
-## Dependency Unblocking
-
-When WU-01 completes:
-1. Find all units that depend on WU-01
-2. Check if those units now have all dependencies DONE
-3. Those units become READY for next iteration
-
-Example:
-- WU-02 depends on WU-01
-- WU-03 depends on WU-01
-- When WU-01 → DONE: both WU-02 and WU-03 become READY
-- Execute WU-02 first (lower ID)
-
----
-
-## Task Agent Prompt
-
-See `prompts/execute-unit.md` for the full prompt template.
-
-Key points for agent:
-- Read work unit file completely before starting
-- Execute tasks in order
-- Create all files listed
-- Follow BudTags patterns strictly
-- Update "Decisions Made" section
-- Do NOT run verification
-- Do NOT commit
-
----
-
-## Resume After Failure
-
-When `/run-plan` is called after a previous BLOCKED state:
-
-1. Read MANIFEST
-2. Find BLOCKED unit(s)
-3. Those units are the starting point
-4. User should have fixed the issue
-5. Resume execution from that unit
-
-The BLOCKED status indicates "needs attention" - the orchestrator will attempt it again when resumed.
-
----
-
 ## Anti-Patterns
 
-❌ Pushing to remote (NEVER)
-❌ Running all verifications after all units (gate each unit)
-❌ Continuing after a failure
-❌ Skipping verification commands
-❌ Skipping stub detection
-❌ Using --force or --amend git flags
-❌ Committing unrelated files
-❌ Committing files with TODO/FIXME comments
-❌ Committing files with empty method bodies
-❌ Committing files with placeholder exceptions
-❌ Accepting "I'll finish this later" from agents
+- Pushing to remote (NEVER)
+- Running all verifications after all units (gate each unit)
+- Continuing after a failure
+- Skipping verification commands
+- Skipping stub detection
+- Using --force or --amend git flags
+- Committing unrelated files
+- Accepting incomplete implementations from agents
 
 ---
 
 ## Correct Behavior
 
-✅ Create feature branch if on main
-✅ Execute one unit at a time in fresh context
-✅ Run stub detection BEFORE other verification
-✅ Run all verification commands for each unit
-✅ Commit immediately after each success
-✅ Stop immediately on any failure (including stubs)
-✅ Update MANIFEST status throughout
-✅ Report clear summary at end
-✅ Remind user commits are local
-✅ Reject incomplete implementations immediately
+- Create feature branch if on main
+- Execute one unit at a time in fresh context
+- Run stub detection BEFORE other verification
+- Run all verification commands for each unit
+- Commit immediately after each success
+- Stop immediately on any failure
+- Update MANIFEST status throughout
+- Report clear summary at end
+- Remind user commits are local
