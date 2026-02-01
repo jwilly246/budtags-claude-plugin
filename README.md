@@ -40,7 +40,7 @@ Choose from:
 
 ---
 
-## Skills (19)
+## Skills (20)
 
 Domain-specific knowledge that Claude can reference during development.
 
@@ -48,6 +48,7 @@ Domain-specific knowledge that Claude can reference during development.
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **Metrc API** | 2.0.0 | Cannabis compliance tracking API integration |
+| **Metrc Tinker** | 1.0.0 | Query any Metrc endpoint via Laravel Tinker |
 | **LeafLink** | 1.0.0 | LeafLink wholesale marketplace API integration |
 
 ### Accounting & Business
@@ -143,7 +144,7 @@ Specialized subagents for the Task tool that handle specific domains.
 
 ---
 
-## Commands (21)
+## Commands (22)
 
 Slash commands available via `/budtags:<command>`.
 
@@ -173,6 +174,7 @@ Slash commands available via `/budtags:<command>`.
 |---------|-------------|
 | `metrc-api` | Metrc API reference and patterns |
 | `metrc-help` | Interactive Metrc API guidance |
+| `metrc-tinker` | Query Metrc endpoints via Laravel Tinker |
 | `leaflink` | LeafLink API reference |
 | `leaflink-help` | Interactive LeafLink API guidance |
 | `quickbooks-help` | QuickBooks Online API guidance |
