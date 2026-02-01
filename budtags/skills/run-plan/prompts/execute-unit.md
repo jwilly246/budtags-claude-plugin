@@ -97,7 +97,7 @@ Do NOT run verification or commit. The orchestrator handles that.
 
 ## Agent Type Selection
 
-Read `**Agent**:` field from work unit:
+Read `**Agent**:` field from work unit. **Always use `model: "sonnet"`** - execution requires full reasoning.
 
 | Agent Value | subagent_type |
 |-------------|---------------|
