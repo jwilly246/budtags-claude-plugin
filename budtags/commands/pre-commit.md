@@ -184,7 +184,9 @@ Report detected skills:
 
 ### Step 5: Spawn Domain Subagents (Parallel)
 
-Spawn all applicable subagents **in a single message** using Claude's native parallel tool calls:
+Spawn all applicable subagents **in a single message** using Claude's native parallel tool calls.
+
+**IMPORTANT:** Use `model: "sonnet"` for all subagents. Code review requires nuanced understanding - haiku is insufficient.
 
 #### For PHP Files → `budtags-specialist`
 
