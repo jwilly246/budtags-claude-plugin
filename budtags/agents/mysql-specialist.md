@@ -1,7 +1,8 @@
 ---
 name: mysql-specialist
+model: opus
 description: 'Expert MySQL database specialist for performance tuning, replication, InnoDB optimization, query optimization, and production database management. Use for MySQL-specific optimization, scaling, and troubleshooting.'
-version: 1.0.0
+version: 1.1.0
 tools: Read, Grep, Glob, Bash
 ---
 

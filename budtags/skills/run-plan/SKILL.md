@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked.
-version: 1.4.1
+version: 1.5.0
 category: workflow
 auto_activate:
   keywords:
@@ -164,7 +164,7 @@ Parse work unit file for `**Agent**:` field:
 
 Use Task tool with:
 - **prompt**: From `prompts/execute-unit.md`
-- **model**: `"sonnet"` - execution agents need full reasoning capability
+- **model**: `"opus"` - execution agents need deep reasoning capability
 
 ### 1.5 Run Verification
 

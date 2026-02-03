@@ -1,6 +1,6 @@
 # BudTags Claude Plugin
 
-**Version 1.5.0**
+**Version 1.6.0**
 
 A comprehensive Claude Code plugin for BudTags development - includes cannabis compliance integrations (Metrc, LeafLink), accounting (QuickBooks), modern frontend tooling, planning workflows, and specialized agents.
 
@@ -98,49 +98,51 @@ Domain-specific knowledge that Claude can reference during development.
 
 Specialized subagents for the Task tool that handle specific domains.
 
+**Model Assignments:** Agents now specify their preferred model (opus/sonnet) for optimal performance. Opus is used for complex reasoning tasks; Sonnet for lightweight housekeeping.
+
 ### Core Development
-| Agent | Version | Description |
-|-------|---------|-------------|
-| **PHP Developer** | 1.1.0 | Laravel 11+, PHPUnit, modern PHP 8+, auto-loads verify-alignment |
-| **TypeScript Developer** | 2.0.0 | React + Inertia + TypeScript frontend, auto-loads verify-alignment |
-| **Fullstack Developer** | 2.0.0 | Laravel + Inertia + React end-to-end, auto-loads verify-alignment |
-| **React Specialist** | 1.0.0 | React 19 + Inertia + TypeScript frontend expertise |
+| Agent | Version | Model | Description |
+|-------|---------|-------|-------------|
+| **PHP Developer** | 1.2.0 | opus | Laravel 11+, PHPUnit, modern PHP 8+, auto-loads verify-alignment |
+| **TypeScript Developer** | 2.1.0 | opus | React + Inertia + TypeScript frontend, auto-loads verify-alignment |
+| **Fullstack Developer** | 2.1.0 | opus | Laravel + Inertia + React end-to-end, auto-loads verify-alignment |
+| **React Specialist** | 1.1.0 | opus | React 19 + Inertia + TypeScript frontend expertise |
 
 ### Industry Specialists
-| Agent | Version | Description |
-|-------|---------|-------------|
-| **Metrc Specialist** | 1.0.0 | Metrc cannabis tracking API expertise |
-| **LeafLink Specialist** | 1.0.0 | LeafLink marketplace API integration expertise |
-| **QuickBooks Specialist** | 1.0.0 | QuickBooks Online OAuth and API integration |
+| Agent | Version | Model | Description |
+|-------|---------|-------|-------------|
+| **Metrc Specialist** | 1.1.0 | opus | Metrc cannabis tracking API expertise |
+| **LeafLink Specialist** | 1.1.0 | opus | LeafLink marketplace API integration expertise |
+| **QuickBooks Specialist** | 1.1.0 | opus | QuickBooks Online OAuth and API integration |
 
 ### Infrastructure & Data
-| Agent | Version | Description |
-|-------|---------|-------------|
-| **MySQL Specialist** | 1.0.0 | MySQL performance tuning and query optimization |
-| **Redis Specialist** | 1.0.0 | Redis caching, pub/sub, and performance optimization |
-| **Terraform Specialist** | 1.0.0 | Infrastructure as code and multi-cloud provisioning |
+| Agent | Version | Model | Description |
+|-------|---------|-------|-------------|
+| **MySQL Specialist** | 1.1.0 | opus | MySQL performance tuning and query optimization |
+| **Redis Specialist** | 1.1.0 | opus | Redis caching, pub/sub, and performance optimization |
+| **Terraform Specialist** | 1.1.0 | opus | Infrastructure as code and multi-cloud provisioning |
 
 ### Frontend Libraries
-| Agent | Version | Description |
-|-------|---------|-------------|
-| **TanStack Specialist** | 1.0.0 | TanStack Query, Table, Virtual, Form, Router expertise |
+| Agent | Version | Model | Description |
+|-------|---------|-------|-------------|
+| **TanStack Specialist** | 1.1.0 | opus | TanStack Query, Table, Virtual, Form, Router expertise |
 
 ### Quality & Review
-| Agent | Version | Description |
-|-------|---------|-------------|
-| **BudTags Specialist** | 1.1.0 | BudTags patterns + test review (verify-alignment + budtags-testing) |
-| **Code Reviewer** | 1.1.0 | General PRs and quality checks (use budtags-specialist for BudTags code) |
-| **Security Auditor** | 1.1.0 | Security vulnerability audits with Laravel-specific checks |
-| **Debugger** | 1.1.0 | Systematic debugging with Laravel/PHP patterns |
-| **Mutation Testing** | 1.0.0 | Mutation testing to measure and improve test quality |
+| Agent | Version | Model | Description |
+|-------|---------|-------|-------------|
+| **BudTags Specialist** | 1.2.0 | opus | BudTags patterns + test review (verify-alignment + budtags-testing) |
+| **Code Reviewer** | 1.2.0 | opus | General PRs and quality checks (use budtags-specialist for BudTags code) |
+| **Security Auditor** | 1.2.0 | opus | Security vulnerability audits with Laravel-specific checks |
+| **Debugger** | 1.2.0 | opus | Systematic debugging with Laravel/PHP patterns |
+| **Mutation Testing** | 1.1.0 | opus | Mutation testing to measure and improve test quality |
 
 ### Context & Planning
-| Agent | Version | Description |
-|-------|---------|-------------|
-| **Context Gathering** | 1.0.0 | Gather comprehensive context for new tasks |
-| **Context Refinement** | 1.0.0 | Update task context with session discoveries |
-| **Knowledge Researcher** | 1.0.0 | Search and synthesize organizational knowledge |
-| **Logging** | 1.0.0 | Consolidate and organize work logs for tasks |
+| Agent | Version | Model | Description |
+|-------|---------|-------|-------------|
+| **Context Gathering** | 1.1.0 | opus | Gather comprehensive context for new tasks |
+| **Context Refinement** | 1.1.0 | sonnet | Update task context with session discoveries |
+| **Knowledge Researcher** | 1.1.0 | opus | Search and synthesize organizational knowledge |
+| **Logging** | 1.1.0 | sonnet | Consolidate and organize work logs for tasks |
 
 ---
 

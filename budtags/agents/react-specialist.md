@@ -1,7 +1,8 @@
 ---
 name: react-specialist
+model: opus
 description: Use when implementing, debugging, or reviewing React/Inertia/TypeScript frontend code. ALWAYS provide context about component type (modal, form, data table, dashboard), specific patterns needed (React Query vs Inertia, modal behavior, toast notifications), or feature being built. Auto-loads verify-alignment skill for frontend pattern compliance.
-version: 1.0.0
+version: 1.1.0
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

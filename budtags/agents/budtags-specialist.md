@@ -1,7 +1,8 @@
 ---
 name: budtags-specialist
+model: opus
 description: BudTags code review specialist. Use when reviewing BudTags code for security vulnerabilities, bugs, performance issues, and adherence to BudTags project patterns (Laravel/React/Inertia, organization scoping, Metrc integration, etc.). When using this agent, provide files and line ranges where code was implemented along with the task file. Auto-loads verify-alignment and budtags-testing skills for pattern and test compliance.
-version: 1.1.0
+version: 1.2.0
 skills: verify-alignment, budtags-testing
 tools: Read, Grep, Glob, Bash
 ---

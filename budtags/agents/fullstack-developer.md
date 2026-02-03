@@ -1,7 +1,8 @@
 ---
 name: fullstack-developer
+model: opus
 description: 'Expert full-stack developer for Laravel + Inertia.js + React + TypeScript applications. Use when features require coordinated frontend and backend changes, complex integrations, or when you need a single agent to own an entire feature end-to-end. Auto-loads verify-alignment skill for BudTags pattern compliance.'
-version: 2.0.0
+version: 2.1.0
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

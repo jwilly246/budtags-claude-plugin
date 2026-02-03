@@ -138,120 +138,160 @@
     {
       "id": "budtags-specialist",
       "name": "BudTags Specialist",
+      "version": "1.2.0",
+      "model": "opus",
       "description": "Code review for BudTags patterns and security",
       "default": true
     },
     {
       "id": "code-reviewer",
       "name": "Code Reviewer",
+      "version": "1.2.0",
+      "model": "opus",
       "description": "General code review for best practices and clean code",
       "default": true
     },
     {
       "id": "context-gathering",
       "name": "Context Gathering",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "Gather comprehensive context for new tasks",
       "default": true
     },
     {
       "id": "context-refinement",
       "name": "Context Refinement",
+      "version": "1.1.0",
+      "model": "sonnet",
       "description": "Update task context with session discoveries",
       "default": true
     },
     {
       "id": "debugger",
       "name": "Debugger",
+      "version": "1.2.0",
+      "model": "opus",
       "description": "Systematic debugging and root cause analysis",
       "default": true
     },
     {
       "id": "fullstack-developer",
       "name": "Fullstack Developer",
+      "version": "2.1.0",
+      "model": "opus",
       "description": "End-to-end feature implementation (Laravel + React)",
       "default": true
     },
     {
       "id": "knowledge-researcher",
       "name": "Knowledge Researcher",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "Search and synthesize organizational knowledge",
       "default": true
     },
     {
       "id": "leaflink-specialist",
       "name": "LeafLink Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "LeafLink marketplace API integration expertise",
       "default": true
     },
     {
       "id": "logging",
       "name": "Logging",
+      "version": "1.1.0",
+      "model": "sonnet",
       "description": "Consolidate and organize work logs for tasks",
       "default": true
     },
     {
       "id": "metrc-specialist",
       "name": "Metrc Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "Metrc cannabis tracking API expertise",
       "default": true
     },
     {
       "id": "mutation-testing-specialist",
       "name": "Mutation Testing",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "Mutation testing to measure and improve test quality",
       "default": false
     },
     {
       "id": "mysql-specialist",
       "name": "MySQL Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "MySQL performance tuning and query optimization",
       "default": true
     },
     {
       "id": "php-developer",
       "name": "PHP Developer",
+      "version": "1.2.0",
+      "model": "opus",
       "description": "Laravel, PHPUnit, Composer, and modern PHP 8+",
       "default": true
     },
     {
       "id": "quickbooks-specialist",
       "name": "QuickBooks Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "QuickBooks Online OAuth and API integration",
       "default": true
     },
     {
       "id": "react-specialist",
       "name": "React Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "React 19 + Inertia + TypeScript frontend expertise",
       "default": true
     },
     {
       "id": "redis-specialist",
       "name": "Redis Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "Redis caching, pub/sub, and performance optimization",
       "default": false
     },
     {
       "id": "security-auditor",
       "name": "Security Auditor",
+      "version": "1.2.0",
+      "model": "opus",
       "description": "Security vulnerability audits and compliance checks",
       "default": true
     },
     {
       "id": "tanstack-specialist",
       "name": "TanStack Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "TanStack Query, Table, Virtual, Form, Router expertise",
       "default": true
     },
     {
       "id": "terraform-specialist",
       "name": "Terraform Specialist",
+      "version": "1.1.0",
+      "model": "opus",
       "description": "Infrastructure as code and multi-cloud provisioning",
       "default": false
     },
     {
       "id": "typescript-developer",
       "name": "TypeScript Developer",
+      "version": "2.1.0",
+      "model": "opus",
       "description": "TypeScript/Node.js backend and React frontend",
       "default": true
     }

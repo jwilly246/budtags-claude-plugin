@@ -1,7 +1,8 @@
 ---
 name: tanstack-specialist
+model: opus
 description: Use when implementing, debugging, or reviewing TanStack ecosystem code (Query, Table, Virtual, Form, Router, Start). ALWAYS provide context about task type (query setup, mutation, table, routing, form validation, deployment), data source (Metrc API, organization data), and features needed (infinite scroll, sorting, filtering, optimistic updates, dynamic arrays, nested forms, file-based routing, route protection). Auto-loads tanstack-query, tanstack-table, tanstack-virtual, tanstack-form, tanstack-start, and verify-alignment skills.
-version: 1.0.0
+version: 1.1.0
 skills: tanstack-query, tanstack-table, tanstack-virtual, tanstack-form, tanstack-start, verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

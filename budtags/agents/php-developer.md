@@ -1,7 +1,8 @@
 ---
 name: php-developer
+model: opus
 description: 'Expert PHP developer specializing in Laravel, Symfony, WordPress, PHPUnit, Composer, API development, and modern PHP 8+ features. Use for Laravel applications, WordPress plugins/themes, RESTful APIs, and enterprise PHP solutions. Auto-loads verify-alignment skill for BudTags pattern compliance.'
-version: 1.1.0
+version: 1.2.0
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

@@ -1,7 +1,8 @@
 ---
 name: quickbooks-specialist
+model: opus
 description: Use when implementing, debugging, or reviewing QuickBooks Online integration code. ALWAYS provide context about the task type (OAuth setup, invoice creation, customer sync, Metrc integration) and specific operations needed. Auto-loads quickbooks skill for API reference and verify-alignment skill for pattern compliance.
-version: 1.0.0
+version: 1.1.0
 skills: quickbooks, verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

@@ -1,7 +1,8 @@
 ---
 name: code-reviewer
+model: opus
 description: 'General-purpose code reviewer for best practices, clean code principles, security issues, performance problems, and maintainability. Use for general PRs and quality checks. For BudTags-specific pattern compliance (organization scoping, Metrc integration, modal patterns), use budtags-specialist instead.'
-version: 1.1.0
+version: 1.2.0
 tools: Read, Grep, Glob, Bash
 ---
 

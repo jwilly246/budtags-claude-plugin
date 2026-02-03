@@ -1,7 +1,8 @@
 ---
 name: knowledge-researcher
+model: opus
 description: 'Expert in searching, analyzing, and synthesizing organizational knowledge. Queries the knowledge base for patterns, anti-patterns, performance baselines, validated assumptions, technology comparisons, and refactoring opportunities to inform decision-making.'
-version: 1.0.0
+version: 1.1.0
 tools: Read, Grep, Glob, Bash
 ---
 

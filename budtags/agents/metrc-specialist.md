@@ -1,7 +1,8 @@
 ---
 name: metrc-specialist
+model: opus
 description: Use when implementing, debugging, or reviewing Metrc API integration code. ALWAYS provide context about license type (cultivation/processing/retail), specific endpoints needed, or feature being built. Auto-loads metrc-api skill for endpoint reference and verify-alignment skill for pattern compliance.
-version: 1.0.0
+version: 1.1.0
 skills: metrc-api, verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

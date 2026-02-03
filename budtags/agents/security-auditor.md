@@ -1,7 +1,8 @@
 ---
 name: security-auditor
+model: opus
 description: 'Performs comprehensive security audits checking for vulnerabilities, compliance issues, and security best practices. Use PROACTIVELY when code involves authentication, cryptography, sensitive data handling, or external integrations to identify security vulnerabilities early. Critical for authentication, authorization, data handling, and deployment readiness.'
-version: 1.1.0
+version: 1.2.0
 tools: Read, Grep, Glob
 ---
 

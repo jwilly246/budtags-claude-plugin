@@ -1,7 +1,8 @@
 ---
 name: leaflink-specialist
+model: opus
 description: Use when implementing, debugging, or reviewing LeafLink wholesale marketplace integration code. ALWAYS provide context about company type (seller/buyer), specific operations needed (orders, products, inventory sync), or feature being built. Auto-loads leaflink skill for API reference and verify-alignment skill for pattern compliance.
-version: 1.0.0
+version: 1.1.0
 skills: leaflink, verify-alignment
 tools: Read, Grep, Glob, Bash
 ---

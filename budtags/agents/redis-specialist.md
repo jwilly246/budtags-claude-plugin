@@ -1,7 +1,8 @@
 ---
 name: redis-specialist
+model: opus
 description: 'Expert Redis specialist for caching strategies, pub/sub, data structures, clustering, persistence, and performance optimization. Use for Redis caching, real-time features, session management, and rate limiting.'
-version: 1.0.0
+version: 1.1.0
 tools: Read, Grep, Glob, Bash
 ---
 

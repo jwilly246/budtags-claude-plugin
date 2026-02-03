@@ -1,7 +1,8 @@
 ---
 name: terraform-specialist
+model: opus
 description: 'Expert in Terraform infrastructure as code, multi-cloud provisioning, state management, and infrastructure automation. Use for infrastructure provisioning, cloud resource management, IaC best practices, and infrastructure automation across AWS, Azure, GCP, and other providers.'
-version: 1.0.0
+version: 1.1.0
 tools: Read, Grep, Glob, Bash
 ---
 

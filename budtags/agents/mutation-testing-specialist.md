@@ -1,7 +1,8 @@
 ---
 name: mutation-testing-specialist
+model: opus
 description: 'Expert mutation testing specialist using PITest, Stryker, and mutmut to measure and improve test quality through mutation analysis. Use PROACTIVELY when test coverage appears high but bugs still escape to production, indicating weak test assertions or inadequate edge case coverage.'
-version: 1.0.0
+version: 1.1.0
 tools: Read, Grep, Glob, Bash
 ---
 

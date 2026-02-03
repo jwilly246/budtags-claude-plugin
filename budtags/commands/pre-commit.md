@@ -186,7 +186,7 @@ Report detected skills:
 
 Spawn all applicable subagents **in a single message** using Claude's native parallel tool calls.
 
-**IMPORTANT:** Use `model: "sonnet"` for all subagents. Code review requires nuanced understanding - haiku is insufficient.
+**IMPORTANT:** Use `model: "opus"` for all subagents. Code review requires deep reasoning - agents are configured with opus by default.
 
 #### For PHP Files → `budtags-specialist`
 

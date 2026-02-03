@@ -1,7 +1,8 @@
 ---
 name: typescript-developer
+model: opus
 description: 'Expert TypeScript/JavaScript developer specializing in React, Inertia.js, TanStack libraries, and modern frontend ecosystems. Use for TypeScript/JavaScript development, React components, frontend applications, and type safety improvements. Auto-loads verify-alignment skill for BudTags pattern compliance.'
-version: 2.0.0
+version: 2.1.0
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash
 ---
