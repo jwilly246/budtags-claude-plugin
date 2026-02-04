@@ -849,49 +849,42 @@ protected function active_secrets(int $secret_type_id): Collection {
 
 ---
 
-## Pattern 8: Route Naming Consistency (Dashes, Not Dots)
+## Pattern 8: Routes Do NOT Use Named Routes
 
-**Rule:** Route names use **single words** or **dashes for multi-word names**. NEVER use dot notation.
+**Rule:** BudTags does **NOT use named routes**. Do not add `->name()` to routes.
 
 ### ✅ CORRECT - BudTags Convention
 
 ```php
-// Single-word routes
-Route::get('/dashboard', ...)->name('dashboard');
-Route::get('/contacts', ...)->name('contacts');
-Route::get('/users', ...)->name('users');
-Route::get('/strains', ...)->name('strains');
-
-// Multi-word routes: Use DASHES
-Route::get('/users/{user}', ...)->name('users-edit');
-Route::post('/labels', ...)->name('labels-create');
-Route::get('/pick-license', ...)->name('pick-license');
-Route::get('/missing-metrc-key', ...)->name('missing-metrc-key');
-Route::post('/labels/print', ...)->name('labels-print-many');
+// No ->name() calls - just define the route
+Route::get('/dashboard', [DashboardController::class, 'index']);
+Route::get('/contacts', [ContactController::class, 'index']);
+Route::get('/users', [UserController::class, 'index']);
+Route::get('/users/{user}', [UserController::class, 'edit']);
+Route::post('/labels', [LabelController::class, 'create']);
+Route::post('/labels/print', [LabelController::class, 'print_many']);
 ```
 
-### ❌ WRONG - Dot Notation (Laravel Default)
+### ❌ WRONG - Adding Named Routes
 
 ```php
-// ❌ NEVER use dots - these are Laravel defaults that violate BudTags standards
-Route::get('/profile', ...)->name('profile.edit');      // Should be 'profile-edit'
-Route::patch('/profile', ...)->name('profile.update');  // Should be 'profile-update'
-Route::delete('/profile', ...)->name('profile.destroy');// Should be 'profile-delete'
-Route::get('/updates/{announcement}', ...)->name('updates.show'); // Should be 'updates' or 'updates-show'
+// ❌ Do NOT add ->name() to routes
+Route::get('/dashboard', ...)->name('dashboard');        // Wrong - remove ->name()
+Route::get('/users/{user}', ...)->name('users-edit');    // Wrong - remove ->name()
+Route::get('/profile', ...)->name('profile.edit');       // Wrong - remove ->name()
 ```
 
 ### Pattern Rules
 
-1. **Index/list routes**: Single word (`'users'`, `'labels'`, `'contacts'`)
-2. **Action routes**: Word + dash + action (`'users-edit'`, `'labels-create'`, `'labels-delete'`)
-3. **Multi-word**: Dashes between words (`'pick-license'`, `'missing-metrc-key'`)
-4. **Never dots**: Dots are Laravel convention, not BudTags convention
+1. **No named routes**: Do not use `->name()` on any routes
+2. **URL-based navigation**: Use explicit URLs in redirects and links
+3. **Existing legacy routes**: Some old routes may have names - do not add more
 
-### Verification Command
+### Why No Named Routes?
 
-```bash
-# Check for dot notation violations (should return profile routes only)
-grep "->name.*\." routes/web.php
+- BudTags uses explicit URL paths for clarity
+- Avoids indirection between route names and actual URLs
+- Frontend uses direct URL strings with Inertia's `router.visit()` and `Link href=""`
 
 # These profile routes need to be fixed eventually:
 # profile.edit → profile-edit

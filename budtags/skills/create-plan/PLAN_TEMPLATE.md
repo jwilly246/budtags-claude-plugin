@@ -194,12 +194,12 @@ class {ControllerName} extends Controller {
 ### Routes (routes/web.php)
 
 ```php
-// {Feature} routes
+// {Feature} routes (no named routes - BudTags convention)
 Route::group([
     'middleware' => ['auth', '{additional-middleware}'],
     'prefix' => '/{prefix}',
 ], function () {
-    Route::get('/{path}', [{Controller}::class, '{method}'])->name('{route-name}');
+    Route::get('/{path}', [{Controller}::class, '{method}']);
     // ... more routes
 });
 ```

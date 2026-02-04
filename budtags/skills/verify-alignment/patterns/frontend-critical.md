@@ -107,9 +107,9 @@ const [errors, setErrors] = useState({});
 
 ---
 
-## Pattern 3: Toast Notifications (Typed Methods)
+## Pattern 3: Toast Notifications & Confirmations
 
-**Rule:** Use typed toast methods (`toast.error()`, `toast.success()`). NEVER use `alert()`.
+**Rule:** Use typed toast methods (`toast.error()`, `toast.success()`). NEVER use `alert()` or `confirm()`.
 
 ### ✅ CORRECT
 
@@ -133,8 +133,10 @@ onError: (errors) => {
 ### ❌ WRONG
 
 ```typescript
-// ❌ Never use alert()!
+// ❌ Never use alert() or confirm()!
 alert('Please select at least one item');
+window.confirm('Are you sure?');  // Use modal instead
+confirm('Delete this item?');     // Use modal instead
 
 // ❌ Generic toast (no color)
 toast('Error occurred');  // Use toast.error()
@@ -143,6 +145,28 @@ toast('Error occurred');  // Use toast.error()
 onSuccess: (page) => {
     toast.success((page.props as any).flash?.success);
 }
+```
+
+### ✅ For Confirmations - Use Modal
+
+```typescript
+// State for confirmation modal
+const [showConfirm, setShowConfirm] = useState(false);
+
+// Handler shows modal instead of confirm()
+const handleDelete = () => setShowConfirm(true);
+
+// JSX modal
+<Modal show={showConfirm} onClose={() => setShowConfirm(false)} size="sm">
+    <div className="text-center">
+        <h3 className="text-lg font-semibold">Delete Item?</h3>
+        <p className="text-theme-secondary mb-6">This cannot be undone.</p>
+        <div className="flex justify-center gap-3">
+            <Button secondary onClick={() => setShowConfirm(false)}>Cancel</Button>
+            <Button danger onClick={confirmDelete}>Delete</Button>
+        </div>
+    </div>
+</Modal>
 ```
 
 ---

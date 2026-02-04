@@ -1,5 +1,7 @@
 # Pattern 14: Authorization
 
+> **⚠️ BudTags Note:** Examples in this file show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+
 ## Overview
 
 Pass authorization data from Laravel policies/gates to React components via Inertia props.

@@ -37,10 +37,10 @@ class FeatureController extends Controller
 ## Route Pattern
 
 ```php
-Route::middleware(['auth', 'verified'])->prefix('features')->name('features-')->group(function () {
-    Route::get('/', [FeatureController::class, 'fetch_all'])->name('index');
-    Route::post('/', [FeatureController::class, 'create'])->name('store');
-    Route::get('/{feature}', [FeatureController::class, 'fetch_one'])->name('show');
+Route::middleware(['auth', 'verified'])->prefix('features')->group(function () {
+    Route::get('/', [FeatureController::class, 'fetch_all']);
+    Route::post('/', [FeatureController::class, 'create']);
+    Route::get('/{feature}', [FeatureController::class, 'fetch_one']);
 });
 ```
 
@@ -51,4 +51,4 @@ Route::middleware(['auth', 'verified'])->prefix('features')->name('features-')->
 - **Organization scoping**: Always query through `$org->relationship()`
 - **LogService::store()**, never Log facade
 - **Flash**: `->with('message', 'text')`, not 'success'
-- Route names use **dashes**: `features-index`, not `features.index`
+- **No named routes**: Do not add `->name()` to routes

@@ -31,8 +31,9 @@
 - [ ] Handles `onSuccess` and `onError`
 - [ ] Only closes modal AFTER successful submission
 
-### Error Handling
-- [ ] Uses `toast.error()` (NEVER `alert()`)
+### Error Handling & Confirmations
+- [ ] Uses `toast.error()` (NEVER `alert()` or `confirm()`)
+- [ ] Uses modal for confirmations (NEVER `confirm()` or `window.confirm()`)
 - [ ] Typed toast methods (`toast.error`, `toast.success`, etc.)
 - [ ] Client-side validation before submit
 - [ ] onError callback handles validation errors
@@ -72,13 +73,19 @@ interface MyComponentProps {
 const MyComponent: React.FC<MyComponentProps> = ({ items, onSelect }) => { ... }
 ```
 
-### Using alert()
+### Using alert() or confirm()
 ```typescript
-// ❌ WRONG
+// ❌ WRONG - Never use browser dialogs
 alert('Please select an item');
+confirm('Are you sure?');
+window.confirm('Delete this item?');
 
-// ✅ FIX
+// ✅ FIX - Use toast for messages
 toast.error('Please select an item');
+
+// ✅ FIX - Use modal for confirmations
+const [showConfirm, setShowConfirm] = useState(false);
+// ... modal component with confirm/cancel buttons
 ```
 
 ### Assuming Data Exists

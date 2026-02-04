@@ -1,5 +1,7 @@
 # Pattern 21: Events & Lifecycle
 
+> **⚠️ BudTags Note:** Examples in this file show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+
 ## Overview
 
 Inertia provides event hooks at global and per-request levels for monitoring and controlling the navigation lifecycle.

@@ -34,6 +34,10 @@
 |create-plan:SKILL.md
 |decompose-plan:SKILL.md
 |run-plan:SKILL.md
+|redis:{README.md,SKILL.md}
+|redis/patterns:{cache-facade.md,redis-facade.md,key-naming.md,ttl-strategy.md,distributed-locks.md,rate-limiting.md}
+|redis/scenarios:{caching-api-responses.md,bulk-cache-operations.md,atomic-counters.md,pattern-based-deletion.md}
+|redis/docs:{data-types.md,commands-quick-ref.md,laravel-integration.md}
 [License Restrictions]
 |Cultivation:plants,plantbatches,harvests,packages|NO:sales
 |Processing:packages,items,labtests,processingjob|NO:plants,sales

@@ -1,5 +1,7 @@
 # Pattern 6: Manual Visits (router)
 
+> **⚠️ BudTags Note:** Examples in this file show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+
 ## Overview
 
 The `router` object enables programmatic navigation without `<Link>`:

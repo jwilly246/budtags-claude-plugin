@@ -443,7 +443,7 @@ Before starting any implementation:
 
 - [ ] Organization scoping strategy documented
 - [ ] Method names follow snake_case verb-first pattern
-- [ ] Routes use dash-separated names
+- [ ] Routes do NOT use named routes (no `->name()`)
 - [ ] Form Request classes planned (not inline validation)
 - [ ] LogService calls planned (not Log facade)
 - [ ] Flash messages use 'message' key

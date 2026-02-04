@@ -70,10 +70,9 @@ Load these patterns before verification:
 - [ ] No hard-coded URLs in redirects
 
 ### Routes (if adding/modifying)
-- [ ] Route names use single words or dashes (NOT dots)
-- [ ] Examples: `'users-edit'`, `'labels-create'`, `'pick-license'`
-- [ ] NO dot notation: `'profile.edit'` should be `'profile-edit'`
-- [ ] Verified existing routes follow dash pattern
+- [ ] NO named routes - do not add `->name()` to routes
+- [ ] Use explicit URL paths in redirects: `redirect('/users')`
+- [ ] Frontend uses direct URLs: `Link href="/users"`, `router.visit('/users')`
 
 ---
 
@@ -122,15 +121,13 @@ $item->delete();
 LogService::store('Item Deleted', "Deleted item {$item->name}", $item);
 ```
 
-### Issue 5: Wrong Route Naming
+### Issue 5: Adding Named Routes
 ```php
-// ❌ WRONG - Uses dot notation
-Route::get('/updates/{announcement}', ...)->name('updates.show');
-
-// ✅ FIX - Use dashes or single word
+// ❌ WRONG - BudTags does not use named routes
 Route::get('/updates/{announcement}', ...)->name('updates');
-// OR
-Route::get('/updates/{announcement}', ...)->name('updates-show');
+
+// ✅ FIX - No ->name() needed
+Route::get('/updates/{announcement}', [UpdateController::class, 'show']);
 ```
 
 ---

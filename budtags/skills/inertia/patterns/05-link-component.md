@@ -1,5 +1,7 @@
 # Pattern 5: Link Component
 
+> **⚠️ BudTags Note:** Examples in this file show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+
 ## Basic Usage
 
 The `<Link>` component creates client-side navigation links:

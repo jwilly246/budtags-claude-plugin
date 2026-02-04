@@ -1,6 +1,6 @@
 # BudTags Claude Plugin
 
-**Version 1.6.0**
+**Version 1.7.0**
 
 A comprehensive Claude Code plugin for BudTags development - includes cannabis compliance integrations (Metrc, LeafLink), accounting (QuickBooks), modern frontend tooling, planning workflows, and specialized agents.
 
@@ -40,7 +40,7 @@ Choose from:
 
 ---
 
-## Skills (20)
+## Skills (21)
 
 Domain-specific knowledge that Claude can reference during development.
 
@@ -74,6 +74,11 @@ Domain-specific knowledge that Claude can reference during development.
 | **BudTags Testing** | 2.3.0 | PHPUnit test patterns, Mockery mocking, multi-tenancy test helpers |
 | **Verify Alignment** | 3.0.1 | Verify code against BudTags coding standards |
 
+### Infrastructure
+| Skill | Version | Description |
+|-------|---------|-------------|
+| **Redis** | 2.0.0 | Redis caching patterns, data structures, persistence, and Laravel integration |
+
 ### Planning & Workflow
 | Skill | Version | Description |
 |-------|---------|-------------|
@@ -94,59 +99,58 @@ Domain-specific knowledge that Claude can reference during development.
 
 ---
 
-## Agents (20)
+## Agents (19)
 
-Specialized subagents for the Task tool that handle specific domains.
+Specialized subagents for the Task tool that handle specific domains. All agents use a compressed CLAUDE.md-style format (~40-80 lines each) with skill file pointers instead of inline documentation.
 
 **Model Assignments:** Agents now specify their preferred model (opus/sonnet) for optimal performance. Opus is used for complex reasoning tasks; Sonnet for lightweight housekeeping.
 
 ### Core Development
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
-| **PHP Developer** | 1.2.0 | opus | Laravel 11+, PHPUnit, modern PHP 8+, auto-loads verify-alignment |
-| **TypeScript Developer** | 2.1.0 | opus | React + Inertia + TypeScript frontend, auto-loads verify-alignment |
-| **Fullstack Developer** | 2.1.0 | opus | Laravel + Inertia + React end-to-end, auto-loads verify-alignment |
-| **React Specialist** | 1.1.0 | opus | React 19 + Inertia + TypeScript frontend expertise |
+| **PHP Developer** | 2.0.0 | opus | Laravel 11+, PHPUnit, modern PHP 8+, auto-loads verify-alignment |
+| **TypeScript Developer** | 2.0.0 | opus | React + Inertia + TypeScript frontend, auto-loads verify-alignment |
+| **Fullstack Developer** | 2.0.0 | opus | Laravel + Inertia + React end-to-end, auto-loads verify-alignment |
+| **React Specialist** | 2.0.0 | opus | React 19 + Inertia + TypeScript frontend expertise |
 
 ### Industry Specialists
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
-| **Metrc Specialist** | 1.1.0 | opus | Metrc cannabis tracking API expertise |
-| **LeafLink Specialist** | 1.1.0 | opus | LeafLink marketplace API integration expertise |
-| **QuickBooks Specialist** | 1.1.0 | opus | QuickBooks Online OAuth and API integration |
+| **Metrc Specialist** | 2.0.0 | opus | Metrc cannabis tracking API expertise |
+| **LeafLink Specialist** | 2.0.0 | opus | LeafLink marketplace API integration expertise |
+| **QuickBooks Specialist** | 2.0.0 | opus | QuickBooks Online OAuth and API integration |
 
 ### Infrastructure & Data
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
 | **MySQL Specialist** | 1.1.0 | opus | MySQL performance tuning and query optimization |
-| **Redis Specialist** | 1.1.0 | opus | Redis caching, pub/sub, and performance optimization |
-| **Terraform Specialist** | 1.1.0 | opus | Infrastructure as code and multi-cloud provisioning |
+| **Redis Specialist** | 2.0.0 | opus | Redis caching, pub/sub, and performance optimization, auto-loads redis skill |
 
 ### Frontend Libraries
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
-| **TanStack Specialist** | 1.1.0 | opus | TanStack Query, Table, Virtual, Form, Router expertise |
+| **TanStack Specialist** | 2.0.0 | opus | TanStack Query, Table, Virtual, Form, Router expertise |
 
 ### Quality & Review
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
-| **BudTags Specialist** | 1.2.0 | opus | BudTags patterns + test review (verify-alignment + budtags-testing) |
-| **Code Reviewer** | 1.2.0 | opus | General PRs and quality checks (use budtags-specialist for BudTags code) |
-| **Security Auditor** | 1.2.0 | opus | Security vulnerability audits with Laravel-specific checks |
-| **Debugger** | 1.2.0 | opus | Systematic debugging with Laravel/PHP patterns |
-| **Mutation Testing** | 1.1.0 | opus | Mutation testing to measure and improve test quality |
+| **BudTags Specialist** | 2.0.0 | opus | BudTags patterns + test review (verify-alignment + budtags-testing) |
+| **Code Reviewer** | 2.0.0 | opus | General PRs and quality checks (use budtags-specialist for BudTags code) |
+| **Security Auditor** | 2.0.0 | opus | Security vulnerability audits with Laravel-specific checks |
+| **Debugger** | 2.0.0 | opus | Systematic debugging with Laravel/PHP patterns |
+| **Mutation Testing** | 2.0.0 | opus | Mutation testing to measure and improve test quality |
 
 ### Context & Planning
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
-| **Context Gathering** | 1.1.0 | opus | Gather comprehensive context for new tasks |
-| **Context Refinement** | 1.1.0 | sonnet | Update task context with session discoveries |
-| **Knowledge Researcher** | 1.1.0 | opus | Search and synthesize organizational knowledge |
-| **Logging** | 1.1.0 | sonnet | Consolidate and organize work logs for tasks |
+| **Context Gathering** | 2.0.0 | opus | Gather comprehensive context for new tasks |
+| **Context Refinement** | 2.0.0 | sonnet | Update task context with session discoveries |
+| **Knowledge Researcher** | 2.0.0 | opus | Search and synthesize organizational knowledge |
+| **Logging** | 2.0.0 | sonnet | Consolidate and organize work logs for tasks |
 
 ---
 
-## Commands (22)
+## Commands (23)
 
 Slash commands available via `/budtags:<command>`.
 
@@ -180,6 +184,7 @@ Slash commands available via `/budtags:<command>`.
 | `leaflink` | LeafLink API reference |
 | `leaflink-help` | Interactive LeafLink API guidance |
 | `quickbooks-help` | QuickBooks Online API guidance |
+| `redis-help` | Redis caching patterns and guidance |
 
 ### Frontend Help
 | Command | Description |

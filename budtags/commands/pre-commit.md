@@ -56,8 +56,8 @@ For TSX_FILES and TS_FILES:
 # Console statements (CRITICAL)
 grep -n "console\.log\|console\.error\|console\.warn" [TSX_FILES] [TS_FILES] 2>/dev/null
 
-# Alert usage (CRITICAL)
-grep -n "alert(" [TSX_FILES] [TS_FILES] 2>/dev/null
+# Alert/Confirm usage (CRITICAL)
+grep -n "alert(\|confirm(" [TSX_FILES] [TS_FILES] 2>/dev/null
 
 # Native button elements - EXCLUDE Button.tsx itself (CRITICAL)
 grep -n "<button" [TSX_FILES] 2>/dev/null | grep -v "Button.tsx"
@@ -84,6 +84,7 @@ grep -n "->with('success'" [PHP_FILES] 2>/dev/null
 |---------|-------|----------|--------|
 | `console.log/error/warn` | TSX/TS | 🔴 CRITICAL | Must remove |
 | `alert(` | TSX/TS | 🔴 CRITICAL | Use toast |
+| `confirm(` | TSX/TS | 🔴 CRITICAL | Use confirmation modal |
 | `<button` (not Button.tsx) | TSX | 🔴 CRITICAL | Use Button component |
 | `Log::` or `\Log::` | PHP | 🔴 CRITICAL | Use LogService |
 | `: any` or `as any` | TSX/TS | 🟠 HIGH | Add proper types |

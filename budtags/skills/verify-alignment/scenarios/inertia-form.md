@@ -41,11 +41,11 @@
 - [ ] **NO redundant `toast.success()`** in onSuccess (MainLayout handles it!)
 - [ ] Only closes modal/resets form in onSuccess
 
-### Error Handling
+### Error Handling & Confirmations
 - [ ] `onError` callback handles validation errors
 - [ ] Uses `toast.error()` for user feedback
 - [ ] Displays specific error messages from backend
-- [ ] NO `alert()` usage
+- [ ] NO `alert()` or `confirm()` usage (use modal for confirmations)
 
 ### TypeScript
 - [ ] Uses proper types (NO `as any` without TODO)

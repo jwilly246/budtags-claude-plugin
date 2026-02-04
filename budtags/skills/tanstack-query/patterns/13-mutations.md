@@ -1,5 +1,7 @@
 # Pattern 13: Mutations
 
+> **⚠️ BudTags Note:** Examples in this file show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+
 ## useMutation Hook
 
 Use mutations for CREATE, UPDATE, DELETE operations:

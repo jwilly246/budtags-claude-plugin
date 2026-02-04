@@ -31,6 +31,8 @@ auto_activate:
 
 # Inertia.js v2 Skill
 
+> **⚠️ BudTags Note:** Some examples in this skill show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+
 Comprehensive patterns for **Inertia.js v2** - the glue between your Laravel backend and React frontend, enabling modern SPA experiences without building a separate API.
 
 ## Version Targets
