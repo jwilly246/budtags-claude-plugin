@@ -84,7 +84,7 @@ Domain-specific knowledge that Claude can reference during development.
 |-------|---------|-------------|
 | **Create Plan** | 1.1.0 | Research-driven feature planning with codebase discovery |
 | **Decompose Plan** | 3.2.0 | Break plans into context-window-sized work units |
-| **Run Plan** | 1.4.1 | Autonomously execute decomposed work units |
+| **Run Plan** | 1.6.0 | Autonomously execute decomposed work units |
 
 ### Label Printing
 | Skill | Version | Description |

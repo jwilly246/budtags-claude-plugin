@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked.
-version: 1.5.0
+version: 1.6.0
 category: workflow
 auto_activate:
   keywords:
@@ -96,7 +96,7 @@ Each Task agent starts fresh. Use `{directory}/SHARED_CONTEXT.md` for cross-agen
 
 **Orchestrator responsibilities:**
 1. Create from template if missing
-2. Stage in commits alongside work unit files
+2. NEVER commit — this file stays local as working context only
 
 ---
 
@@ -194,15 +194,17 @@ Parse the work unit's `## Verification` section and run each command.
 
 **If all verification passes:**
 1. Stage files: `git add {files from WU "Files" section}`
-2. Commit:
+2. Safety: unstage any plan files that may have been caught:
+   `git reset HEAD {directory}/` (unstages everything in the plan directory)
+3. Commit:
    ```
-   WU-{N}: {Work unit title}
+   {Work unit description from MANIFEST table}
 
-   {Brief 2-3 line summary}
+   {Brief 2-3 line summary of what was implemented}
    ```
-3. Update MANIFEST: status -> DONE
-4. Update MANIFEST Progress Log section
-5. Continue to next READY unit
+4. Update MANIFEST: status -> DONE
+5. Update MANIFEST Progress Log section
+6. Continue to next READY unit
 
 **If verification fails:**
 1. Update MANIFEST: status -> BLOCKED
@@ -222,8 +224,8 @@ Parse the work unit's `## Verification` section and run each command.
 All work units completed successfully.
 
 ### Commits Created (local)
-- abc1234: WU-01: database-models
-- def5678: WU-02: admin-controller
+- abc1234: Create database tables and models
+- def5678: Admin CRUD endpoints
 
 ### Final Verification
 All tests passing, PHPStan clean, Pint formatted.
@@ -245,9 +247,9 @@ Output:
 {error output}
 
 ### Progress
-- [DONE] WU-01: database-models (abc1234)
-- [BLOCKED] WU-02: admin-controller
-- [PENDING] WU-03: admin-ui
+- [DONE] Create database tables and models (abc1234)
+- [BLOCKED] Admin CRUD endpoints
+- [PENDING] Admin UI components
 
 ### To Resume
 1. Fix the issues reported above
@@ -342,6 +344,8 @@ Use this to:
 - Skipping stub detection
 - Using --force or --amend git flags
 - Committing unrelated files
+- Committing plan files (MANIFEST.md, WU-*.md, SHARED_CONTEXT.md, plan directory files)
+- Using `git add .` or `git add -A` (always stage specific files only)
 - Accepting incomplete implementations from agents
 
 ---
@@ -356,4 +360,5 @@ Use this to:
 - Stop immediately on any failure
 - Update MANIFEST status throughout
 - Report clear summary at end
+- Verify no plan directory files are staged before committing
 - Remind user commits are local
