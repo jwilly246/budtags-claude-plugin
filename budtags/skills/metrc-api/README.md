@@ -386,6 +386,10 @@ This allows you and your partner to stay in sync.
 
 ## Changelog
 
+**v2.0.1** - February 2026
+- Clarified rate limiting architecture: GET requests use Redis-based rate limiter, POST/PUT/DELETE are object-limited only (max 10/request, no `sleep()` needed between chunks)
+- Updated batch-operations pattern to remove incorrect `sleep()` guidance between POST chunks
+
 **v2.0** - January 2026
 - Updated from new Postman collection
 - Added 47 new endpoints (290+ total)

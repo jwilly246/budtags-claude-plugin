@@ -1,7 +1,7 @@
 {
   "name": "budtags",
   "description": "BudTags development toolkit: Metrc, LeafLink, TanStack, QuickBooks integrations + coding standards",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "author": {
     "name": "BudTags Team"
   },

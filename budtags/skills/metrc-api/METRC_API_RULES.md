@@ -261,8 +261,16 @@ if (licenseType === 'C') {
 | 500 | Server Error | Metrc internal error |
 
 ### Rate Limiting
-- Metrc enforces rate limits (exact limits not specified in collection)
-- Implement exponential backoff for 429 responses
+
+**GET requests** are coordinated via Redis-based rate limiter (`MetrcApi::acquire_rate_limit_slot()`):
+- 4 requests/second per license (`RATE_LIMIT_PER_LICENSE`)
+- 35 requests/second globally (`RATE_LIMIT_GLOBAL`)
+- 210ms pagination delay (`RATE_LIMIT_DELAY`)
+- `execute_with_retry()` handles 429 responses reactively with exponential backoff
+
+**POST/PUT/DELETE requests** are object-limited only:
+- Maximum 10 objects per request (HTTP 413 if exceeded)
+- No time-based rate limiting needed between chunks
 - Batch operations reduce number of API calls
 
 ---

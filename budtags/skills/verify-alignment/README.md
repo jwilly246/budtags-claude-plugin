@@ -457,7 +457,7 @@ grep -r "invalidateQueries()" resources/js --include="*.tsx"
 | **Quick Check** | 1168 lines | ~300 lines | 74% reduction |
 | **Standard Review** | 1168 lines | ~500 lines | 57% reduction |
 | **Comprehensive** | 1168 lines | ~700 lines | 40% reduction |
-| **Pattern Count** | 8 patterns | 15+ patterns | 87% increase |
+| **Pattern Count** | 8 patterns | 15 patterns | 87% increase |
 | **Maintainability** | Hard (one file) | Easy (modular) | 🎯 |
 
 ---
@@ -542,6 +542,11 @@ For questions or improvements, reference:
 ---
 
 ## 📝 Version History
+
+**Version 3.0.2** (2026-02-20):
+- Added Pattern 14: Metrc Rate Limiting Architecture to integrations.md
+- Documents GET vs POST/PUT/DELETE rate limiting differences
+- Pre-commit reviewer guidance: no false positives on missing `sleep()` between POST chunks
 
 **Version 3.0.1** (2025-01-29):
 - Fixed `error` → `errors` prop in input component examples

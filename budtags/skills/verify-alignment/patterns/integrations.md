@@ -1,8 +1,8 @@
 # API Integration Patterns
 
 **Source:** `.claude/docs/integrations/metrc.md`, `.claude/docs/integrations/quickbooks.md`
-**Last Updated:** 2026-01-08
-**Pattern Count:** 14 patterns (API service + Lab/Transporter + Pass Data optimization)
+**Last Updated:** 2026-02-20
+**Pattern Count:** 15 patterns (API service + Lab/Transporter + Pass Data optimization + Rate Limiting Architecture)
 
 > **Note (Dec 2025):** Added LabCompany/TransporterCompany patterns, MetrcFacility architecture, TransferCartService patterns.
 
@@ -572,6 +572,38 @@ LabCompany::where('enabled', true)
     ->where('generate_coc_enabled', true)
     ->get();
 ```
+
+---
+
+## Pattern 14: Metrc Rate Limiting Architecture
+
+**Rule:** GET and POST/PUT/DELETE have different rate limiting strategies. Do NOT add `sleep()` between POST chunks.
+
+### GET Requests — Redis-Based Rate Limiter
+
+```
+MetrcApi::get() → acquire_rate_limit_slot() → Redis atomic locks
+```
+
+- `RATE_LIMIT_PER_LICENSE = 4` — max 4 GET requests/sec per license
+- `RATE_LIMIT_GLOBAL = 35` — max 35 GET requests/sec across all workers
+- `RATE_LIMIT_DELAY = 210000` — 210ms pagination delay between pages
+- `SLOT_POLL_DELAY = 50000` — 50ms between slot acquisition attempts
+- `execute_with_retry()` handles 429 responses with exponential backoff
+
+### POST/PUT/DELETE Requests — Object-Limited Only
+
+```
+MetrcApi::post() → execute_with_retry() (no rate limiter)
+```
+
+- Metrc limits to **max 10 objects per request** (HTTP 413 if exceeded)
+- No time-based rate limiting needed between chunks
+- See `MetrcApi::create_packages()` — chunks with zero delay between POSTs
+
+### Pre-Commit Review Note
+
+Reviewers should **NOT** flag missing `sleep()` or delay between POST/PUT/DELETE chunks. This is a false positive — POST calls are object-limited, not time-rate-limited.
 
 ---
 
