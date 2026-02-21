@@ -1,6 +1,6 @@
 # BudTags Claude Plugin
 
-**Version 1.7.0**
+**Version 1.7.1**
 
 A comprehensive Claude Code plugin for BudTags development - includes cannabis compliance integrations (Metrc, LeafLink), accounting (QuickBooks), modern frontend tooling, planning workflows, and specialized agents.
 
@@ -47,7 +47,7 @@ Domain-specific knowledge that Claude can reference during development.
 ### Cannabis Industry Integrations
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **Metrc API** | 2.0.0 | Cannabis compliance tracking API integration |
+| **Metrc API** | 2.0.1 | Cannabis compliance tracking API integration |
 | **Metrc Tinker** | 1.0.0 | Query any Metrc endpoint via Laravel Tinker |
 | **LeafLink** | 1.0.0 | LeafLink wholesale marketplace API integration |
 
@@ -72,7 +72,7 @@ Domain-specific knowledge that Claude can reference during development.
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **BudTags Testing** | 2.3.0 | PHPUnit test patterns, Mockery mocking, multi-tenancy test helpers |
-| **Verify Alignment** | 3.0.1 | Verify code against BudTags coding standards |
+| **Verify Alignment** | 3.0.2 | Verify code against BudTags coding standards |
 
 ### Infrastructure
 | Skill | Version | Description |

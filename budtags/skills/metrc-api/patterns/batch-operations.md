@@ -217,11 +217,6 @@ public function process_in_batches(array $items, string $endpoint, string $licen
 
             Log::info("Batch {$chunkNumber} completed successfully");
 
-            // Add delay to avoid rate limiting
-            if ($chunkNumber < $totalChunks) {
-                sleep(1); // 1 second between batches
-            }
-
         } catch (\Exception $e) {
             // Check if it's a 413 error (shouldn't happen with proper chunking)
             if (str_contains($e->getMessage(), '413')) {
@@ -258,7 +253,7 @@ $createdIds = $this->process_in_batches($adjustments, '/packages/v2/adjust', $li
 3. **Validate before sending**: Check all items are valid before batch
 4. **Log batch details**: Record what you're sending for debugging
 5. **Chunk into batches of 10**: Required for datasets larger than 10
-6. **Add delays between batches**: Avoid rate limiting (500-1000ms)
+6. **No delays needed between POST chunks**: POST/PUT/DELETE are object-limited (max 10/request), not time-rate-limited
 7. **Track created IDs**: Metrc returns IDs in order matching your request
 8. **Handle failures gracefully**: Log which items failed
 9. **Consider retrying individually**: If batch fails, retry items one-by-one
@@ -301,7 +296,6 @@ $chunks = array_chunk($finishes, 10);
 
 foreach ($chunks as $chunk) {
     $api->post("/packages/v2/finish?licenseNumber={$license}", $chunk);
-    sleep(1); // Delay between batches
 }
 // 100 packages = 10 API calls (manageable)
 ```
@@ -326,7 +320,7 @@ foreach ($chunks as $chunk) {
 ✅ **Maximum 10 objects per request** (Metrc enforced limit)
 ✅ **All-or-nothing**: Entire batch fails if any item fails
 ✅ **Chunk large datasets**: Process in batches of 10 or fewer
-✅ **Add delays**: 500-1000ms between batches to avoid rate limits
+✅ **No delays needed between POST chunks**: POST/PUT/DELETE are object-limited, not time-rate-limited
 ✅ **Track created IDs**: Metrc returns IDs in request order
 ✅ **Validate first**: Check all items before sending
 ✅ **Log everything**: Record batches for debugging
