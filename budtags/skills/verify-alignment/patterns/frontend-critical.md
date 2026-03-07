@@ -182,7 +182,7 @@ router.post('/api/endpoint', data, {
     preserveScroll: true,
     onSuccess: () => {
         onClose();  // Component state
-        queryClient.invalidateQueries(['items']);
+        queryClient.invalidateQueries({ queryKey: ['items'] });
     },
     onError: (errors) => {
         const message = Object.values(errors)[0] as string;

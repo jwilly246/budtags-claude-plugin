@@ -36,11 +36,12 @@
 - [ ] Uses `UseQueryResult<DataType, Error>` return type
 
 ### Configuration
-- [ ] Appropriate `staleTime` for entity type
-  - Invoices/Credit Memos: 2 min
-  - Inventory/Packages: 5 min (default)
-  - Items/Products: 10 min
-  - Terms/Accounts: 10 min
+- [ ] Uses `STALE_TIME` constant from `@/constants/query-config` (never raw numbers)
+  - `STALE_TIME.SHORT` (2 min) — invoices, credit memos, frequently changing
+  - `STALE_TIME.DEFAULT` (5 min) — inventory, packages, products, customers
+  - `STALE_TIME.LONG` (10 min) — brands, rarely changing items
+  - `STALE_TIME.REFERENCE` (30 min) — categories, strains, UOM
+  - `STALE_TIME.REGULATORY` (24 hr) — lab test batches, compliance categories
 - [ ] `retry` configuration (default 1 is usually fine)
 - [ ] `enabled` parameter if conditional fetching
 
@@ -51,9 +52,9 @@
 - [ ] Consistent with other queries
 
 ### Error Handling
-- [ ] `onError` callback with toast notification
-- [ ] Console.error for debugging (optional)
-- [ ] User-friendly error message
+- [ ] Error state handled in consuming component via returned `error`/`isError` (v5 removed `onError` from `useQuery`)
+- [ ] User-friendly error display in component JSX
+- [ ] Optional: `throwOnError` for error boundary delegation
 
 ---
 
@@ -134,17 +135,25 @@ queryClient.invalidateQueries({ queryKey: ['metrc-items'] });
 
 ### No staleTime Configuration
 ```typescript
-// ❌ WRONG - Uses default 5 min for rarely-changing data
+// ❌ WRONG - Relies on global default for rarely-changing data
 useQuery({
     queryKey: ['quickbooks-items'],
     queryFn: fetchItems,
 });
 
-// ✅ FIX - Appropriate staleTime
+// ❌ WRONG - Raw milliseconds instead of STALE_TIME constant
 useQuery({
     queryKey: ['quickbooks-items'],
     queryFn: fetchItems,
-    staleTime: 10 * 60 * 1000,  // 10 min for rarely-changing data
+    staleTime: 10 * 60 * 1000,
+});
+
+// ✅ FIX - Use STALE_TIME constant from @/constants/query-config
+import { STALE_TIME } from '@/constants/query-config';
+
+useQuery({
+    ...qbQueries.items(),  // queryOptions factory handles key + fn + staleTime
+    enabled,
 });
 ```
 
@@ -159,12 +168,22 @@ queryClient.invalidateQueries({ queryKey: ['quickbooks-items'] });
 
 ---
 
-## Example: Compliant Query Hook
+## Example: Compliant 3-Layer Query Pattern
+
+BudTags uses a 3-layer architecture: **keys.ts** → **queries.ts** → **use*.ts** hooks.
 
 ```typescript
-import { useQuery, UseQueryResult } from '@tanstack/react-query';
+// ── Layer 1: Key Factory (keys.ts) ──
+export const quickbooksKeys = {
+    invoices: () => ['quickbooks-invoices'] as const,
+    items: () => ['quickbooks-items'] as const,
+};
+
+// ── Layer 2: queryOptions Factory (queries.ts) ──
+import { queryOptions } from '@tanstack/react-query';
+import { STALE_TIME } from '@/constants/query-config';
+import { quickbooksKeys } from './keys';
 import axios from 'axios';
-import { toast } from 'react-toastify';
 
 type Invoice = {
     Id: string;
@@ -172,23 +191,38 @@ type Invoice = {
     TotalAmt: number;
 };
 
-const fetchInvoices = async (): Promise<Invoice[]> => {
-    const response = await axios.get<Invoice[]>('/quickbooks/invoices');
-    return response.data;
+const fetchInvoices = async (signal?: AbortSignal): Promise<Invoice[]> => {
+    const { data } = await axios.get<Invoice[]>('/quickbooks/invoices', { signal });
+    return data;
 };
 
-export function useQuickBooksInvoices(enabled: boolean = true): UseQueryResult<Invoice[], Error> {
-    return useQuery({
-        queryKey: ['quickbooks-invoices'],
-        queryFn: fetchInvoices,
-        enabled,
-        staleTime: 2 * 60 * 1000,  // 2 minutes (frequent changes)
+export const qbQueries = {
+    invoices: () => queryOptions({
+        queryKey: quickbooksKeys.invoices(),
+        queryFn: ({ signal }) => fetchInvoices(signal),
+        staleTime: STALE_TIME.SHORT,
         retry: 2,
-        onError: (error: Error) => {
-            console.error('Failed to load QuickBooks invoices:', error);
-            toast.error('Failed to load invoices. Please refresh the page.');
-        },
+    }),
+};
+
+// ── Layer 3: Hook Wrapper (useQuickBooksData.tsx) ──
+import { useQuery } from '@tanstack/react-query';
+import { qbQueries } from './queries';
+
+export function useQuickBooksInvoices(enabled: boolean = true) {
+    return useQuery({
+        ...qbQueries.invoices(),  // spread queryOptions (key + fn + staleTime)
+        enabled,                   // add/override options at consumption point
     });
+}
+
+// ── Error handling in consuming component (NOT in hook) ──
+function InvoicesDashboard() {
+    const { data: invoices, isLoading, error } = useQuickBooksInvoices();
+
+    if (error) return <div className="text-red-600">Failed to load invoices</div>;
+    if (isLoading) return <Spinner />;
+    return <InvoicesTable data={invoices} />;
 }
 ```
 
@@ -235,8 +269,10 @@ grep -r "invalidateQueries()" resources/js --include="*.tsx"
 **CRITICAL**:
 - Using React Query for form submissions
 - Global cache invalidation
+- Using `onError` in `useQuery` options (removed in v5)
+- Raw millisecond staleTime instead of `STALE_TIME` constants
 
 **HIGH**:
-- Wrong staleTime for entity type
-- Missing error handling
-- Incorrect query key naming
+- Not using 3-layer pattern (keys.ts → queries.ts → hooks)
+- Wrong staleTime constant for entity type
+- Incorrect query key naming (must be kebab-case)

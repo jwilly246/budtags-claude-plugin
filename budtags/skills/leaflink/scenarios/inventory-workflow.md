@@ -490,7 +490,7 @@ class LeafLinkInventoryController extends Controller
                 "Item #{$values['item_id']}: {$values['quantity']}"
             );
 
-            return redirect()->back()->with('success', 'Inventory updated');
+            return redirect()->back()->with('message', 'Inventory updated');
         }
 
         return redirect()->back()->with('error', 'Failed to update inventory');
@@ -509,7 +509,7 @@ class LeafLinkInventoryController extends Controller
     {
         $synced = $this->sync_pos_inventory();
 
-        return redirect()->back()->with('success', "Synced {$synced} items from POS");
+        return redirect()->back()->with('message', "Synced {$synced} items from POS");
     }
 
     private function reconcile_inventory() { /* ... */ }

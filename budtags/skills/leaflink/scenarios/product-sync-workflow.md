@@ -121,7 +121,7 @@ public function sync_products()
             "Created: {$synced}\nUpdated: {$updated}\nFailed: {$failed}"
         );
 
-        return redirect()->back()->with('success', "Synced {$synced} new products, updated {$updated}");
+        return redirect()->back()->with('message', "Synced {$synced} new products, updated {$updated}");
 
     } catch (Exception $e) {
         LogService::store('LeafLink Sync Error', $e->getMessage());
@@ -418,7 +418,7 @@ public function incremental_sync()
 
     LogService::store('LeafLink Incremental Sync', "{$synced} products updated");
 
-    return redirect()->back()->with('success', "Updated {$synced} products");
+    return redirect()->back()->with('message', "Updated {$synced} products");
 }
 ```
 
@@ -528,7 +528,7 @@ class LeafLinkSyncController extends Controller
                 "Synced: {$synced}\nFailed: {$failed}"
             );
 
-            return redirect()->back()->with('success', "Synced {$synced} products");
+            return redirect()->back()->with('message', "Synced {$synced} products");
 
         } catch (Exception $e) {
             LogService::store('LeafLink Sync Failed', $e->getMessage());

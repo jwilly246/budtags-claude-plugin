@@ -591,19 +591,14 @@ function OfflineIndicator() {
 Cache license data across sessions:
 
 ```typescript
-function useLicenseData(license: string) {
-  const { user } = usePage<PageProps>().props
+import { STALE_TIME } from '@/constants/query-config'
 
+function useLicenseData(license: string) {
   return useQuery({
-    queryKey: ['metrc', 'facility', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.facilities().then(facilities =>
-        facilities.find(f => f.License.Number === license)
-      )
-    },
-    staleTime: 60 * 60 * 1000, // 1 hour
+    queryKey: ['metrc-facility', license],
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/facility', { params: { license }, signal }).then(r => r.data),
+    staleTime: STALE_TIME.LONG, // 1 hour
     gcTime: 24 * 60 * 60 * 1000, // 24 hours (persisted)
     networkMode: 'offlineFirst', // Try cache first, then network
   })

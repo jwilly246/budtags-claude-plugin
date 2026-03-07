@@ -18,6 +18,10 @@
 |leaflink/categories:{orders.md,products.md,inventory.md,customers.md,companies.md}
 |leaflink/patterns:{authentication.md,company-scoping.md,pagination.md,filtering.md,error-handling.md}
 |leaflink/scenarios:{order-workflow.md,product-sync-workflow.md,inventory-workflow.md}
+|unleashed:{README.md,SKILL.md,UNLEASHED_API_RULES.md}
+|unleashed/categories:{sales-orders.md,customers.md,products.md,stock.md,purchase-orders.md,shipments.md,credit-notes.md,supplier-returns.md,assemblies.md,warehouses.md,salespersons.md,reference-data.md}
+|unleashed/patterns:{authentication.md,full-object-updates.md,pagination.md,filtering.md,guid-identifiers.md,error-handling.md,json-xml-format.md}
+|unleashed/scenarios:{order-import-workflow.md,inventory-sync-workflow.md,stock-adjustment-workflow.md,customer-sync-workflow.md}
 |quickbooks:{README.md,SKILL.md,ENTITY_TYPES.md}
 |quickbooks/categories:{authentication.md,invoices.md,payments.md,customers.md,items.md,credit-memos.md}
 |quickbooks/patterns:{authentication.md,token-refresh.md,multi-tenancy.md,error-handling.md}

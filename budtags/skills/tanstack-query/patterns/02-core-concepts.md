@@ -241,42 +241,38 @@ Benefits:
 - Prevents unnecessary re-renders
 - Optimizes React performance
 
-## BudTags Example: Metrc Packages
+## BudTags Example: Metrc Packages with 3-Layer Architecture
 
 ```typescript
+// BudTags Example: Metrc Packages with 3-Layer Architecture
+import { useQuery } from '@tanstack/react-query';
+import { metrcQueries } from '@/Hooks/metrc/queries';
+
 function PackagesTable() {
-  const { user } = usePage<PageProps>().props
-  const license = usePage<PageProps>().props.session.license
+    const license = usePage<PageProps>().props.session?.license ?? null;
 
-  // Query packages from Metrc
-  const {
-    data: packages,
-    isLoading,
-    error,
-    isFetching,
-  } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
-    staleTime: 5 * 60 * 1000, // Metrc data stale after 5 minutes
-    gcTime: 10 * 60 * 1000,   // Keep in cache for 10 minutes
-    retry: 1,                 // Metrc API is rate-limited
-  })
+    // Spread queryOptions factory (handles key + fn + staleTime)
+    const { data: packages, isLoading, error, isFetching } = useQuery({
+        ...metrcQueries.packages(license),
+        enabled: !!license,
+    });
 
-  if (isLoading) return <Spinner />
-  if (error) return <ErrorMessage error={error} />
+    // Or use the pre-built hook (even simpler):
+    // const { data: packages, isLoading, error } = useMetrcPackages(license);
 
-  return (
-    <div>
-      {isFetching && <RefreshIndicator />}
-      <DataTable data={packages} />
-    </div>
-  )
+    if (isLoading) return <Spinner />;
+    if (error) return <ErrorMessage error={error} />;
+
+    return (
+        <div>
+            {isFetching && <RefreshIndicator />}
+            <DataTable data={packages} />
+        </div>
+    );
 }
 ```
+
+> **Note:** In BudTags, Metrc data is fetched through Laravel backend routes (`/metrc/packages/{license}`). The frontend never calls the Metrc API directly.
 
 ## Next Steps
 - **Important Defaults** → Read `03-important-defaults.md`

@@ -14,7 +14,11 @@ Cultivation (AU-C-######) and Processing (AU-P-######) licenses will receive:
 - HTTP 401 Unauthorized or 403 Forbidden
 - Error: "No valid endpoint found"
 
-**Before using any sales endpoint, verify the license type starts with `AU-R-`**
+**MANDATORY guard before ANY sales endpoint call:**
+```php
+$license_type = explode('-', session('license'))[1] ?? null;
+abort_unless($license_type === 'R', 403, 'Sales endpoints require Retail license (AU-R-)');
+```
 
 ---
 

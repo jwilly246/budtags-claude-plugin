@@ -121,18 +121,22 @@ const queryClient = new QueryClient({
 ### BudTags Recommended Configuration
 
 ```typescript
+import { STALE_TIME } from '@/constants/query-config';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // Metrc data stale after 1 minute
-      gcTime: 5 * 60 * 1000, // Keep cache for 5 minutes
-      retry: 1, // Metrc API is rate-limited
-      refetchOnWindowFocus: false, // Don't refetch when switching tabs
-      refetchOnReconnect: true, // Refetch when network reconnects
+      staleTime: STALE_TIME.DEFAULT,    // 5 min — most CRUD data
+      gcTime: STALE_TIME.LONG,          // 10 min — 2x staleTime for GC
+      refetchOnWindowFocus: false,      // Opt-in per query, not global
+      retry: 1,                         // Single retry
+      retryDelay: 1000,                 // Fixed 1s delay, not exponential
     },
   },
-})
+});
 ```
+
+**Important:** Never use raw millisecond numbers for `staleTime`. Always import from `@/constants/query-config`.
 
 ## DevTools Setup
 

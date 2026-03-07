@@ -186,7 +186,7 @@ Right-click any query to:
 ```
 Queries (5)
 ┌────────────────────────────────────────────────────────────┐
-│ ['metrc', 'packages', 'au-c-00001'] 🟡 Stale             │
+│ ['metrc-packages', 'au-c-00001'] 🟡 Stale                │
 │ Observers: 2 | Updated: 2 minutes ago                     │
 │ Data: [{Id: 1, Label: "1A4..."}, ...]                     │
 │ staleTime: 5m | gcTime: 10m | retry: 1                    │

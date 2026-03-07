@@ -477,17 +477,15 @@ const queryClient = new QueryClient({
 ### Metrc API Error Handling
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { STALE_TIME } from '@/constants/query-config'
+
 // ✅ v5-compliant: No onError in useQuery, handle errors from result
 function useMetrcPackages(license: string) {
-  const { user } = usePage<PageProps>().props
-
   return useQuery<Package[], Error>({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license, 'active')
-    },
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license, filter: 'active' }, signal }).then(r => r.data),
     retry: (failureCount, error) => {
       const status = (error as any).response?.status
 
@@ -513,7 +511,7 @@ function useMetrcPackages(license: string) {
       // Server error: normal backoff
       return Math.min(1000 * 2 ** attemptIndex, 10000)
     },
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: STALE_TIME.SHORT, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
   })
 }
@@ -644,12 +642,15 @@ function OrgStrains() {
 ### Stale Data with Error Toast
 
 ```typescript
+import { STALE_TIME } from '@/constants/query-config'
+
 function TransfersList() {
   const license = usePage<PageProps>().props.session.license
   const { data, error, isError, refetch, isFetching } = useQuery({
-    queryKey: ['metrc', 'transfers', license],
-    queryFn: () => fetchMetrcTransfers(license),
-    staleTime: 60 * 1000, // 1 minute
+    queryKey: ['metrc-transfers', license],
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/transfers', { params: { license }, signal }).then(r => r.data),
+    staleTime: STALE_TIME.MEDIUM, // 1 minute
     refetchInterval: 5 * 60 * 1000, // Poll every 5 minutes
   })
 

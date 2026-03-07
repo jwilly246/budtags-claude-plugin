@@ -1,6 +1,6 @@
 # BudTags Claude Plugin
 
-**Version 1.7.1**
+**Version 2.0.0**
 
 A comprehensive Claude Code plugin for BudTags development - includes cannabis compliance integrations (Metrc, LeafLink), accounting (QuickBooks), modern frontend tooling, planning workflows, and specialized agents.
 
@@ -40,30 +40,31 @@ Choose from:
 
 ---
 
-## Skills (21)
+## Skills (22)
 
 Domain-specific knowledge that Claude can reference during development.
 
 ### Cannabis Industry Integrations
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **Metrc API** | 2.0.1 | Cannabis compliance tracking API integration |
-| **Metrc Tinker** | 1.0.0 | Query any Metrc endpoint via Laravel Tinker |
+| **Metrc API** | 2.0.2 | Cannabis compliance tracking API integration |
+| **Metrc Tinker** | 2.0.0 | Query any Metrc endpoint via Laravel Tinker |
 | **LeafLink** | 1.0.0 | LeafLink wholesale marketplace API integration |
 
 ### Accounting & Business
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **QuickBooks** | 2.0.1 | QuickBooks Online OAuth, invoices, customers, payments |
+| **QuickBooks** | 2.0.0 | QuickBooks Online OAuth, invoices, customers, payments |
+| **Unleashed** | 1.0.0 | Unleashed Software inventory and order management API |
 
 ### Frontend Development
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **React 19** | 1.0.0 | React 19 new hooks, Actions, and migration guides |
+| **React 19** | 1.0.1 | React 19 new hooks, Actions, and migration guides |
 | **Inertia** | 1.0.1 | Inertia.js v2 patterns for Laravel + React full-stack development |
 | **Inertia React Dev** | 1.0.0 | Inertia.js v2 React client-side development patterns |
 | **Tailwind CSS** | 1.0.0 | Tailwind CSS v4 styling patterns and utilities |
-| **TanStack Query** | 1.0.0 | React Query v5 data fetching, caching, mutations |
+| **TanStack Query** | 1.1.0 | React Query v5 data fetching, caching, mutations |
 | **TanStack Table** | 1.0.0 | Headless table components with sorting, filtering, pagination |
 | **TanStack Virtual** | 1.0.0 | Virtualized list rendering for large datasets |
 | **Quill** | 1.0.0 | Quill.js rich text editor API and configuration |
@@ -72,7 +73,7 @@ Domain-specific knowledge that Claude can reference during development.
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **BudTags Testing** | 2.3.0 | PHPUnit test patterns, Mockery mocking, multi-tenancy test helpers |
-| **Verify Alignment** | 3.0.2 | Verify code against BudTags coding standards |
+| **Verify Alignment** | 3.0.3 | Verify code against BudTags coding standards |
 
 ### Infrastructure
 | Skill | Version | Description |
@@ -82,9 +83,9 @@ Domain-specific knowledge that Claude can reference during development.
 ### Planning & Workflow
 | Skill | Version | Description |
 |-------|---------|-------------|
-| **Create Plan** | 1.1.0 | Research-driven feature planning with codebase discovery |
-| **Decompose Plan** | 3.2.0 | Break plans into context-window-sized work units |
-| **Run Plan** | 1.6.0 | Autonomously execute decomposed work units |
+| **Create Plan** | 1.2.0 | Research-driven feature planning with codebase discovery |
+| **Decompose Plan** | 3.3.0 | Break plans into context-window-sized work units |
+| **Run Plan** | 1.7.0 | Autonomously execute decomposed work units |
 
 ### Label Printing
 | Skill | Version | Description |
@@ -99,7 +100,7 @@ Domain-specific knowledge that Claude can reference during development.
 
 ---
 
-## Agents (19)
+## Agents (20)
 
 Specialized subagents for the Task tool that handle specific domains. All agents use a compressed CLAUDE.md-style format (~40-80 lines each) with skill file pointers instead of inline documentation.
 
@@ -119,6 +120,7 @@ Specialized subagents for the Task tool that handle specific domains. All agents
 | **Metrc Specialist** | 2.0.0 | opus | Metrc cannabis tracking API expertise |
 | **LeafLink Specialist** | 2.0.0 | opus | LeafLink marketplace API integration expertise |
 | **QuickBooks Specialist** | 2.0.0 | opus | QuickBooks Online OAuth and API integration |
+| **Unleashed Specialist** | 1.0.0 | opus | Unleashed Software API integration expertise |
 
 ### Infrastructure & Data
 | Agent | Version | Model | Description |
@@ -129,7 +131,7 @@ Specialized subagents for the Task tool that handle specific domains. All agents
 ### Frontend Libraries
 | Agent | Version | Model | Description |
 |-------|---------|-------|-------------|
-| **TanStack Specialist** | 2.0.0 | opus | TanStack Query, Table, Virtual, Form, Router expertise |
+| **TanStack Specialist** | 2.1.0 | opus | TanStack Query, Table, Virtual, Form, Router expertise |
 
 ### Quality & Review
 | Agent | Version | Model | Description |
@@ -150,7 +152,7 @@ Specialized subagents for the Task tool that handle specific domains. All agents
 
 ---
 
-## Commands (23)
+## Commands (24)
 
 Slash commands available via `/budtags:<command>`.
 
@@ -184,6 +186,7 @@ Slash commands available via `/budtags:<command>`.
 | `leaflink` | LeafLink API reference |
 | `leaflink-help` | Interactive LeafLink API guidance |
 | `quickbooks-help` | QuickBooks Online API guidance |
+| `unleashed-help` | Unleashed Software API guidance |
 | `redis-help` | Redis caching patterns and guidance |
 
 ### Frontend Help

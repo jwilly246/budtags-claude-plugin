@@ -114,7 +114,6 @@ useInfiniteQuery({
 
 ```typescript
 function InfinitePackages() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
   const {
@@ -124,19 +123,17 @@ function InfinitePackages() {
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ['metrc', 'packages', license, 'infinite'],
-    queryFn: async ({ pageParam }) => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      // Metrc API uses lastModifiedStart/lastModifiedEnd for pagination
-      return api.packages_paginated(license, pageParam)
+    queryKey: ['metrc-packages', license, 'infinite'],
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
+      const response = await axios.get('/api/metrc/packages', {
+        params: { license, page: pageParam, per_page: 100 },
+      })
+      return response.data as { data: MetrcPackage[]; last_page: number; current_page: number }
     },
-    initialPageParam: new Date('2020-01-01').toISOString(),
+    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      // If we got a full page, there might be more
-      if (lastPage.length === 100) {
-        const lastPackage = lastPage[lastPage.length - 1]
-        return lastPackage.LastModified
+      if (lastPage.current_page < lastPage.last_page) {
+        return lastPage.current_page + 1
       }
       return undefined
     },
@@ -148,9 +145,9 @@ function InfinitePackages() {
   return (
     <div>
       <div className="grid grid-cols-1 gap-4">
-        {data.pages.map((page, i) => (
+        {data?.pages.map((page, i) => (
           <React.Fragment key={i}>
-            {page.map(pkg => (
+            {page.data.map(pkg => (
               <PackageCard key={pkg.Id} pkg={pkg} />
             ))}
           </React.Fragment>

@@ -11,6 +11,12 @@
 **Plant batch endpoints are ONLY accessible to Cultivation licenses.**
 Non-cultivation licenses will receive 401/403 errors.
 
+**MANDATORY guard before ANY plant batch endpoint call:**
+```php
+$license_type = explode('-', session('license'))[1] ?? null;
+abort_unless($license_type === 'C', 403, 'Plant batch endpoints require Cultivation license (AU-C-)');
+```
+
 ---
 
 ## GET Endpoints (6 endpoints)

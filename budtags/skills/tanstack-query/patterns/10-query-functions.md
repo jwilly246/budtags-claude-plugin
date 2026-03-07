@@ -144,18 +144,15 @@ useQuery<Package[], ApiError>({
 ### Metrc API with Error Handling
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function useMetrcPackages(license: string) {
-  const { user } = usePage<PageProps>().props
-
   return useQuery({
-    queryKey: ['metrc', 'packages', license],
+    queryKey: metrcPackageKeys.byLicense(license),
     queryFn: async ({ signal }) => {
-      const api = new MetrcApi()
-      api.set_user(user)
-
       try {
-        const packages = await api.packages(license, signal)
-        return packages
+        const response = await axios.get(`/metrc/packages/${license}`, { signal })
+        return response.data
       } catch (error) {
         if (error.response?.status === 401) {
           throw new Error('Invalid Metrc API key. Please check your secrets.')

@@ -25,21 +25,22 @@
 ### Step 1: Get Available Tags
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
+$facility = session('facility');
 
 // Check license type
 $licenseType = explode('-', $license)[1];
 if ($licenseType !== 'C') {
-    throw new Exception("Plant tags only available for cultivation licenses");
+    return redirect()->back()->with('message', 'Plant tags only available for cultivation licenses');
 }
 
 // Get available plant tags
 $availableTags = $api->get("/tags/v2/plant/available?licenseNumber={$license}");
 
 if (count($availableTags) === 0) {
-    throw new Exception("No plant tags available. Order more from Metrc.");
+    return redirect()->back()->with('message', 'No plant tags available. Order more from Metrc.');
 }
 ```
 
@@ -68,13 +69,24 @@ $tagReplacements = [
 try {
     $api->put("/plants/v2/tag?licenseNumber={$license}", $tagReplacements);
 
-    Log::info("Replaced " . count($tagReplacements) . " plant tags");
+    LogService::store(
+        'plant_tags_replaced',
+        "Replaced " . count($tagReplacements) . " plant tags",
+        null,
+        request()->user()->active_org_id
+    );
 
     return redirect()->back()->with('message', count($tagReplacements) . ' tags replaced successfully');
 
 } catch (\Exception $e) {
-    Log::error("Tag replacement failed: " . $e->getMessage());
-    return redirect()->back()->with('error', $e->getMessage());
+    LogService::store(
+        'plant_tags_replacement_failed',
+        "Tag replacement failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
+
+    return redirect()->back()->with('message', 'Failed to replace tags: ' . $e->getMessage());
 }
 ```
 
@@ -88,17 +100,7 @@ $availableTagLabels = array_column($availableTags, 'Label');
 
 foreach ($tagReplacements as $replacement) {
     if (!in_array($replacement['NewTag'], $availableTagLabels)) {
-        throw new Exception("Tag {$replacement['NewTag']} not available");
-    }
-}
-
-// Ensure old tags exist
-$allPlants = $api->get("/plants/v2/vegetative?licenseNumber={$license}");
-$plantLabels = array_column($allPlants, 'Label');
-
-foreach ($tagReplacements as $replacement) {
-    if (!in_array($replacement['PlantLabel'], $plantLabels)) {
-        throw new Exception("Plant {$replacement['PlantLabel']} not found");
+        return redirect()->back()->with('message', "Tag {$replacement['NewTag']} not available");
     }
 }
 ```

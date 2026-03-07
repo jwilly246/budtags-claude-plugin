@@ -123,16 +123,16 @@ This prevents unnecessary re-renders.
 ### Add Package to Cache After Creation
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 const createMutation = useMutation({
-  mutationFn: async (data) => {
-    const api = new MetrcApi()
-    api.set_user(user)
-    return api.create_package(license, data)
-  },
+  mutationFn: (data: CreatePackageData) =>
+    axios.post('/metrc/packages/create', { ...data, license }),
   onSuccess: (newPackage) => {
-    // Add to list cache
+    // Use queryOptions factory for typed cache access
+    const opts = metrcQueries.packages(license)
     queryClient.setQueryData(
-      ['metrc', 'packages', license],
+      opts.queryKey,
       (old: Package[]) => [...(old ?? []), newPackage]
     )
 
@@ -144,22 +144,24 @@ const createMutation = useMutation({
 ### Update Package in Cache
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 const adjustMutation = useMutation({
   mutationFn: (data) =>
     axios.post(`/metrc/packages/${data.id}/adjust`, data),
   onSuccess: (updatedPackage) => {
-    // Update in list
+    // Use queryOptions factory for typed cache access
+    const listOpts = metrcQueries.packages(license)
     queryClient.setQueryData(
-      ['metrc', 'packages', license],
+      listOpts.queryKey,
       (old: Package[]) =>
         old?.map(pkg => pkg.Id === updatedPackage.Id ? updatedPackage : pkg)
     )
 
-    // Update detail
-    queryClient.setQueryData(
-      ['metrc', 'package', license, updatedPackage.Id],
-      updatedPackage
-    )
+    // Update detail — use queryOptions factory for the detail query
+    const detailOpts = metrcQueries.packageDetail(license, updatedPackage.Id)
+    queryClient.setQueryData(detailOpts.queryKey, updatedPackage)
 
     toast.success('Package adjusted')
   },
@@ -169,17 +171,22 @@ const adjustMutation = useMutation({
 ### Remove Package from Cache
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 const deleteMutation = useMutation({
-  mutationFn: (id: number) => axios.delete(`/packages/${id}`),
+  mutationFn: (id: number) => axios.delete(`/metrc/packages/${id}`),
   onSuccess: (_, deletedId) => {
-    // Remove from list
+    // Remove from list — use queryOptions factory for typed key
+    const listOpts = metrcQueries.packages(license)
     queryClient.setQueryData(
-      ['packages'],
-      (old: Package[]) => old?.filter(pkg => pkg.id !== deletedId)
+      listOpts.queryKey,
+      (old: Package[]) => old?.filter(pkg => pkg.Id !== deletedId)
     )
 
     // Remove detail
-    queryClient.removeQueries({ queryKey: ['package', deletedId] })
+    const detailOpts = metrcQueries.packageDetail(license, deletedId)
+    queryClient.removeQueries({ queryKey: detailOpts.queryKey })
 
     toast.success('Package deleted')
   },
@@ -189,19 +196,23 @@ const deleteMutation = useMutation({
 ### Optimistic Update with Rollback
 
 ```typescript
-const finishMutation = useMutation({
-  mutationFn: (id: number) => axios.post(`/packages/${id}/finish`),
-  onMutate: async (id) => {
-    // Cancel outgoing refetches
-    await queryClient.cancelQueries({ queryKey: ['packages'] })
+import { metrcQueries } from '@/Hooks/metrc/queries'
 
-    // Snapshot
-    const previous = queryClient.getQueryData(['packages'])
+const finishMutation = useMutation({
+  mutationFn: (id: number) => axios.post(`/metrc/packages/${id}/finish`),
+  onMutate: async (id) => {
+    const opts = metrcQueries.packages(license)
+
+    // Cancel outgoing refetches
+    await queryClient.cancelQueries({ queryKey: opts.queryKey })
+
+    // Snapshot — typed via queryOptions factory
+    const previous = queryClient.getQueryData(opts.queryKey)
 
     // Optimistic update
-    queryClient.setQueryData(['packages'], (old: Package[]) =>
+    queryClient.setQueryData(opts.queryKey, (old: Package[]) =>
       old.map(pkg =>
-        pkg.id === id ? { ...pkg, FinishedDate: new Date().toISOString() } : pkg
+        pkg.Id === id ? { ...pkg, FinishedDate: new Date().toISOString() } : pkg
       )
     )
 
@@ -209,11 +220,13 @@ const finishMutation = useMutation({
   },
   onError: (err, id, context) => {
     // Rollback
-    queryClient.setQueryData(['packages'], context.previous)
+    const opts = metrcQueries.packages(license)
+    queryClient.setQueryData(opts.queryKey, context.previous)
   },
   onSettled: () => {
     // Refetch
-    queryClient.invalidateQueries({ queryKey: ['packages'] })
+    const opts = metrcQueries.packages(license)
+    queryClient.invalidateQueries({ queryKey: opts.queryKey })
   },
 })
 ```
@@ -221,21 +234,19 @@ const finishMutation = useMutation({
 ### Seed Detail Cache from List
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function PackagesList() {
   const queryClient = useQueryClient()
 
-  const { data: packages } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: fetchPackages,
-  })
+  // Use queryOptions factory for typed query + cache access
+  const { data: packages } = useQuery(metrcQueries.packages(license))
 
   // Seed detail cache for each package
   useEffect(() => {
     packages?.forEach(pkg => {
-      queryClient.setQueryData(
-        ['metrc', 'package', license, pkg.Id],
-        pkg
-      )
+      const detailOpts = metrcQueries.packageDetail(license, pkg.Id)
+      queryClient.setQueryData(detailOpts.queryKey, pkg)
     })
   }, [packages, license, queryClient])
 
@@ -246,10 +257,13 @@ function PackagesList() {
 ### Update Multiple Queries
 
 ```typescript
+// For domains with key factories, use them for typed cache access.
+// For simpler domains without factories, flat kebab-case keys are fine.
 const updateMutation = useMutation({
-  mutationFn: updateStrain,
+  mutationFn: (data: UpdateStrainData) =>
+    axios.put(`/strains/${data.id}`, data),
   onSuccess: (updatedStrain) => {
-    // Update in all organization's queries
+    // Update in list — flat kebab-case key
     queryClient.setQueryData(
       ['strains', orgId],
       (old: Strain[]) =>
@@ -257,7 +271,7 @@ const updateMutation = useMutation({
     )
 
     // Update detail
-    queryClient.setQueryData(['strain', updatedStrain.id], updatedStrain)
+    queryClient.setQueryData(['strain-detail', updatedStrain.id], updatedStrain)
 
     // Update in labels query (if strain is used)
     queryClient.setQueryData(

@@ -57,12 +57,31 @@ $sale = [
 **Endpoint**: `POST /sales/v2/receipts`
 
 ```php
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
+$license = session('license');
+
 try {
     $api->post("/sales/v2/receipts?licenseNumber={$license}", $sale);
+
+    LogService::store(
+        'record_sales_receipt',
+        'Sale recorded successfully',
+        null,
+        request()->user()->active_org_id
+    );
+
     return redirect()->back()->with('message', 'Sale recorded successfully');
+
 } catch (\Exception $e) {
-    Log::error("Sales receipt failed: " . $e->getMessage());
-    return redirect()->back()->with('error', $e->getMessage());
+    LogService::store(
+        'record_sales_receipt_failed',
+        "Sales receipt failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
+
+    return redirect()->back()->with('message', 'Failed to record sale: ' . $e->getMessage());
 }
 ```
 

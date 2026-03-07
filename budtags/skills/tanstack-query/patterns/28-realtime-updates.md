@@ -215,6 +215,8 @@ function useWebSocket(url: string) {
 Refetch queries when WebSocket receives update:
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function usePackageUpdates(license: string) {
   const queryClient = useQueryClient()
 
@@ -227,12 +229,12 @@ function usePackageUpdates(license: string) {
       if (type === 'PACKAGE_UPDATED') {
         // Invalidate specific package
         queryClient.invalidateQueries({
-          queryKey: ['metrc', 'package', packageId],
+          queryKey: ['metrc-package-detail', packageId],
         })
 
         // Invalidate package list
         queryClient.invalidateQueries({
-          queryKey: ['metrc', 'packages', license],
+          queryKey: metrcPackageKeys.byLicense(license),
         })
 
         toast.info('Package updated')
@@ -243,8 +245,9 @@ function usePackageUpdates(license: string) {
   }, [license, queryClient])
 
   return useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: () => fetchPackages(license),
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license }, signal }).then(r => r.data),
   })
 }
 ```
@@ -341,16 +344,14 @@ function useSSE(endpoint: string) {
 Poll for active packages every 30 seconds:
 
 ```typescript
-function useMetrcPackages(license: string, filter: 'active' | 'inactive') {
-  const { user } = usePage<PageProps>().props
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { STALE_TIME } from '@/constants/query-config'
 
+function useMetrcPackages(license: string, filter: 'active' | 'inactive') {
   return useQuery({
-    queryKey: ['metrc', 'packages', license, filter],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license, filter)
-    },
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license, filter }, signal }).then(r => r.data),
     refetchInterval: (query) => {
       // Only poll active packages
       if (filter !== 'active') return false
@@ -362,7 +363,7 @@ function useMetrcPackages(license: string, filter: 'active' | 'inactive') {
       return 30000
     },
     refetchIntervalInBackground: false, // Stop when tab inactive
-    staleTime: 20 * 1000, // Consider data stale after 20 seconds
+    staleTime: STALE_TIME.SHORT, // Consider data stale after 20 seconds
   })
 }
 ```
@@ -468,13 +469,17 @@ function useTransferCheckIn(transferId: number) {
 ### Conditional Polling Based on Filter
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { STALE_TIME } from '@/constants/query-config'
+
 function PackagesPage() {
   const [filter, setFilter] = useState<'active' | 'inactive'>('active')
   const license = usePage<PageProps>().props.session.license
 
   const { data, isFetching } = useQuery({
-    queryKey: ['metrc', 'packages', license, filter],
-    queryFn: () => fetchPackages(license, filter),
+    queryKey: ['metrc-packages', license, filter],
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license, filter }, signal }).then(r => r.data),
     refetchInterval: (query) => {
       // Only poll active packages
       if (filter === 'inactive') return false
@@ -485,7 +490,7 @@ function PackagesPage() {
       // Poll every 30 seconds if there are active packages
       return hasActivePackages ? 30000 : false
     },
-    staleTime: 20 * 1000,
+    staleTime: STALE_TIME.SHORT,
   })
 
   return (
@@ -514,6 +519,8 @@ function PackagesPage() {
 ### Real-Time Inventory Updates Across Licenses
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function useMultiLicenseUpdates(licenses: string[]) {
   const queryClient = useQueryClient()
   const { user } = usePage<PageProps>().props
@@ -530,7 +537,7 @@ function useMultiLicenseUpdates(licenses: string[]) {
     }) => {
       // Invalidate packages for affected license
       queryClient.invalidateQueries({
-        queryKey: ['metrc', 'packages', event.license],
+        queryKey: metrcPackageKeys.byLicense(event.license),
       })
 
       // Show notification if it's one of our monitored licenses

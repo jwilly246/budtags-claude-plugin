@@ -27,8 +27,8 @@
 ### Step 1: Prepare Lab Test Data
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
 
 $packageLabel = '1A4060300000001000000050';
@@ -74,13 +74,24 @@ $testResults = [
 try {
     $api->post("/labtests/v2/record?licenseNumber={$license}", $testResults);
 
-    Log::info("Lab test results submitted for package {$packageLabel}");
+    LogService::store(
+        'lab_results_submitted',
+        "Lab test results submitted for package {$packageLabel}",
+        null,
+        request()->user()->active_org_id
+    );
 
     return redirect()->back()->with('message', 'Lab test results submitted successfully');
 
 } catch (\Exception $e) {
-    Log::error("Lab test submission failed: " . $e->getMessage());
-    return redirect()->back()->with('error', $e->getMessage());
+    LogService::store(
+        'lab_results_failed',
+        "Lab test submission failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
+
+    return redirect()->back()->with('message', 'Failed to submit lab results: ' . $e->getMessage());
 }
 ```
 

@@ -1,7 +1,7 @@
 ---
 name: decompose-plan
 description: Decomposes a plan file into context-window-sized work units with dependency tracking. FILE CREATION ONLY - does NOT implement or execute any code.
-version: 3.2.0
+version: 3.3.0
 category: workflow
 auto_activate:
   keywords:
@@ -152,6 +152,8 @@ Based on work unit content, assign the best specialist agent. The agent type det
 | Backend controllers, services | `php-developer` | (none - reads patterns) |
 | Database migrations, models | `php-developer` | (none - reads patterns) |
 | Mixed frontend + backend | `fullstack-developer` | (none - fallback) |
+
+**CRITICAL for Metrc work units:** Any work unit that involves MetrcApi controller methods MUST include a task to verify `$api->set_user(request()->user())` is called before any API interaction. Queue jobs must accept User via constructor and call `$api->set_user($this->user)`. See `METRC_API_RULES.md` "User Context Management" section.
 
 **Selection Priority:**
 1. If work involves a specific integration (Metrc, QuickBooks, LeafLink), use that specialist

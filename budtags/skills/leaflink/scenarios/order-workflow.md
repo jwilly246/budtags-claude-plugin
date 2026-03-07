@@ -44,7 +44,7 @@ $api = new LeafLinkApi();
 $orders = $api->get_orders(
     page: 1,
     status: 'confirmed',
-    path: route('leaflink.orders')
+    path: '/leaflink/orders'
 );
 
 // Iterate through orders
@@ -60,7 +60,7 @@ foreach ($orders as $order) {
 $orders = $api->get_orders(
     page: 1,
     status: 'all',
-    path: route('leaflink.orders'),
+    path: '/leaflink/orders',
     extraParams: [
         'created_date__gte' => now()->subDays(30)->toDateString(),
         'created_date__lte' => now()->toDateString()
@@ -228,7 +228,7 @@ public function accept_order(string $orderId)
             "Total: \${$order['total']}"
         );
 
-        return redirect()->back()->with('success', 'Order accepted');
+        return redirect()->back()->with('message', 'Order accepted');
     }
 
     $error = $response->json('detail') ?? 'Failed to accept order';
@@ -275,7 +275,7 @@ public function ship_order(Request $request)
             new OrderShipped($order, $trackingNumber)
         );
 
-        return redirect()->back()->with('success', 'Order marked as shipped');
+        return redirect()->back()->with('message', 'Order marked as shipped');
     }
 
     return redirect()->back()->with('error', 'Failed to ship order');
@@ -467,7 +467,7 @@ class LeafLinkOrderController extends Controller
         $orders = $api->get_orders(
             page: $page,
             status: $status,
-            path: route('leaflink.orders'),
+            path: '/leaflink/orders',
             extraParams: [
                 'created_date__gte' => $request->input('date_from', now()->subDays(30)->toDateString()),
                 'created_date__lte' => $request->input('date_to', now()->toDateString())
@@ -515,7 +515,7 @@ class LeafLinkOrderController extends Controller
                 "Order #{$order['number']}: {$values['action']}"
             );
 
-            return redirect()->back()->with('success', 'Order transitioned successfully');
+            return redirect()->back()->with('message', 'Order transitioned successfully');
         }
 
         $error = $response->json('detail') ?? 'Failed to transition order';

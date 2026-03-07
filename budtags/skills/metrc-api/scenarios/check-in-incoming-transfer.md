@@ -26,19 +26,18 @@
 ### Step 1: Get Incoming Transfers
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
+$facility = session('facility');
 
-// Get pending incoming transfers
-$incoming = $api->get("/transfers/v2/incoming", [
-    'licenseNumber' => $license
-]);
+// Get incoming transfers using public method
+$incoming = $api->fetch_transfers_bulk($facility, 'incoming');
 
 // Filter to pending only
-$pending = array_filter($incoming, function($transfer) {
-    return $transfer['ShipmentTransactionType'] === 'Standard' &&
-           !$transfer['ReceivedDateTime'];
+$pending = collect($incoming)->filter(function ($transfer) {
+    return $transfer['ShipmentTransactionType'] === 'Standard'
+        && !$transfer['ReceivedDateTime'];
 });
 ```
 
@@ -46,7 +45,7 @@ $pending = array_filter($incoming, function($transfer) {
 
 ```php
 // Get first pending transfer
-$transfer = $pending[0];
+$transfer = $pending->first();
 $deliveryId = $transfer['DeliveryId'];
 
 // Get packages in delivery
@@ -87,6 +86,13 @@ $incomingTransfer = [
 ];
 
 $api->post("/transfers/v2/external/incoming?licenseNumber={$license}", $incomingTransfer);
+
+LogService::store(
+    'transfer_checked_in',
+    "Checked in incoming transfer from {$transfer['ShipperName']}",
+    null,
+    request()->user()->active_org_id
+);
 ```
 
 ---
@@ -98,7 +104,7 @@ $api->post("/transfers/v2/external/incoming?licenseNumber={$license}", $incoming
 
 ```php
 if ($transfer['ReceivedDateTime']) {
-    throw new Exception("Transfer already accepted on " . $transfer['ReceivedDateTime']);
+    return redirect()->back()->with('message', "Transfer already accepted on " . $transfer['ReceivedDateTime']);
 }
 ```
 

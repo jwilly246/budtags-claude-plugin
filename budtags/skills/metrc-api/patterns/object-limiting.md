@@ -17,12 +17,12 @@ The Metrc API enforces **object limiting** to ensure reliable performance and fa
 
 Any API endpoint that accepts an **array of objects** in the request body:
 
-- `POST /packages/v1/create` - Creating multiple packages
-- `POST /packages/v1/adjust` - Adjusting multiple packages
-- `POST /plants/v1/create/plantings` - Creating multiple plants
-- `POST /sales/v1/receipts` - Recording multiple sales receipts
-- `PUT /packages/v1/item` - Changing item for multiple packages
-- `DELETE /plants/v1/{ids}` - Destroying multiple plants
+- `POST /packages/v2/create` - Creating multiple packages
+- `POST /packages/v2/adjust` - Adjusting multiple packages
+- `POST /plants/v2/create/plantings` - Creating multiple plants
+- `POST /sales/v2/receipts` - Recording multiple sales receipts
+- `PUT /packages/v2/item` - Changing item for multiple packages
+- `DELETE /plants/v2/{ids}` - Destroying multiple plants
 - And many more...
 
 ### HTTP 413 Error Response
@@ -47,34 +47,24 @@ To process more than 10 objects, you must **chunk** your requests into batches o
 ### Example: Creating 35 Packages
 
 **❌ WRONG - Will fail with HTTP 413:**
-```javascript
-const packages = [...]; // 35 packages
+```php
+$packages = [...]; // 35 packages
 
-await axios.post('/packages/v1/create', packages, {
-  params: { licenseNumber: facility }
-});
+$api->post("/packages/v2/create?licenseNumber={$license}", $packages);
 // ERROR: HTTP 413 - Request Entity Too Large
 ```
 
 **✅ CORRECT - Chunk into batches of 10:**
-```javascript
-const packages = [...]; // 35 packages
-const BATCH_SIZE = 10;
+```php
+$packages = [...]; // 35 packages
+$BATCH_SIZE = 10;
 
-// Split into chunks
-const chunks = [];
-for (let i = 0; i < packages.length; i += BATCH_SIZE) {
-  chunks.push(packages.slice(i, i + BATCH_SIZE));
-}
+// Split into chunks of 10
+$chunks = array_chunk($packages, $BATCH_SIZE);
 
-// Process each chunk sequentially (to respect rate limits)
-for (const chunk of chunks) {
-  await axios.post('/packages/v1/create', chunk, {
-    params: { licenseNumber: facility }
-  });
-
-  // Optional: Add delay between batches to avoid rate limiting
-  await new Promise(resolve => setTimeout(resolve, 500));
+// Process each chunk sequentially
+foreach ($chunks as $chunk) {
+    $api->post("/packages/v2/create?licenseNumber={$license}", $chunk);
 }
 
 // Result: 4 API calls (10 + 10 + 10 + 5 packages)
@@ -88,16 +78,16 @@ for (const chunk of chunks) {
 
 ### Response Format
 
-```javascript
-// Request: Create 3 packages
-POST /packages/v1/create
+```
+Request: Create 3 packages
+POST /packages/v2/create?licenseNumber=AU-R-000001
 [
-  { Tag: "1A4000000000001", ... },
-  { Tag: "1A4000000000002", ... },
-  { Tag: "1A4000000000003", ... }
+  { "Tag": "1A4000000000001", ... },
+  { "Tag": "1A4000000000002", ... },
+  { "Tag": "1A4000000000003", ... }
 ]
 
-// Response: Array of created IDs (order preserved)
+Response: Array of created IDs (order preserved)
 HTTP 200 OK
 [12345, 12346, 12347]
 ```
@@ -109,32 +99,23 @@ HTTP 200 OK
 
 ### Example: Tracking Created Packages
 
-```javascript
-const packagesTo Create = [
-  { Tag: "1A4000000000001", Item: "Flower", Quantity: 10, ... },
-  { Tag: "1A4000000000002", Item: "Edible", Quantity: 5, ... },
-  { Tag: "1A4000000000003", Item: "Concentrate", Quantity: 2, ... }
+```php
+$packagesToCreate = [
+    ['Tag' => '1A4000000000001', 'Item' => 'Flower', 'Quantity' => 10, ...],
+    ['Tag' => '1A4000000000002', 'Item' => 'Edible', 'Quantity' => 5, ...],
+    ['Tag' => '1A4000000000003', 'Item' => 'Concentrate', 'Quantity' => 2, ...],
 ];
 
-const response = await axios.post('/packages/v1/create', packagesToCreate, {
-  params: { licenseNumber: facility }
-});
+$response = $api->post("/packages/v2/create?licenseNumber={$license}", $packagesToCreate);
 
-// response.data = [12345, 12346, 12347]
-const createdIds = response.data;
+// $response = [12345, 12346, 12347]
+$createdIds = $response;
 
 // Map tags to IDs
-const tagToId = packagesToCreate.map((pkg, i) => ({
-  tag: pkg.Tag,
-  metrcId: createdIds[i]
-}));
-
-console.log(tagToId);
-// [
-//   { tag: "1A4000000000001", metrcId: 12345 },
-//   { tag: "1A4000000000002", metrcId: 12346 },
-//   { tag: "1A4000000000003", metrcId: 12347 }
-// ]
+$tagToId = collect($packagesToCreate)->map(fn($pkg, $i) => [
+    'tag' => $pkg['Tag'],
+    'metrc_id' => $createdIds[$i],
+])->all();
 ```
 
 ---
@@ -143,40 +124,29 @@ console.log(tagToId);
 
 ### Handle HTTP 413 Gracefully
 
-```javascript
-async function createPackagesSafely(packages, facility) {
-  const BATCH_SIZE = 10;
-  const createdIds = [];
+```php
+public function create_packages_safely(array $packages, string $license): array
+{
+    $BATCH_SIZE = 10;
+    $createdIds = [];
 
-  try {
     // Split into chunks
-    const chunks = [];
-    for (let i = 0; i < packages.length; i += BATCH_SIZE) {
-      chunks.push(packages.slice(i, i + BATCH_SIZE));
+    $chunks = array_chunk($packages, $BATCH_SIZE);
+
+    foreach ($chunks as $index => $chunk) {
+        try {
+            $response = $api->post("/packages/v2/create?licenseNumber={$license}", $chunk);
+            $createdIds = array_merge($createdIds, $response);
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), '413')) {
+                // This should never happen with proper chunking
+                LogService::store('metrc_413_error', "HTTP 413 despite chunking to 10! Chunk size: " . count($chunk));
+            }
+            throw $e;
+        }
     }
 
-    // Process each chunk
-    for (const chunk of chunks) {
-      const response = await axios.post('/packages/v1/create', chunk, {
-        params: { licenseNumber: facility }
-      });
-
-      createdIds.push(...response.data);
-
-      // Add delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-
-    return { success: true, ids: createdIds };
-
-  } catch (error) {
-    if (error.response?.status === 413) {
-      // This should never happen with proper chunking, but handle it anyway
-      throw new Error('Request too large - reduce batch size below 10 objects');
-    }
-
-    throw error;
-  }
+    return $createdIds;
 }
 ```
 
@@ -187,23 +157,22 @@ async function createPackagesSafely(packages, facility) {
 ### 1. Forgetting to Chunk Large Datasets
 
 **Problem:**
-```javascript
+```php
 // User wants to create 100 packages at once
-const packages = generatePackages(100);
-await createPackages(packages); // ❌ Will fail with HTTP 413
+$packages = $this->generate_packages(100);
+$api->post("/packages/v2/create?licenseNumber={$license}", $packages);
+// ❌ Will fail with HTTP 413
 ```
 
 **Solution:**
 Always check array length before making requests:
-```javascript
-if (packages.length > 10) {
-  // Must chunk into batches
-  return await createPackagesSafely(packages, facility);
+```php
+if (count($packages) > 10) {
+    // Must chunk into batches
+    return $this->create_packages_safely($packages, $license);
 } else {
-  // Can send directly
-  return await axios.post('/packages/v1/create', packages, {
-    params: { licenseNumber: facility }
-  });
+    // Can send directly
+    return $api->post("/packages/v2/create?licenseNumber={$license}", $packages);
 }
 ```
 
@@ -213,35 +182,27 @@ if (packages.length > 10) {
 If you're chunking 35 packages (4 batches), and batch 3 fails, what happens to batches 1 and 2?
 
 **Solution:**
-Implement transactional rollback or partial success handling:
-```javascript
-const results = [];
-const failures = [];
+Implement partial success handling:
+```php
+$results = [];
+$failures = [];
 
-for (let i = 0; i < chunks.length; i++) {
-  try {
-    const response = await axios.post('/packages/v1/create', chunks[i], {
-      params: { licenseNumber: facility }
-    });
+foreach ($chunks as $index => $chunk) {
+    try {
+        $response = $api->post("/packages/v2/create?licenseNumber={$license}", $chunk);
+        $results[] = ['batch' => $index + 1, 'ids' => $response, 'success' => true];
+    } catch (\Exception $e) {
+        $failures[] = ['batch' => $index + 1, 'error' => $e->getMessage(), 'packages' => $chunk];
+        LogService::store('batch_chunk_failed', "Batch " . ($index + 1) . " failed: " . $e->getMessage());
 
-    results.push({
-      batch: i + 1,
-      ids: response.data,
-      success: true
-    });
-  } catch (error) {
-    failures.push({
-      batch: i + 1,
-      error: error.message,
-      packages: chunks[i]
-    });
-
-    // Decision: Continue or stop?
-    if (stopOnFirstError) break;
-  }
+        // Decision: Continue or stop?
+        if ($stopOnFirstError) {
+            break;
+        }
+    }
 }
 
-return { results, failures };
+return ['results' => $results, 'failures' => $failures];
 ```
 
 ### 3. Not Accounting for Rate Limits
@@ -250,27 +211,20 @@ return { results, failures };
 Chunking helps with object limits, but you can still hit rate limits if you send chunks too fast.
 
 **Solution:**
-Add delays between batches and handle 429 responses:
-```javascript
-for (const chunk of chunks) {
-  try {
-    await axios.post('/packages/v1/create', chunk, {
-      params: { licenseNumber: facility }
-    });
-
-    // Wait 500ms between batches
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-  } catch (error) {
-    if (error.response?.status === 429) {
-      // Rate limit hit - wait for Retry-After header
-      const retryAfter = parseInt(error.response.headers['retry-after'] || 60);
-      await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-
-      // Retry this chunk
-      // ... (implement retry logic)
+Handle 429 responses with Retry-After:
+```php
+foreach ($chunks as $chunk) {
+    try {
+        $api->post("/packages/v2/create?licenseNumber={$license}", $chunk);
+    } catch (\Exception $e) {
+        if (str_contains($e->getMessage(), '429')) {
+            // Rate limit hit - wait for Retry-After header
+            LogService::store('metrc_rate_limited', 'Rate limited during batch operation, retrying...');
+            sleep(60); // Use Retry-After header value in practice
+            // Retry this chunk...
+        }
+        throw $e;
     }
-  }
 }
 ```
 
@@ -304,7 +258,6 @@ When chunking, you trade object limit compliance for increased API calls:
 
 ## Related Patterns
 
-- **[Rate Limiting](./rate-limiting.md)** - Handle 429 responses and Retry-After headers
 - **[Error Handling](./error-handling.md)** - Comprehensive error handling strategies
 - **[Batch Operations](./batch-operations.md)** - General batch processing patterns
 
@@ -316,13 +269,11 @@ When chunking, you trade object limit compliance for increased API calls:
 ✅ DO:
 - Chunk arrays into batches of 10 or fewer
 - Handle HTTP 413 errors gracefully
-- Add delays between batches to avoid rate limits
 - Track created IDs from POST responses
 - Implement partial success handling
 
 ❌ DON'T:
 - Send more than 10 objects in a single request
 - Ignore HTTP 413 errors
-- Send batches too quickly (rate limits)
 - Assume all objects succeed or fail together
 ```

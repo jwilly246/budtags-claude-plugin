@@ -45,71 +45,46 @@ $headers = [
 
 ---
 
-## Laravel Implementation
+## BudTags MetrcApi Usage
+
+BudTags wraps all Metrc API calls in `App\Services\Api\MetrcApi`. The `get()`/`post()` methods are **protected** — they enforce caching, rate limiting, and metrics internally. Always use the 147+ public methods instead.
+
+### Standard Controller Setup
 
 ```php
-use Illuminate\Support\Facades\Http;
+// Resolve from container (never use `new MetrcApi()`)
+$api = app(\App\Services\Api\MetrcApi::class);
 
-class MetrcApi
-{
-    private $apiKey;
-    private $baseUrl;
+// CRITICAL: Always set user context before any API call
+$api->set_user(request()->user());
 
-    public function set_user(User $user): void
-    {
-        $this->apiKey = $user->active_org->getMetrcKey();
+// License and facility from session
+$license = session('license');
+$facility = session('facility');
+```
 
-        if (!$this->apiKey) {
-            throw new Exception("No Metrc API key configured for organization");
-        }
+### Using Public Methods (Preferred)
 
-        // Determine base URL from state
-        $state = config('metrc.state', 'ca');
-        $environment = config('metrc.environment', 'production');
+```php
+// ✅ Use dedicated public methods — handles caching, rate limits, pagination
+$packages = $api->one_day_of_packages($facility, now()->format('Y-m-d'));
+$strains = $api->strains($facility);
+$plants = $api->one_day_of_plants($facility, now()->format('Y-m-d'));
+$transfers = $api->fetch_transfers_bulk($facility, 'incoming');
 
-        if ($environment === 'sandbox') {
-            $this->baseUrl = "https://sandbox-api-{$state}.metrc.com";
-        } else {
-            $this->baseUrl = "https://api-{$state}.metrc.com";
-        }
-    }
+// For write operations
+$api->packages_adjust($license, $adjustments);
+$api->change_plant_growth_phase($license, $phaseChanges);
+```
 
-    public function get(string $endpoint, array $params = []): array
-    {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . base64_encode("{$this->apiKey}:")
-        ])->get($this->baseUrl . $endpoint, $params);
+### Raw Endpoint Calls (When No Public Method Exists)
 
-        if ($response->failed()) {
-            $this->handleError($response);
-        }
-
-        return $response->json();
-    }
-
-    public function post(string $endpoint, array $data): array
-    {
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Authorization' => 'Basic ' . base64_encode("{$this->apiKey}:")
-        ])->post($this->baseUrl . $endpoint, $data);
-
-        if ($response->failed()) {
-            $this->handleError($response);
-        }
-
-        return $response->json() ?? [];
-    }
-
-    private function handleError($response): void
-    {
-        $status = $response->status();
-        $body = $response->body();
-
-        throw new Exception("Metrc API Error ({$status}): {$body}");
-    }
-}
+```php
+// Some endpoints don't have dedicated public methods
+// Use the raw get/post through available wrapper methods
+$labResults = $api->get("/packages/v2/{$packageId}/labtestresults", [
+    'licenseNumber' => $license,
+]);
 ```
 
 ---

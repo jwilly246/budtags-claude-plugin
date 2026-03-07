@@ -166,26 +166,17 @@ const { data, error } = useQuery({ queryKey: ['packages'], queryFn: fetchPackage
 ### Optimized Package List
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function PackagesList() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
-  // Memoize query options
-  const queryOptions = useMemo(
-    () => ({
-      queryKey: ['metrc', 'packages', license],
-      queryFn: async () => {
-        const api = new MetrcApi()
-        api.set_user(user)
-        return api.packages(license)
-      },
-      staleTime: 5 * 60 * 1000,
-    }),
-    [license, user]
-  )
-
-  // Only destructure what we need
-  const { data: packages } = useQuery(queryOptions)
+  // Spread queryOptions so queryKey, queryFn, and staleTime all come from the factory.
+  // No manual memoization needed — the factory returns a stable object.
+  const { data: packages } = useQuery({
+    ...metrcQueries.packages(license),
+    enabled: !!license,
+  })
 
   return <DataTable data={packages} />
 }
@@ -194,11 +185,14 @@ function PackagesList() {
 ### Select Optimization
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function PackageCount() {
-  // Only re-renders when count changes, not when packages change
+  const license = usePage<PageProps>().props.session.license
+
+  // Only re-renders when count changes, not when the full package list changes
   const { data: count } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: fetchPackages,
+    ...metrcQueries.packages(license),
     select: (packages) => packages.length,
   })
 
@@ -209,13 +203,15 @@ function PackageCount() {
 ### Memoized Filter
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function ActivePackages() {
+  const license = usePage<PageProps>().props.session.license
   const [showActive, setShowActive] = useState(true)
 
   const { data: packages } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: fetchPackages,
-    // Only re-render when filtered result changes
+    ...metrcQueries.packages(license),
+    // Stable selector reference prevents re-render when filter hasn't changed
     select: useCallback(
       (packages: Package[]) => {
         return packages.filter(pkg =>

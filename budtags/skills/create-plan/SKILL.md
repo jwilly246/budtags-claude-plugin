@@ -1,7 +1,7 @@
 ---
 name: create-plan
 description: Thorough, question-driven feature planning. Asks questions you haven't thought of. Fills gaps with questions, not assumptions. Produces comprehensive plan documents ready for decomposition.
-version: 1.1.0
+version: 1.2.0
 category: workflow
 auto_activate:
   keywords:
@@ -499,6 +499,13 @@ Before asking integration questions, map existing integrations:
 - What happens when the external service is down?
 - Are there webhooks involved?
 - What's the retry strategy for failures?
+
+**MetrcApi User Context (CRITICAL if Metrc integration involved):**
+- Every controller method using MetrcApi MUST call `$api->set_user(request()->user())` before any API interaction
+- Queue jobs MUST accept User via constructor and call `$api->set_user($this->user)` in `handle()`
+- Inside MetrcApi, `$this->user` is set by `set_user()` — some internal methods access it directly (no fallback), so omitting `set_user()` causes null-reference crashes in deeper code paths
+- The `headers()` method has a fallback (`$this->user ?? request()->user()`) that masks the problem — basic API calls appear to work without `set_user()`, but deeper methods crash
+- **Pre-commit and code review**: Verify `set_user()` is preserved when refactoring controller code
 
 **Existing Code:**
 - What existing models/services does this interact with?

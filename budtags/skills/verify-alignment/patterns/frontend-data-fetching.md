@@ -10,7 +10,13 @@
 
 BudTags uses **two data fetching patterns**: React Query (client-side caching) and Inertia (server-driven). Using the wrong tool creates bugs and poor UX.
 
-**Architecture Note (Dec 2025):** BudTags uses a **hooks-as-services** pattern where React Query hooks serve AS the service layer. There is NO separate `services/` directory - this is intentional. All fetch functions, query keys, and mutations are co-located in hook files.
+**Architecture Note (Mar 2026):** BudTags uses a **3-layer React Query architecture**. Domain code lives in `resources/js/Hooks/{domain}/` with three separate files:
+
+- **`keys.ts`** — Query key factories (plain objects of functions returning `as const` tuples)
+- **`queries.ts`** — `queryOptions()` factories bundling key + fn + staleTime (fetch functions are private, NOT exported)
+- **`use*.ts`** — Hook wrappers that spread `queryOptions` and add/override `enabled`, etc.
+
+Mutations live in hook files, NOT in `queries.ts`. Page-level queries with no reuse can co-locate in `{page}-queries.ts` next to the page component (e.g., `Pages/Org/Items/items-queries.ts`).
 
 **Complete Reference:** `.claude/docs/frontend/data-fetching.md` (~400 lines with full examples)
 
@@ -111,22 +117,27 @@ queryClient.invalidateQueries({ queryKey: ['quickbooks-items'] });
 
 ## Stale Time Guidelines
 
-Use the `STALE_TIME` constants from `@/app` for consistency:
+Use the `STALE_TIME` constants from `@/constants/query-config` — **never use raw millisecond numbers**:
 
 ```typescript
-import { STALE_TIME } from '@/app';
-// STALE_TIME.SHORT (2 min), DEFAULT (5 min), LONG (10 min), REGULATORY (24 hr)
+import { STALE_TIME } from '@/constants/query-config';
 ```
 
-| Entity Type | Stale Time | Constant | Example |
-|-------------|------------|----------|---------|
-| Invoices/Credit Memos | 2 min | `STALE_TIME.SHORT` | `useQuickBooksInvoices` |
-| Inventory/Packages | 5 min | `STALE_TIME.DEFAULT` | `useMetrcItems` |
-| Items/Products | 10 min | `STALE_TIME.LONG` | `useQuickBooksItems` |
-| Terms/Accounts | 10 min | `STALE_TIME.LONG` | `useQuickBooksTerms` |
-| **Regulatory/Static** | **24 hr** | `STALE_TIME.REGULATORY` | `useTestBatches` |
+| Constant | Duration | Use Case | Example |
+|----------|----------|----------|---------|
+| `STALE_TIME.REALTIME` | 5 sec | Real-time polling endpoints | Health checks |
+| `STALE_TIME.SUGGESTIONS` | 30 sec | Typeahead/autocomplete | Package search |
+| `STALE_TIME.MONITORING` | 30 sec | Monitoring dashboards | API monitor |
+| `STALE_TIME.POLLING` | 60 sec | Background polling | Transfer tracking |
+| `STALE_TIME.SHORT` | 2 min | Frequently changing data | Invoices, orders |
+| `STALE_TIME.DEFAULT` | 5 min | Most CRUD data (global default) | Products, customers |
+| `STALE_TIME.LONG` | 10 min | Rarely changing data | Brands, packages |
+| `STALE_TIME.STATIC` | 15 min | Nearly static reference data | Category dropdowns |
+| `STALE_TIME.REFERENCE` | 30 min | Lookup/reference data | Strains, UOM, items |
+| `STALE_TIME.REGULATORY` | 24 hr | Regulatory data | Lab test batches |
+| `STALE_TIME.FOREVER` | Infinity | Fetch once per page lifecycle | Static config |
 
-**REGULATORY** is for data that only changes with regulatory updates (test batch types, compliance categories, etc.)
+**Note:** `staleTime` is set inside `queryOptions()` factories in `queries.ts`, not in individual hooks or components.
 
 ---
 
@@ -282,95 +293,96 @@ export function useQuickBooksData(enabled: boolean = true) {
 
 ---
 
-### Domain-Organized Hooks (Consolidated Domain Logic)
+### Domain-Organized 3-Layer Architecture
 
-**Pattern:** Consolidate all hooks, constants, and helpers for a domain into a single file.
+**Pattern:** Separate domain logic into three files: `keys.ts`, `queries.ts`, and `use*.ts` hook wrappers.
 
-This extends the Composite Hook pattern by also including:
-- Module-level **constants** (exported)
-- Module-level **pure helper functions** (exported)
-- **Private fetchers** (internal)
-- **Individual hooks** (exported)
-- **Composite hook** that aggregates everything (exported)
+```
+resources/js/Hooks/{domain}/
+├── keys.ts         # Key factories only
+├── queries.ts      # queryOptions factories + private fetch functions
+└── use*.ts         # Hook wrappers (spread queryOptions) + mutations
+```
 
 ```typescript
-// ✅ GOOD - Domain-organized hook file structure
-// resources/js/Hooks/useTestingData.tsx
+// ── keys.ts — Key factories only ──
+// Two patterns: flat (metrc) or hierarchical (marketplace)
 
-// ========================================
-// Constants (module-level, exported)
-// ========================================
-export const PRODUCT_CATEGORY_TO_TEST_BATCH: Record<string, string> = { ... };
-export const RELEVANT_ADDITIONAL_TESTS: Record<string, string[]> = { ... };
-
-// ========================================
-// Pure Helper Functions (module-level, exported)
-// ========================================
-export const categorizeTestBatch = (batch: TestBatch): 'compliance' | 'additional' | 'rd' | 'other' => {
-    // Pure function - no React hooks, just logic
+// Pattern A: Flat (most Metrc reference data)
+export const metrcPackageKeys = {
+    all: () => ['metrc-packages'] as const,
+    byLicense: (license: string | null) => [...metrcPackageKeys.all(), license] as const,
+    paginated: (license: string | null, page: number, perPage: number) =>
+        ['metrc-packages-paginated', license, page, perPage] as const,
+    paginatedPrefix: (license: string | null) =>
+        ['metrc-packages-paginated', license] as const,  // for broad invalidation
 };
 
-// ========================================
-// Private Fetchers (internal)
-// ========================================
-const fetchTestBatches = async (): Promise<TestBatch[]> => {
-    const response = await fetch('/metrc/lab-tests/batches');
-    return response.json();
+// Pattern B: Hierarchical (marketplace entities with granular invalidation)
+export const marketplaceOrderKeys = {
+    all: (orgId: string, viewMode: 'seller' | 'buyer') =>
+        ['marketplace-orders', orgId, viewMode] as const,
+    lists: (orgId: string, viewMode: 'seller' | 'buyer') =>
+        [...marketplaceOrderKeys.all(orgId, viewMode), 'list'] as const,
+    list: (orgId: string, viewMode: 'seller' | 'buyer', filters?: object) =>
+        [...marketplaceOrderKeys.lists(orgId, viewMode), filters] as const,
+    details: (orgId: string, viewMode: 'seller' | 'buyer') =>
+        [...marketplaceOrderKeys.all(orgId, viewMode), 'detail'] as const,
+    detail: (orgId: string, viewMode: 'seller' | 'buyer', id: string) =>
+        [...marketplaceOrderKeys.details(orgId, viewMode), id] as const,
+};
+```
+
+```typescript
+// ── queries.ts — queryOptions factories + private fetchers ──
+import { queryOptions } from '@tanstack/react-query';
+import { STALE_TIME } from '@/constants/query-config';
+import { metrcPackageKeys } from './keys';
+import axios from 'axios';
+
+// Private fetch function (NOT exported)
+const fetchPackages = async (license: string, signal?: AbortSignal) => {
+    const { data } = await axios.get(`/metrc/packages/${license}`, { signal });
+    return data.packages;
 };
 
-// ========================================
-// Individual Hooks (exported)
-// ========================================
-export function useTestBatches(enabled: boolean = true) {
+// Exported queryOptions factory
+export const metrcQueries = {
+    packages: (license: string | null) => queryOptions({
+        queryKey: metrcPackageKeys.byLicense(license),
+        queryFn: ({ signal }) => fetchPackages(license!, signal),
+        staleTime: STALE_TIME.DEFAULT,
+    }),
+};
+```
+
+```typescript
+// ── useMetrcPackages.ts — Hook wrapper ──
+import { useQuery } from '@tanstack/react-query';
+import { metrcQueries } from './queries';
+
+export function useMetrcPackages(license: string | null, enabled = true) {
     return useQuery({
-        queryKey: ['metrc-test-batches'],
-        queryFn: fetchTestBatches,
-        enabled,
-        staleTime: STALE_TIME.REGULATORY,
+        ...metrcQueries.packages(license),  // spread queryOptions
+        enabled: enabled && !!license,       // add/override at consumption
     });
-}
-
-export function useSampleSizeCalculation(packages: Package[], category: string | null) {
-    return useMemo(() => {
-        // Calculation logic
-    }, [packages, category]);
-}
-
-// ========================================
-// Composite Hook (exports everything needed)
-// ========================================
-export function useTestingData({ packages, enabled = true }) {
-    const { data: testBatches, isLoading, error, refetch } = useTestBatches(enabled);
-    const primaryCategory = usePrimaryCategory(packages);
-    const suggestedBatch = useSuggestedBatch(primaryCategory, testBatches);
-
-    return {
-        testBatches,
-        isLoading,
-        error,
-        refetch,
-        primaryCategory,
-        suggestedBatch,
-        // Expose helper functions for UI
-        categorizeTestBatch,
-    };
 }
 ```
 
 **Use When:**
-- Domain has multiple related hooks, constants, and helpers
-- Want to reduce imports in consumer components
-- Logic is domain-specific (testing, QuickBooks, LeafLink, etc.)
-- Need to share constants between hooks and UI
+- Domain has multiple related queries (metrc, marketplace, leaflink)
+- Keys need to be imported separately for invalidation in mutations
+- Multiple hooks share the same fetch logic via `queryOptions`
 
-**Naming Convention:**
-- File: `use{Domain}Data.tsx` (e.g., `useTestingData.tsx`, `useQuickBooksData.tsx`)
-- Constants: `UPPER_SNAKE_CASE`
-- Helper functions: `snake_case` preferred (e.g., `categorize_test_batch`)
-- Hooks: `useCamelCase` (React convention, required by React)
-- Variables: `snake_case` preferred
+**When to co-locate instead (single file):**
+- Small domains with 1-2 queries (e.g., `usePendingTransferCart.tsx`, `useForecastBatch.tsx`)
+- Page-specific queries unlikely to be reused (e.g., `Pages/Org/Items/items-queries.ts`)
 
-**Reference:** `resources/js/Hooks/useTestingData.tsx`, `resources/js/Hooks/useQuickBooksData.tsx`
+**Naming Conventions:**
+- Key factory names: `{entity}Keys` (e.g., `metrcPackageKeys`, `marketplaceOrderKeys`)
+- Query factory names: `{domain}Queries` (e.g., `metrcQueries`, `marketplaceOrderQueries`)
+- Top-level key strings: kebab-case (`'metrc-packages'`, `'marketplace-orders'`)
+- Hook functions: `useCamelCase` (React convention, required by React)
 
 ---
 
@@ -528,20 +540,28 @@ const buttonClass = pendingConfirmation === itemId
 
 ### Reference Implementations
 
-**Query Hooks:**
-- `resources/js/Hooks/useQuickBooksData.tsx` - Composite hook pattern
-- `resources/js/Hooks/useMetrcItems.tsx` (in useQuickBooksData.tsx) - Single query hook
+**3-Layer Domain Pattern (keys → queries → hooks):**
+- `resources/js/Hooks/metrc/keys.ts` - Key factories (flat pattern)
+- `resources/js/Hooks/metrc/queries.ts` - `queryOptions` factories with `STALE_TIME`
+- `resources/js/Hooks/metrc/useMetrcPackages.ts` - Hook wrapper with spread pattern
+- `resources/js/Hooks/marketplace/keys.ts` - Key factories (hierarchical pattern)
+- `resources/js/Hooks/marketplace/queries.ts` - Multiple named `queryOptions` exports
+- `resources/js/Hooks/marketplace/useMarketplaceOrders.ts` - Hook + mutations + optimistic updates
 
-**Mutation Hooks:**
-- `resources/js/Hooks/useInlineQuantityEdit.tsx` - Mutation with optimistic updates
-- `resources/js/Hooks/useInlineTextEdit.tsx` - Text field mutations
+**Co-located Queries (small domains):**
+- `resources/js/Hooks/useQuickBooksData.tsx` - Composite hook with inline keys/queries
+- `resources/js/Pages/Org/Items/items-queries.ts` - Page-level co-located queries
+
+**Stale Time Constants:**
+- `resources/js/constants/query-config.ts` - All `STALE_TIME` constants
+
+**Prefetch Utilities:**
+- `resources/js/Hooks/metrc/prefetch.ts` - `usePrefetchPages` for adjacent-page prefetch
 
 **Supporting Hooks:**
 - `resources/js/Hooks/useLocalSync.tsx` - Local state sync with props
 - `resources/js/Hooks/useRefreshMetrcItems.tsx` - Non-React-Query refresh
-- `resources/js/Hooks/useRefreshMetrcLocations.tsx` - Non-React-Query refresh
 
 **Component Examples:**
 - `resources/js/Components/InventoryStatusMenu.tsx` - Mutation with confirmation workflow
-- `resources/js/Components/ChangeItemModal.tsx` - Combining useLocalSync + useMetrcItems
 - `resources/js/Pages/Quickbooks/Dashboard.tsx` - Using composite hook

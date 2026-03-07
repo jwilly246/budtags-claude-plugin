@@ -383,6 +383,9 @@ function Dashboard() {
 ### Metrc Packages with Suspense
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { STALE_TIME } from '@/constants/query-config'
+
 function PackagesPage() {
   const { reset } = useQueryErrorResetBoundary()
   const license = usePage<PageProps>().props.session.license
@@ -419,16 +422,11 @@ function PackagesPage() {
 }
 
 function PackagesTable({ license }: { license: string }) {
-  const { user } = usePage<PageProps>().props
-
   const { data: packages } = useSuspenseQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license, 'active')
-    },
-    staleTime: 30 * 1000,
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: async ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license, filter: 'active' }, signal }).then(r => r.data),
+    staleTime: STALE_TIME.SHORT,
   })
 
   return <DataTable data={packages} />
@@ -493,6 +491,8 @@ function DashboardContent({ orgId }: { orgId: number }) {
 ### Nested Suspense: Licenses → Packages → Lab Results
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function LicenseView({ license }: { license: string }) {
   return (
     <div>
@@ -510,17 +510,10 @@ function LicenseView({ license }: { license: string }) {
 }
 
 function LicenseInfo({ license }: { license: string }) {
-  const { user } = usePage<PageProps>().props
-
   const { data: facility } = useSuspenseQuery({
-    queryKey: ['metrc', 'facility', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.facilities().then(facilities =>
-        facilities.find(f => f.License.Number === license)
-      )
-    },
+    queryKey: ['metrc-facility', license],
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/facility', { params: { license }, signal }).then(r => r.data),
   })
 
   return (
@@ -532,15 +525,10 @@ function LicenseInfo({ license }: { license: string }) {
 }
 
 function PackagesList({ license }: { license: string }) {
-  const { user } = usePage<PageProps>().props
-
   const { data: packages } = useSuspenseQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license, 'active')
-    },
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license, filter: 'active' }, signal }).then(r => r.data),
   })
 
   return (

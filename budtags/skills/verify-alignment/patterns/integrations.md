@@ -16,7 +16,23 @@ All API integrations use dedicated service classes (`MetrcApi`, `QuickBooksApi`,
 
 ## Pattern 1: Service Usage with `set_user()`
 
-**Rule:** ALWAYS call `set_user(User $user)` before using API services.
+**Rule:** ALWAYS call `set_user(User $user)` before using API services. This is **SECURITY-CRITICAL** — omitting it causes silent failures or null-reference crashes in deeper code paths.
+
+### Why It's Critical
+
+`MetrcApi` has three user context patterns, and understanding the difference prevents a class of subtle bugs:
+
+| Pattern | Where Used | Behavior if `set_user()` Not Called |
+|---------|-----------|-------------------------------------|
+| `$this->user` (direct) | `one_day_of_packages()`, auto-label dispatch, some helper methods | **CRASHES** — `null->active_org` |
+| `$this->user ?? request()->user()` (fallback) | `headers()`, API authentication | Works in HTTP context, **CRASHES in jobs** |
+| `$api->set_user($user)` (explicit) | Controllers, jobs | Sets `$this->user` — must always be called |
+
+**The danger**: Because `headers()` has a fallback to `request()->user()`, basic API calls _appear_ to work without `set_user()`. But deeper methods that access `$this->user` directly (like auto-label generation in `one_day_of_packages()`) will crash with `Attempt to read property "active_org" on null`.
+
+### Controller Context (has `request()->user()`)
+
+Every controller method using MetrcApi **MUST** call `$api->set_user()` because downstream methods may access `$this->user` directly:
 
 ### ✅ CORRECT
 
@@ -24,7 +40,7 @@ All API integrations use dedicated service classes (`MetrcApi`, `QuickBooksApi`,
 use App\Services\Api\MetrcApi;
 
 public function fetch_packages(MetrcApi $api) {
-    $api->set_user(request()->user());
+    $api->set_user(request()->user());  // ALWAYS before any API call
 
     $license = session('license');
     $packages = $api->packages($license, 'Active');
@@ -36,14 +52,53 @@ public function fetch_packages(MetrcApi $api) {
 ### ❌ WRONG
 
 ```php
-// ❌ No set_user() call - API keys not configured!
+// ❌ No set_user() call — basic calls may work via headers() fallback,
+// but deeper methods that access $this->user directly will CRASH!
 public function fetch_packages(MetrcApi $api) {
-    $packages = $api->packages($license, 'Active');  // Fails!
+    $packages = $api->packages($license, 'Active');  // May work...
+    // But if this triggers one_day_of_packages() → $this->user->active_org → CRASH!
 }
 
 // ❌ Direct API call without service
 $packages = Http::get('https://api-ca.metrc.com/packages/v1/active');
 ```
+
+### Queue Job Context (NO `request()->user()`)
+
+Jobs have no HTTP context — the `headers()` fallback to `request()->user()` returns null. Jobs **MUST** receive the User explicitly and call `set_user()`:
+
+```php
+class FetchMetrcPackages implements ShouldQueue
+{
+    public function handle(MetrcApi $api): void
+    {
+        $api->set_user($this->user);  // User injected via constructor
+        // Now both headers() and direct $this->user access work
+    }
+}
+```
+
+### Inside MetrcApi — Defensive Patterns
+
+When writing code inside MetrcApi that needs user context, prefer guarding against null:
+
+```php
+// ✅ SAFE — guard with null check
+if ($this->user !== null) {
+    $org = $this->user->active_org;
+    // ... user-dependent logic
+}
+
+// ✅ SAFE — use fallback
+$user = $this->user ?? request()->user();
+
+// ❌ DANGEROUS — crashes if set_user() not called
+$org = $this->user->active_org;  // null->active_org = crash!
+```
+
+### Real Bug Example (Feb 2026)
+
+`$api->set_user($user)` was accidentally removed from `MetrcController::get_packages()` during a cleanup commit. Basic API calls continued working via the `headers()` fallback. But when the packages cache was complete and `one_day_of_packages()` ran auto-label generation, it hit `$this->user->active_org` → 500 error. The frontend showed a success toast (job completed) but packages never appeared.
 
 ---
 
@@ -611,6 +666,10 @@ Reviewers should **NOT** flag missing `sleep()` or delay between POST/PUT/DELETE
 
 ### Metrc Integration
 - [ ] Uses `MetrcApi` service with `set_user()`
+- [ ] **Every controller method** calls `$api->set_user()` before any MetrcApi interaction
+- [ ] **Queue jobs** accept User via constructor and call `set_user()` in `handle()`
+- [ ] No code inside MetrcApi accesses `$this->user` without null guard (use `$this->user !== null` check)
+- [ ] Refactoring/cleanup preserves existing `set_user()` calls
 - [ ] Caches data appropriately
 - [ ] Handles rate limits and API errors
 - [ ] Validates license selection before operations
@@ -652,9 +711,11 @@ Reviewers should **NOT** flag missing `sleep()` or delay between POST/PUT/DELETE
 ### Violation 1: No `set_user()` Call
 
 ```php
-// ❌ WRONG
+// ❌ WRONG — basic calls may work via headers() fallback,
+// but deeper methods crash on $this->user->active_org access
 public function sync(MetrcApi $api) {
-    $packages = $api->packages($license, 'Active');  // Fails - no API keys!
+    $packages = $api->packages($license, 'Active');  // May work...
+    // But methods like one_day_of_packages() access $this->user directly → CRASH
 }
 
 // ✅ FIX
@@ -729,7 +790,7 @@ LabCompany::with(['facilities' => function ($query) use ($user) {
 
 | Violation | Impact | Severity |
 |-----------|--------|----------|
-| No `set_user()` call | API requests fail (no credentials) | **CRITICAL** |
+| No `set_user()` call | Deeper methods crash on `$this->user->active_org`; basic calls may silently work via fallback | **CRITICAL** |
 | Direct API calls | Bypasses caching, error handling | **HIGH** |
 | Wrong license type endpoint | 401 errors for non-cultivation licenses | **HIGH** |
 | Wrong facility FK | Data corruption, broken relationships | **CRITICAL** |

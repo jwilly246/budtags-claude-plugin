@@ -134,16 +134,13 @@ fetchStatus === 'fetching' // Automatically resumes
 ### Standard Metrc Query (Online Only)
 
 ```typescript
-function useMetrcPackages(license: string) {
-  const { user } = usePage<PageProps>().props
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
 
+function useMetrcPackages(license: string) {
   return useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: async ({ signal }) =>
+      axios.get('/metrc/packages', { params: { license }, signal }).then(r => r.data),
     networkMode: 'online', // Default: only fetch when online
   })
 }
@@ -152,18 +149,19 @@ function useMetrcPackages(license: string) {
 ### Offline-First with LocalStorage
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function usePackagesOfflineFirst() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
   return useQuery({
-    queryKey: ['packages', license],
-    queryFn: async () => {
+    queryKey: metrcPackageKeys.byLicense(license),
+    queryFn: async ({ signal }) => {
       // Try network first
       try {
-        const api = new MetrcApi()
-        api.set_user(user)
-        const packages = await api.packages(license)
+        const packages = await axios
+          .get('/metrc/packages', { params: { license }, signal })
+          .then(r => r.data)
 
         // Save to localStorage
         localStorage.setItem(

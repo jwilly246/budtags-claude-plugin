@@ -59,16 +59,12 @@ class MetrcApi
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             // Network/connection errors
-            Log::error("Metrc connection failed: {$endpoint}", [
-                'error' => $e->getMessage()
-            ]);
+            LogService::store('metrc_connection_failed', "Metrc connection failed: {$endpoint} - " . $e->getMessage());
             throw new \Exception("Failed to connect to Metrc API. Please try again.");
 
         } catch (\Exception $e) {
             // General errors
-            Log::error("Metrc API error: {$endpoint}", [
-                'error' => $e->getMessage()
-            ]);
+            LogService::store('metrc_api_error', "Metrc API error: {$endpoint} - " . $e->getMessage());
             throw $e;
         }
     }
@@ -169,10 +165,7 @@ private function getWithRetry(string $endpoint, array $params = [], int $maxRetr
             if ($response->status() === 429) {
                 $retryAfter = (int) $response->header('Retry-After', 60);
 
-                Log::warning("Rate limited on {$endpoint}. Waiting {$retryAfter} seconds.", [
-                    'attempt' => $attempt + 1,
-                    'maxRetries' => $maxRetries
-                ]);
+                LogService::store('metrc_rate_limited', "Rate limited on {$endpoint}. Waiting {$retryAfter}s (attempt " . ($attempt + 1) . "/{$maxRetries})");
 
                 if ($attempt < $maxRetries - 1) {
                     sleep($retryAfter);
@@ -214,10 +207,7 @@ class MetrcApi
                 $attempt++;
 
                 if ($this->shouldRetry($e) && $attempt < $maxRetries) {
-                    Log::warning("Retrying Metrc request (attempt {$attempt}/{$maxRetries})", [
-                        'endpoint' => $endpoint,
-                        'error' => $e->getMessage()
-                    ]);
+                    LogService::store('metrc_retry', "Retrying {$endpoint} (attempt {$attempt}/{$maxRetries}): " . $e->getMessage());
 
                     sleep($delay);
                     $delay *= 2; // Exponential backoff: 1s, 2s, 4s
@@ -263,7 +253,7 @@ if ($response->status() === 413) {
 When you have more than 10 objects to send, you must **chunk** them into batches:
 
 ```php
-public function createPackages(array $packages, string $license): array
+public function create_packages(array $packages, string $license): array
 {
     $BATCH_SIZE = 10;
     $createdIds = [];
@@ -281,10 +271,7 @@ public function createPackages(array $packages, string $license): array
                 $ids = $response->json();
                 $createdIds = array_merge($createdIds, $ids);
 
-                Log::info("Created batch {$index} of packages", [
-                    'count' => count($chunk),
-                    'ids' => $ids
-                ]);
+                LogService::store('Packages Created', "Created batch {$index} of packages (" . count($chunk) . " items)");
 
                 // Add delay between batches to avoid rate limiting
                 if ($index < count($chunks) - 1) {
@@ -295,10 +282,7 @@ public function createPackages(array $packages, string $license): array
             }
 
         } catch (\Exception $e) {
-            Log::error("Package creation batch {$index} failed", [
-                'error' => $e->getMessage(),
-                'batch' => $chunk
-            ]);
+            LogService::store('batch_chunk_failed', "Package creation batch {$index} failed: " . $e->getMessage());
 
             // Decision: Continue with remaining batches or stop?
             // throw $e;  // Stop on first error
@@ -324,31 +308,39 @@ public function createPackages(array $packages, string $license): array
 ## Validation Errors
 
 ```php
-public function create_packages(Request $request)
+public function create_packages()
 {
+    $validated = request()->validate([
+        'packages' => 'required|array',
+        'packages.*.Tag' => 'required|string',
+        'packages.*.Item' => 'required|string',
+        'packages.*.Quantity' => 'required|numeric|min:0.01',
+    ]);
+
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
+    $license = session('license');
+
     try {
         // Validate before sending to Metrc
-        $this->validatePackages($request->packages);
+        $this->validate_packages($validated['packages']);
 
         // Send to Metrc
-        $api->post("/packages/v2/create?licenseNumber={$license}", $request->packages);
+        $api->post("/packages/v2/create?licenseNumber={$license}", $validated['packages']);
 
     } catch (\InvalidArgumentException $e) {
         // Our validation error
-        return redirect()->back()->with('error', $e->getMessage());
+        return redirect()->back()->with('message', $e->getMessage());
 
     } catch (\Exception $e) {
         // Metrc API error
-        Log::error("Package creation failed", [
-            'packages' => $request->packages,
-            'error' => $e->getMessage()
-        ]);
+        LogService::store('package_creation_failed', 'Package creation failed: ' . $e->getMessage());
 
-        return redirect()->back()->with('error', 'Failed to create packages: ' . $e->getMessage());
+        return redirect()->back()->with('message', 'Failed to create packages: ' . $e->getMessage());
     }
 }
 
-private function validatePackages(array $packages): void
+private function validate_packages(array $packages): void
 {
     foreach ($packages as $index => $package) {
         if (empty($package['Tag'])) {
@@ -430,22 +422,10 @@ $date = now()->format('Y-m-d'); // YYYY-MM-DD
 
 ```php
 // Log all API calls (without sensitive data)
-Log::info("Metrc API call", [
-    'endpoint' => $endpoint,
-    'method' => 'GET',
-    'license' => substr($license, 0, 8) . '***', // Partial license for privacy
-    'params' => array_keys($params) // Keys only, not values
-]);
+LogService::store('Metrc API Call', "GET {$endpoint} (license: " . substr($license, 0, 8) . "***)");
 
 // Log errors with context
-Log::error("Metrc API error", [
-    'endpoint' => $endpoint,
-    'status' => $response->status(),
-    'error' => $response->body(),
-    'request_data' => json_encode($data),
-    'user_id' => auth()->id(),
-    'org_id' => auth()->user()->active_org_id
-]);
+LogService::store('metrc_api_error', "Metrc API error on {$endpoint} ({$response->status()}): " . $response->body(), null, request()->user()->active_org_id);
 ```
 
 ---

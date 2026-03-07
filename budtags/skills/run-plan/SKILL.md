@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked.
-version: 1.6.0
+version: 1.7.0
 category: workflow
 auto_activate:
   keywords:
@@ -185,6 +185,10 @@ Exit code 1 = stubs found = FAIL IMMEDIATELY.
 ```
 
 Exit code 1 = violations found = FAIL IMMEDIATELY.
+
+**Step 2.5: MetrcApi set_user() Check (for PHP files touching MetrcApi)**
+
+If any modified PHP controller files use `MetrcApi`, verify that every public controller method calls `$api->set_user()` before any API interaction. This prevents a subtle bug class where `MetrcApi::headers()` has a fallback to `request()->user()` masking the missing `set_user()`, but deeper internal methods access `$this->user` directly and crash. Queue jobs must accept User via constructor and call `$api->set_user($this->user)` in `handle()`.
 
 **Step 3: Work Unit Verification Commands**
 

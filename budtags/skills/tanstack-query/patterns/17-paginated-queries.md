@@ -98,8 +98,10 @@ Prevent clicking next/previous while loading:
 ### Metrc Packages with Pagination
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { STALE_TIME } from '@/constants/query-config'
+
 function PaginatedPackages() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(25)
@@ -109,14 +111,16 @@ function PaginatedPackages() {
     isLoading,
     isPlaceholderData,
   } = useQuery({
-    queryKey: ['metrc', 'packages', license, { page, perPage }],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages_paginated(license, page, perPage)
+    queryKey: metrcPackageKeys.paginated(license, page, perPage),
+    queryFn: async ({ signal }) => {
+      const response = await axios.get('/metrc/packages', {
+        params: { license, page, perPage },
+        signal,
+      })
+      return response.data
     },
     placeholderData: (previousData) => previousData,
-    staleTime: 5 * 60 * 1000,
+    staleTime: STALE_TIME.FIVE_MINUTES,
   })
 
   if (isLoading) return <Spinner />

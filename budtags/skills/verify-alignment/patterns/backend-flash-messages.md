@@ -59,7 +59,7 @@ router.post('/api/save-mappings', data, {
     preserveScroll: true,
     onSuccess: () => {
         onClose();  // Component state only
-        queryClient.invalidateQueries(['mappings']);
+        queryClient.invalidateQueries({ queryKey: ['mappings'] });
     },
     onError: (errors) => {
         toast.error('Validation failed');  // Client-side feedback
@@ -270,7 +270,7 @@ public function create_invoice() {
 // SyncQuantitiesModal.tsx
 router.post('/quickbooks/sync-quantities', data, {
     onSuccess: () => {
-        queryClient.invalidateQueries(['qbo-items']);
+        queryClient.invalidateQueries({ queryKey: ['qbo-items'] });
         onClose();  // MainLayout shows "items synced" toast
     }
 });

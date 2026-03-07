@@ -14,10 +14,10 @@ Metrc categorizes packages into different inventory states based on their status
 
 | Endpoint | Description | Use Case |
 |----------|-------------|----------|
-| `/packages/v1/active` | Packages currently in active inventory | Default inventory view, label printing |
-| `/packages/v1/inactive` | Packages that have been Finished or Discontinued | Historical tracking, compliance reporting |
-| `/packages/v1/onhold` | Packages with holds placed (failed lab tests, etc.) | QA workflows, problem resolution |
-| `/packages/v1/intransit` | Packages currently in outgoing transfers | Shipping/receiving workflows |
+| `/packages/v2/active` | Packages currently in active inventory | Default inventory view, label printing |
+| `/packages/v2/inactive` | Packages that have been Finished or Discontinued | Historical tracking, compliance reporting |
+| `/packages/v2/onhold` | Packages with holds placed (failed lab tests, etc.) | QA workflows, problem resolution |
+| `/packages/v2/intransit` | Packages currently in outgoing transfers | Shipping/receiving workflows |
 
 ---
 
@@ -26,16 +26,16 @@ Metrc categorizes packages into different inventory states based on their status
 ### 1. Active vs Inactive Endpoints
 
 **When to use `/active`:**
-- ✅ Initial inventory sync (first-time setup)
-- ✅ Daily/hourly inventory refresh
-- ✅ Label printing workflows
-- ✅ Current inventory reports
+- Initial inventory sync (first-time setup)
+- Daily/hourly inventory refresh
+- Label printing workflows
+- Current inventory reports
 
 **When to use `/inactive`:**
-- ✅ Historical tracking and analytics
-- ✅ Compliance audits (show finished packages)
-- ✅ Finding packages that left inventory
-- ❌ NOT for regular inventory sync (wastes API calls)
+- Historical tracking and analytics
+- Compliance audits (show finished packages)
+- Finding packages that left inventory
+- NOT for regular inventory sync (wastes API calls)
 
 **Key Insight:**
 Packages can **only** leave active inventory via:
@@ -49,28 +49,26 @@ If you're tracking active inventory, you don't need to poll `/inactive` regularl
 
 ## The LastModified Filter (CRITICAL)
 
-###
-
- **Why LastModified Matters**
+### Why LastModified Matters
 
 Metrc **requires** a date range filter for most endpoints using the `lastModifiedStart` and `lastModifiedEnd` parameters. This isn't just a query optimization - it's a **data integrity requirement**.
 
-**⚠️ CRITICAL RULE: Always request data in chronological order (oldest to newest)**
+**CRITICAL RULE: Always request data in chronological order (oldest to newest)**
 
 ### The Problem with Reverse Chronological Ordering
 
 **DON'T DO THIS:**
-```javascript
+```php
 // ❌ WRONG - Fetching newest first, then older data
-const today = new Date();
-const yesterday = new Date(today);
-yesterday.setDate(yesterday.getDate() - 1);
+$today = now();
+$yesterday = now()->subDay();
+$twoDaysAgo = now()->subDays(2);
 
 // First request (newest)
-const newestPackages = await fetchPackages(yesterday, today);
+$newestPackages = $api->one_day_of_packages($facility, $today->format('Y-m-d'));
 
 // Second request (older)
-const olderPackages = await fetchPackages(twoD aysAgo, yesterday);
+$olderPackages = $api->one_day_of_packages($facility, $yesterday->format('Y-m-d'));
 ```
 
 **Why this is bad:**
@@ -84,17 +82,20 @@ const olderPackages = await fetchPackages(twoD aysAgo, yesterday);
 
 ### Correct Approach: Chronological Ordering
 
-**✅ CORRECT:**
-```javascript
+**CORRECT:**
+```php
 // Always fetch oldest to newest
-const lastSync = new Date('2025-01-01'); // Your last successful sync
-const now = new Date();
+$lastSync = SyncStatus::where('facility', $facility)
+    ->where('type', 'active_packages')
+    ->value('last_sync_time') ?? now()->subYear();
 
-// Fetch in chronological order
-const packages = await fetchPackages(lastSync, now);
+$packages = $api->one_day_of_packages($facility, $lastSync->format('Y-m-d'));
 
 // Store last sync time for next run
-await saveLastSyncTime(now);
+SyncStatus::updateOrCreate(
+    ['facility' => $facility, 'type' => 'active_packages'],
+    ['last_sync_time' => now()]
+);
 ```
 
 **Why this works:**
@@ -109,76 +110,88 @@ await saveLastSyncTime(now);
 
 ### Initial Sync (First-Time Setup)
 
-```javascript
-async function initialInventorySync(facility) {
-  // Fetch large date range (e.g., last 365 days)
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 365);
+```php
+public function initial_inventory_sync(string $facility): array
+{
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
+    $license = session('license');
 
-  const packages = await axios.get('/packages/v1/active', {
-    params: {
-      licenseNumber: facility,
-      lastModifiedStart: startDate.toISOString(),
-      lastModifiedEnd: endDate.toISOString()
+    // Fetch large date range (e.g., last 365 days)
+    $startDate = now()->subYear();
+    $endDate = now();
+    $allPackages = [];
+
+    // Use the day-by-day public method
+    $currentDate = clone $startDate;
+    while ($currentDate->lte($endDate)) {
+        $packages = $api->one_day_of_packages($facility, $currentDate->format('Y-m-d'));
+        $allPackages = array_merge($allPackages, $packages);
+        $currentDate->addDay();
     }
-  });
 
-  // Store in database with lastModified timestamps
-  await db.packages.insertMany(packages.data.map(pkg => ({
-    ...pkg,
-    syncedAt: new Date()
-  })));
+    // Store in database
+    foreach ($allPackages as $package) {
+        Package::updateOrCreate(
+            ['Label' => $package['Label']],
+            [...$package, 'synced_at' => now()]
+        );
+    }
 
-  // Save last sync time
-  await db.syncStatus.upsert({
-    facility,
-    lastSyncTime: endDate,
-    type: 'active_packages'
-  });
+    // Save last sync time
+    SyncStatus::updateOrCreate(
+        ['facility' => $facility, 'type' => 'active_packages'],
+        ['last_sync_time' => $endDate]
+    );
 
-  return packages.data;
+    LogService::store('Package Sync', "Initial sync complete. Total packages: " . count($allPackages));
+
+    return $allPackages;
 }
 ```
 
 ### Incremental Sync (Ongoing)
 
-```javascript
-async function incrementalInventorySync(facility) {
-  // Get last successful sync time
-  const lastSync = await db.syncStatus.findOne({
-    facility,
-    type: 'active_packages'
-  });
+```php
+public function incremental_inventory_sync(string $facility): array
+{
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
 
-  const startDate = lastSync?.lastSyncTime || new Date('2025-01-01');
-  const endDate = new Date();
+    // Get last successful sync time
+    $lastSync = SyncStatus::where('facility', $facility)
+        ->where('type', 'active_packages')
+        ->value('last_sync_time') ?? now()->subDay();
 
-  // Fetch only changes since last sync
-  const packages = await axios.get('/packages/v1/active', {
-    params: {
-      licenseNumber: facility,
-      lastModifiedStart: startDate.toISOString(),
-      lastModifiedEnd: endDate.toISOString()
+    $endDate = now();
+
+    // Fetch only changes since last sync using day-by-day
+    $currentDate = Carbon::parse($lastSync);
+    $changedPackages = [];
+
+    while ($currentDate->lte($endDate)) {
+        $packages = $api->one_day_of_packages($facility, $currentDate->format('Y-m-d'));
+        $changedPackages = array_merge($changedPackages, $packages);
+        $currentDate->addDay();
     }
-  });
 
-  // Update or insert changed packages
-  for (const pkg of packages.data) {
-    await db.packages.upsert({
-      where: { Label: pkg.Label },
-      update: { ...pkg, syncedAt: new Date() },
-      create: { ...pkg, syncedAt: new Date() }
-    });
-  }
+    // Update or insert changed packages
+    foreach ($changedPackages as $package) {
+        Package::updateOrCreate(
+            ['Label' => $package['Label']],
+            [...$package, 'synced_at' => now()]
+        );
+    }
 
-  // Update last sync time
-  await db.syncStatus.update({
-    where: { facility, type: 'active_packages' },
-    data: { lastSyncTime: endDate }
-  });
+    // Update last sync time
+    SyncStatus::updateOrCreate(
+        ['facility' => $facility, 'type' => 'active_packages'],
+        ['last_sync_time' => $endDate]
+    );
 
-  return packages.data;
+    LogService::store('Package Sync', "Incremental sync complete. Changed packages: " . count($changedPackages));
+
+    return $changedPackages;
 }
 ```
 
@@ -197,75 +210,78 @@ async function incrementalInventorySync(facility) {
 
 ## Tracking Packages Leaving Inventory
 
-As mentioned in Metrc documentation, packages can only leave active inventory via **three methods**:
+Packages can only leave active inventory via **three methods**:
 
 ### Method 1: Finishing or Discontinuing
 
-```javascript
+```php
 // Packages that were finished/discontinued
-const inactivePackages = await axios.get('/packages/v1/inactive', {
-  params: {
-    licenseNumber: facility,
-    lastModifiedStart: lastSync.toISOString(),
-    lastModifiedEnd: new Date().toISOString()
-  }
-});
+$inactivePackages = $api->get("/packages/v2/inactive", [
+    'licenseNumber' => $license,
+    'lastModifiedStart' => $lastSync->format('Y-m-d'),
+    'lastModifiedEnd' => now()->format('Y-m-d'),
+]);
 
 // Mark as inactive in your database
-for (const pkg of inactivePackages.data) {
-  await db.packages.update({
-    where: { Label: pkg.Label },
-    data: {
-      status: pkg.FinishedDate ? 'finished' : 'discontinued',
-      finishedAt: pkg.FinishedDate,
-      discontinuedAt: pkg.ArchivedDate
-    }
-  });
+foreach ($inactivePackages as $package) {
+    Package::where('Label', $package['Label'])->update([
+        'status' => $package['FinishedDate'] ? 'finished' : 'discontinued',
+        'finished_at' => $package['FinishedDate'],
+    ]);
 }
 ```
 
 ### Method 2: Outgoing Transfers (Cascading API Calls)
 
-**⚠️ Note:** This requires **multiple cascading API calls** and is subject to rate limiting.
+**Note:** This requires **multiple cascading API calls** and is subject to rate limiting.
 
-```javascript
-async function trackOutgoingTransfers(facility) {
-  // Step 1: Get all outgoing transfers
-  const transfers = await axios.get('/transfers/v1/outgoing', {
-    params: { licenseNumber: facility }
-  });
+```php
+public function track_outgoing_transfers(string $facility): array
+{
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
+    $license = session('license');
+    $transferredPackages = [];
 
-  for (const transfer of transfers.data) {
-    // Step 2: Get deliveries for this transfer
-    const deliveries = await axios.get(`/transfers/v1/${transfer.Id}/deliveries`);
+    // Step 1: Get all outgoing transfers
+    $transfers = $api->fetch_transfers_bulk($facility, 'outgoing');
 
-    for (const delivery of deliveries.data) {
-      // Step 3: Get packages in this delivery
-      const packages = await axios.get(`/transfers/v1/deliveries/${delivery.Id}/packages`);
+    foreach ($transfers as $transfer) {
+        try {
+            // Step 2: Get deliveries for this transfer
+            $deliveries = $api->get("/transfers/v2/{$transfer['Id']}/deliveries", [
+                'licenseNumber' => $license,
+            ]);
 
-      // Mark packages as in transit
-      for (const pkg of packages.data) {
-        await db.packages.update({
-          where: { Label: pkg.PackageLabel },
-          data: {
-            status: 'in_transit',
-            transferId: transfer.Id,
-            deliveryId: delivery.Id
-          }
-        });
-      }
+            foreach ($deliveries as $delivery) {
+                // Step 3: Get packages in this delivery
+                $packages = $api->get("/transfers/v2/deliveries/{$delivery['Id']}/packages", [
+                    'licenseNumber' => $license,
+                ]);
 
-      // Rate limiting consideration: Add delay between calls
-      await new Promise(resolve => setTimeout(resolve, 500));
+                // Mark packages as in transit
+                foreach ($packages as $package) {
+                    Package::where('Label', $package['PackageLabel'])->update([
+                        'status' => 'in_transit',
+                        'transfer_id' => $transfer['Id'],
+                    ]);
+                }
+
+                $transferredPackages = array_merge($transferredPackages, $packages);
+            }
+        } catch (\Exception $e) {
+            LogService::store('transfer_tracking_error', "Error processing transfer {$transfer['Id']}: " . $e->getMessage());
+        }
     }
-  }
+
+    return $transferredPackages;
 }
 ```
 
 **Performance Note:** This cascading approach requires:
-- 1 call for `/outgoing`
-- N calls for `/transfers/{id}/deliveries` (one per transfer)
-- M calls for `/deliveries/{id}/packages` (one per delivery)
+- 1 call for outgoing transfers
+- N calls for deliveries (one per transfer)
+- M calls for packages (one per delivery)
 
 Be mindful of rate limits when syncing large numbers of transfers.
 
@@ -287,25 +303,24 @@ Metrc documentation notes that some **State-sanctioned methods** for removing pa
 
 ```php
 // Example from BudTags MetrcApi service
-public function get_history_from_cache($facility, $date, $num_of_days) {
-    $cache_key = "packages:{$facility}:{$date->format('Y-m-d')}:{$num_of_days}";
+public function get_history_from_cache(string $facility, Carbon $date, int $num_of_days): array
+{
+    $cacheKey = "packages:{$facility}:{$date->format('Y-m-d')}:{$num_of_days}";
 
-    return Cache::remember($cache_key, now()->addHours(1), function() use ($facility, $date, $num_of_days) {
-        $days_of_packages = [];
+    return Cache::remember($cacheKey, now()->addHours(1), function () use ($facility, $date, $num_of_days) {
+        $daysOfPackages = [];
 
         for ($i = 0; $i < $num_of_days; $i++) {
-            $current_date = (clone $date)->subDays($i);
+            $currentDate = (clone $date)->subDays($i);
+            $packages = $this->one_day_of_packages($facility, $currentDate->format('Y-m-d'));
 
-            // Fetch from Metrc API
-            $packages = $this->one_day_of_packages($facility, $current_date);
-
-            $days_of_packages[] = [
-                'date' => $current_date,
-                'packages' => $packages
+            $daysOfPackages[] = [
+                'date' => $currentDate,
+                'packages' => $packages,
             ];
         }
 
-        return $days_of_packages;
+        return $daysOfPackages;
     });
 }
 ```
@@ -321,66 +336,28 @@ public function get_history_from_cache($facility, $date, $num_of_days) {
 
 ### Reduce API Calls with Smart Filtering
 
-**❌ BAD - Fetching all active packages every time:**
-```javascript
+**BAD - Fetching all active packages every time:**
+```php
 // Fetches thousands of packages unnecessarily
-const packages = await axios.get('/packages/v1/active', {
-  params: { licenseNumber: facility }
-});
+$packages = $api->get("/packages/v2/active", [
+    'licenseNumber' => $license,
+]);
 ```
 
-**✅ GOOD - Use lastModified filter:**
-```javascript
+**GOOD - Use lastModified filter:**
+```php
 // Only fetch changes in last 15 minutes
-const fifteenMinutesAgo = new Date();
-fifteenMinutesAgo.setMinutes(fifteenMinutesAgo.getMinutes() - 15);
-
-const packages = await axios.get('/packages/v1/active', {
-  params: {
-    licenseNumber: facility,
-    lastModifiedStart: fifteenMinutesAgo.toISOString(),
-    lastModifiedEnd: new Date().toISOString()
-  }
-});
+$packages = $api->get("/packages/v2/active", [
+    'licenseNumber' => $license,
+    'lastModifiedStart' => now()->subMinutes(15)->format('Y-m-d\TH:i:s'),
+    'lastModifiedEnd' => now()->format('Y-m-d\TH:i:s'),
+]);
 ```
 
 **Impact:**
 - **Without filter:** 5000+ packages returned (5 MB+ payload)
 - **With filter:** 10-50 packages returned (50 KB payload)
 - **100x reduction** in data transferred
-
-### Use Webhooks (If Available)
-
-Some Metrc service tiers support webhooks. Instead of polling `/active` every 15 minutes:
-
-**Polling Approach:**
-```javascript
-// Runs every 15 minutes
-setInterval(async () => {
-  await incrementalInventorySync(facility);
-}, 15 * 60 * 1000);
-
-// Result: 96 API calls per day (4 per hour × 24 hours)
-```
-
-**Webhook Approach:**
-```javascript
-// Metrc POSTs to your endpoint when packages change
-app.post('/webhooks/metrc/package-updated', async (req, res) => {
-  const { packageLabel, eventType } = req.body;
-
-  // Fetch only the specific changed package
-  const pkg = await fetchPackageByLabel(packageLabel);
-
-  await db.packages.upsert({ where: { Label: packageLabel }, ...pkg });
-
-  res.status(200).send('OK');
-});
-
-// Result: Only 1 API call per actual change (10-50 per day typical)
-```
-
-**Consult your Metrc agreement** to determine if you have webhook access.
 
 ---
 
@@ -402,10 +379,7 @@ app.post('/webhooks/metrc/package-updated', async (req, res) => {
 
 **Problem:** Checking `/inactive` every 15 minutes when active inventory hasn't changed.
 
-**Solution:** Only fetch inactive packages:
-- During initial sync
-- When generating compliance reports
-- When user explicitly requests historical data
+**Solution:** Only fetch inactive packages during initial sync, compliance reports, or when user explicitly requests historical data.
 
 ### 4. Not Caching Results
 
@@ -424,7 +398,7 @@ app.post('/webhooks/metrc/package-updated', async (req, res) => {
 ## Related Patterns
 
 - **[Object Limiting](./object-limiting.md)** - Handle 10 object limit per request
-- **[Rate Limiting](./rate-limiting.md)** - Avoid 429 responses with proper throttling
+- **[Error Handling](./error-handling.md)** - Comprehensive error handling strategies
 - **[Transfer Workflows](./transfer-workflows.md)** - Complete guide to tracking transfers
 - **[Pagination](./pagination.md)** - Handle large result sets efficiently
 
@@ -433,14 +407,14 @@ app.post('/webhooks/metrc/package-updated', async (req, res) => {
 ## Quick Reference
 
 ```
-✅ DO:
+DO:
 - Use lastModifiedStart/End filters for all syncs
 - Fetch data in chronological order (oldest to newest)
 - Cache results with appropriate TTL
 - Track outgoing transfers to understand inventory changes
 - Use incremental syncing (every 5-15 minutes)
 
-❌ DON'T:
+DON'T:
 - Fetch all active packages without filters
 - Request data in reverse chronological order
 - Poll inactive packages unnecessarily

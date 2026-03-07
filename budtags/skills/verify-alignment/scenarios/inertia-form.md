@@ -139,7 +139,7 @@ const handleSubmit = (e: React.FormEvent) => {
         preserveScroll: true,
         onSuccess: () => {
             onClose();  // MainLayout handles "Item created successfully" toast
-            queryClient.invalidateQueries(['items']);
+            queryClient.invalidateQueries({ queryKey: ['items'] });
         },
         onError: (errors) => {
             const message = Object.values(errors)[0] as string;

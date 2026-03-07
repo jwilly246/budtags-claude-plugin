@@ -175,21 +175,17 @@ function OrganizationSecrets() {
 ### License-Specific Plant Query
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function MetrcPlants() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
   // Only cultivation licenses can access plants
   const isCultivation = license?.startsWith('au-c-')
 
   const plantsQuery = useQuery({
-    queryKey: ['metrc', 'plants', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.plants(license!)
-    },
-    enabled: isCultivation, // Only run for cultivation licenses
+    ...metrcQueries.plants(license),
+    enabled: !!isCultivation, // Only run for cultivation licenses
   })
 
   if (!isCultivation) {
@@ -258,28 +254,19 @@ function FilteredPackages() {
 ### Data Source Toggle
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function Inventory({ dataSource }: { dataSource: 'packages' | 'plants' }) {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
   const packagesQuery = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
-    enabled: dataSource === 'packages',
+    ...metrcQueries.packages(license),
+    enabled: !!license && dataSource === 'packages',
   })
 
   const plantsQuery = useQuery({
-    queryKey: ['metrc', 'plants', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.plants(license)
-    },
-    enabled: dataSource === 'plants',
+    ...metrcQueries.plants(license),
+    enabled: !!license && dataSource === 'plants',
   })
 
   if (dataSource === 'packages') {
