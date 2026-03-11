@@ -98,8 +98,9 @@ const isPackagesFetching = useIsFetching({ queryKey: ['packages'] })
 ### Metrc Packages with Refresh Indicator
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function MetrcPackages() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
   const {
@@ -107,12 +108,8 @@ function MetrcPackages() {
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
+    ...metrcQueries.packages(license),
+    enabled: !!license,
     refetchOnWindowFocus: true, // Enable background refetch
   })
 
@@ -141,8 +138,12 @@ function MetrcPackages() {
 ### Global Metrc Loading Bar
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function MetrcLoadingBar() {
-  const isFetching = useIsFetching({ queryKey: ['metrc'] })
+  // metrcPackageKeys.all() returns the shared prefix for all package queries,
+  // so this matches any metrc-package query regardless of license or page.
+  const isFetching = useIsFetching({ queryKey: metrcPackageKeys.all() })
 
   if (!isFetching) return null
 
@@ -185,8 +186,10 @@ function Packages() {
 ### Status Badge
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function PackagesSyncStatus() {
-  const isFetching = useIsFetching({ queryKey: ['metrc', 'packages'] })
+  const isFetching = useIsFetching({ queryKey: metrcPackageKeys.all() })
 
   return (
     <div className="flex items-center gap-2">
@@ -206,9 +209,11 @@ function PackagesSyncStatus() {
 ### Disabled Actions During Refetch
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function PackageActions({ pkg }: { pkg: Package }) {
   const isFetching = useIsFetching({
-    queryKey: ['metrc', 'packages'],
+    queryKey: metrcPackageKeys.all(),
   })
 
   return (

@@ -138,63 +138,62 @@ function CreatePackage() {
 - Data persisting across route changes
 - Client-side caching and synchronization
 
-### Organization-Scoped Queries
+### BudTags 3-Layer Architecture
+
+BudTags centralizes React Query code into three files per domain:
+
+```
+resources/js/Hooks/{domain}/
+├── keys.ts         # Key factories (as const tuples)
+├── queries.ts      # queryOptions() factories + private fetch functions
+└── use*.ts         # Hook wrappers (spread queryOptions) + mutations
+```
+
+### Key Factory + queryOptions Pattern
 
 ```typescript
-// Query key factory pattern
-const packageKeys = {
-  all: (orgId: number) => ['packages', orgId] as const,
-  lists: (orgId: number) => [...packageKeys.all(orgId), 'list'] as const,
-  list: (orgId: number, filters: string) => [...packageKeys.lists(orgId), { filters }] as const,
-  details: (orgId: number) => [...packageKeys.all(orgId), 'detail'] as const,
-  detail: (orgId: number, id: number) => [...packageKeys.details(orgId), id] as const,
-}
+// keys.ts — key factories only
+export const metrcPackageKeys = {
+    all: () => ['metrc-packages'] as const,
+    byLicense: (license: string | null) => [...metrcPackageKeys.all(), license] as const,
+};
 
-// Usage
-function usePackages(orgId: number, filters: string) {
-  return useQuery({
-    queryKey: packageKeys.list(orgId, filters),
-    queryFn: () => fetchPackages(orgId, filters),
-  })
+// queries.ts — queryOptions factories
+import { queryOptions } from '@tanstack/react-query';
+import { STALE_TIME } from '@/constants/query-config';
+
+export const metrcQueries = {
+    packages: (license: string | null) => queryOptions({
+        queryKey: metrcPackageKeys.byLicense(license),
+        queryFn: ({ signal }) => fetchPackages(license!, signal),
+        staleTime: STALE_TIME.DEFAULT,
+    }),
+};
+
+// useMetrcPackages.ts — hook wrapper with spread
+export function useMetrcPackages(license: string | null, enabled = true) {
+    return useQuery({
+        ...metrcQueries.packages(license),  // spread queryOptions
+        enabled: enabled && !!license,
+    });
 }
 ```
 
-### API Integration Example
+### Mutation with Key Factory Invalidation
 
 ```typescript
-function usePackages(userId: string, license: string) {
-  return useQuery({
-    queryKey: ['packages', userId, license],
-    queryFn: async () => {
-      const response = await fetch(`/api/packages?license=${license}`)
-      return response.json()
-    },
-    staleTime: 5 * 60 * 1000, // Data stale after 5 minutes
-    retry: 1, // API is rate-limited
-  })
-}
-```
+// Mutations use key factories from keys.ts for targeted invalidation
+import { marketplaceOrderKeys } from '@/Hooks/marketplace/keys';
 
-### Modal + Mutation Pattern
-
-```typescript
-function AdjustPackageModal({ pkg, isOpen, onClose }: Props) {
-  const queryClient = useQueryClient()
-  const [formData, setFormData] = useState({ ... })
-
-  const mutation = useMutation({
-    mutationFn: (data) => axios.post('/api/packages/adjust', data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packages'] })
-      toast.success('Package adjusted')
-      onClose()
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    }
-  })
-
-  return <Modal show={isOpen} onClose={onClose}>...</Modal>
+export function useAcceptOrder() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id }: { id: string }) =>
+            axios.post(`/marketplace/seller/orders/${id}/accept`),
+        onSettled: (_data, _error, { id }) => {
+            queryClient.invalidateQueries({ queryKey: marketplaceOrderKeys.all(orgId, 'seller') });
+        },
+    });
 }
 ```
 

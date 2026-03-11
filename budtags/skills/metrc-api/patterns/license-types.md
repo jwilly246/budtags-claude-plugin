@@ -6,6 +6,38 @@ This is the **#1 cause** of 401/403 errors in Metrc integrations. Always verify 
 
 ---
 
+## MANDATORY: License Type Validation Guard
+
+**EVERY controller or service that calls license-restricted endpoints MUST include this guard.**
+
+```php
+// Extract license type from license number (format: STATE-TYPE-NUMBER)
+$license = session('license');
+$license_type = explode('-', $license)[1] ?? null; // 'C', 'P', 'R', or 'L'
+
+// Plant/PlantBatch endpoints → Cultivation only (AU-C-)
+if (in_array($category, ['plants', 'plantbatches']) && $license_type !== 'C') {
+    abort(403, "Plant endpoints require a Cultivation license (AU-C-). Current license: {$license}");
+}
+
+// Sales endpoints → Retail only (AU-R-)
+if ($category === 'sales' && $license_type !== 'R') {
+    abort(403, "Sales endpoints require a Retail license (AU-R-). Current license: {$license}");
+}
+
+// Processing Job endpoints → Processing only (AU-P-)
+if ($category === 'processingjobs' && $license_type !== 'P') {
+    abort(403, "Processing job endpoints require a Processing license (AU-P-). Current license: {$license}");
+}
+```
+
+**When writing ANY code that touches these restricted categories, ALWAYS include the license type check:**
+- `/plants/v2/*` or `/plantbatches/v2/*` → verify `$license_type === 'C'`
+- `/sales/v2/*` → verify `$license_type === 'R'`
+- `/processingjobs/v2/*` → verify `$license_type === 'P'`
+
+---
+
 ## License Type Format
 
 Metrc license numbers follow the pattern: `{STATE}-{TYPE}-{NUMBER}`

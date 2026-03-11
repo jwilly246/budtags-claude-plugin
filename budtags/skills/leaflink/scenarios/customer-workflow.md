@@ -580,8 +580,8 @@ class LeafLinkCustomerController extends Controller
                 "Customer: {$customer['name']}\nID: {$customer['id']}"
             );
 
-            return redirect()->route('leaflink.customers.show', $customer['id'])
-                ->with('success', 'Customer created successfully');
+            return redirect("/leaflink/customers/{$customer['id']}")
+                ->with('message', 'Customer created successfully');
         }
 
         return redirect()->back()->with('error', 'Failed to create customer');

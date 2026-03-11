@@ -170,8 +170,8 @@
 ### 1. Get Active Packages with Pagination
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 
 $packages = [];
 $pageNumber = 1;

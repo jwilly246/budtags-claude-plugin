@@ -1,7 +1,7 @@
 ---
 name: tanstack-query
 description: TanStack Query (React Query) v5 patterns for server state management, data fetching, caching, mutations, and optimistic updates
-version: 1.0.0
+version: 1.1.0
 category: project
 agent: tanstack-specialist
 auto_activate:
@@ -158,113 +158,96 @@ patterns/29-offline-first.md            (275 lines)
 
 ## BudTags Integration Examples
 
-### Organization-Scoped Query Keys
+### 3-Layer Architecture Overview
+
+BudTags organizes React Query code into three layers per domain:
+
+```
+resources/js/Hooks/{domain}/
+├── keys.ts         # Key factories (as const tuples)
+├── queries.ts      # queryOptions() factories + private fetch functions
+└── use*.ts         # Hook wrappers (spread queryOptions) + mutations
+```
+
+### Key Factories (keys.ts)
 ```typescript
-const packageKeys = {
-  all: (orgId: number) => ['packages', orgId] as const,
-  lists: (orgId: number) => [...packageKeys.all(orgId), 'list'] as const,
-  list: (orgId: number, filters: string) => [...packageKeys.lists(orgId), { filters }] as const,
-  details: (orgId: number) => [...packageKeys.all(orgId), 'detail'] as const,
-  detail: (orgId: number, id: number) => [...packageKeys.details(orgId), id] as const,
+// Flat pattern (Metrc reference data) — resources/js/Hooks/metrc/keys.ts
+export const metrcPackageKeys = {
+    all: () => ['metrc-packages'] as const,
+    byLicense: (license: string | null) => [...metrcPackageKeys.all(), license] as const,
+    paginatedPrefix: (license: string | null) => ['metrc-packages-paginated', license] as const,
+};
+
+// Hierarchical pattern (Marketplace) — resources/js/Hooks/marketplace/keys.ts
+export const marketplaceOrderKeys = {
+    all: (orgId: string, viewMode: 'seller' | 'buyer') =>
+        ['marketplace-orders', orgId, viewMode] as const,
+    lists: (orgId: string, viewMode: 'seller' | 'buyer') =>
+        [...marketplaceOrderKeys.all(orgId, viewMode), 'list'] as const,
+    detail: (orgId: string, viewMode: 'seller' | 'buyer', id: string) =>
+        [...marketplaceOrderKeys.all(orgId, viewMode), 'detail', id] as const,
+};
+```
+
+### queryOptions Factories (queries.ts)
+```typescript
+// resources/js/Hooks/metrc/queries.ts
+import { queryOptions } from '@tanstack/react-query';
+import { STALE_TIME } from '@/constants/query-config';
+import { metrcPackageKeys } from './keys';
+
+const fetchPackages = async (license: string, signal?: AbortSignal) => {
+    const { data } = await axios.get(`/metrc/packages/${license}`, { signal });
+    return data.packages;
+};
+
+export const metrcQueries = {
+    packages: (license: string | null) => queryOptions({
+        queryKey: metrcPackageKeys.byLicense(license),
+        queryFn: ({ signal }) => fetchPackages(license!, signal),
+        staleTime: STALE_TIME.DEFAULT,
+    }),
+};
+```
+
+### Hook Wrappers with Spread Pattern
+```typescript
+// resources/js/Hooks/metrc/useMetrcPackages.ts
+export function useMetrcPackages(license: string | null, enabled = true) {
+    return useQuery({
+        ...metrcQueries.packages(license),  // spread queryOptions
+        enabled: enabled && !!license,
+    });
 }
 ```
 
-### License-Specific Metrc Queries
+### Mutation with Optimistic Update
 ```typescript
-function usePackages(license: string) {
-  return useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000,   // 10 minutes
-  })
-}
-```
+// resources/js/Hooks/marketplace/useMarketplaceOrders.ts
+export function useAcceptOrder() {
+    const queryClient = useQueryClient();
+    const orgId = usePage<PageProps>().props.user.active_org_id ?? '';
 
-### Modal + Mutation Pattern
-```typescript
-function AdjustPackageModal({ pkg, isOpen, onClose }: Props) {
-  const queryClient = useQueryClient()
-
-  const mutation = useMutation({
-    mutationFn: (data: AdjustData) => axios.post('/metrc/adjust', data),
-    onSuccess: () => {
-      // Invalidate package list
-      queryClient.invalidateQueries({ queryKey: ['metrc', 'packages'] })
-
-      // Show success toast
-      toast.success('Package adjusted successfully')
-
-      // Close modal
-      onClose()
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to adjust package')
-    }
-  })
-
-  return (
-    <Modal show={isOpen} onClose={onClose}>
-      <form onSubmit={(e) => {
-        e.preventDefault()
-        mutation.mutate(formData)
-      }}>
-        {/* ... */}
-      </form>
-    </Modal>
-  )
-}
-```
-
-### Real-Time Updates with Background Refetch
-```typescript
-function PackagesTable() {
-  const { data: packages } = useQuery({
-    queryKey: ['metrc', 'packages'],
-    queryFn: fetchPackages,
-    refetchInterval: 30000, // Poll every 30 seconds
-    refetchOnWindowFocus: true,
-  })
-
-  return <DataTable data={packages} />
-}
-```
-
-### Optimistic Update for Quick Actions
-```typescript
-function useFinishPackage() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: number) => axios.post(`/packages/${id}/finish`),
-    onMutate: async (id) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['packages'] })
-
-      // Snapshot previous value
-      const previous = queryClient.getQueryData(['packages'])
-
-      // Optimistically update
-      queryClient.setQueryData(['packages'], (old: Package[]) =>
-        old.map(pkg => pkg.Id === id ? { ...pkg, FinishedDate: new Date().toISOString() } : pkg)
-      )
-
-      return { previous }
-    },
-    onError: (err, id, context) => {
-      // Rollback on error
-      queryClient.setQueryData(['packages'], context.previous)
-      toast.error('Failed to finish package')
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({ queryKey: ['packages'] })
-    },
-  })
+    return useMutation({
+        mutationFn: async ({ id }: { id: string }) =>
+            axios.post(`/marketplace/seller/orders/${id}/accept`),
+        onMutate: async ({ id }) => {
+            const opts = marketplaceOrderQueries.detail(orgId, 'seller', id);
+            await queryClient.cancelQueries({ queryKey: opts.queryKey });
+            const previous = queryClient.getQueryData(opts.queryKey);
+            queryClient.setQueryData(opts.queryKey, (old: any) => ({ ...old, status: 'accepted' }));
+            return { previous };
+        },
+        onError: (_err, { id }, context) => {
+            queryClient.setQueryData(
+                marketplaceOrderKeys.detail(orgId, 'seller', id),
+                context?.previous,
+            );
+        },
+        onSettled: (_data, _error, { id }) => {
+            queryClient.invalidateQueries({ queryKey: marketplaceOrderKeys.all(orgId, 'seller') });
+        },
+    });
 }
 ```
 
@@ -281,13 +264,16 @@ npm install @tanstack/react-query-devtools --save-dev
 // app.tsx
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { STALE_TIME } from '@/constants/query-config'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
-      gcTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: STALE_TIME.DEFAULT,    // 5 min
+      gcTime: STALE_TIME.LONG,          // 10 min
+      refetchOnWindowFocus: false,
       retry: 1,
+      retryDelay: 1000,
     },
   },
 })
@@ -299,7 +285,7 @@ createInertiaApp({
     root.render(
       <QueryClientProvider client={queryClient}>
         <App {...props} />
-        <ReactQueryDevtools initialIsOpen={false} />
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     )
   },

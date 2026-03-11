@@ -213,26 +213,20 @@ useQuery({
 
 ### Metrc Packages
 
+Use the hook wrapper — never call MetrcApi directly from components. Metrc data always comes from Laravel routes.
+
 ```typescript
+import { useMetrcPackages } from '@/Hooks/metrc/useMetrcPackages';
+
 function MetrcPackages() {
-  const { user } = usePage<PageProps>().props
-  const license = usePage<PageProps>().props.session.license
+  const license = usePage<PageProps>().props.session?.license ?? null;
 
   const {
     data: packages,
     isLoading,
     error,
     isFetching,
-  } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: 1,
-  })
+  } = useMetrcPackages(license);
 
   if (isLoading) {
     return (
@@ -264,6 +258,37 @@ function MetrcPackages() {
       <DataTable data={packages} />
     </BoxMain>
   )
+}
+```
+
+The hook itself follows the 3-layer pattern (keys → queryOptions → hook):
+
+```typescript
+// keys.ts
+export const metrcPackageKeys = {
+  all: () => ['metrc-packages'] as const,
+  byLicense: (license: string) => ['metrc-packages', license] as const,
+};
+
+// queries.ts
+import { queryOptions } from '@tanstack/react-query';
+import { STALE_TIME } from '@/constants/query-config';
+
+export const metrcQueries = {
+  packages: (license: string) =>
+    queryOptions({
+      queryKey: metrcPackageKeys.byLicense(license),
+      queryFn: () => axios.get(`/metrc/packages/${license}`).then(r => r.data),
+      staleTime: STALE_TIME.METRC,
+    }),
+};
+
+// useMetrcPackages.ts
+export function useMetrcPackages(license: string | null) {
+  return useQuery({
+    ...metrcQueries.packages(license ?? ''),
+    enabled: !!license,
+  });
 }
 ```
 

@@ -154,7 +154,7 @@ try {
 } catch (\Exception $e) {
     // ALL adjustments failed (including valid ones)
     // Error message will indicate which item failed
-    Log::error("Batch adjustment failed: " . $e->getMessage());
+    LogService::store('batch_adjustment_failed', "Batch adjustment failed: " . $e->getMessage());
 }
 ```
 
@@ -169,7 +169,7 @@ public function batch_with_retry(array $items, string $endpoint, string $license
         return ['success' => count($items), 'failed' => 0];
     } catch (\Exception $e) {
         // Batch failed - try items individually
-        Log::warning("Batch failed, retrying individually: " . $e->getMessage());
+        LogService::store('batch_failed', "Batch failed, retrying individually: " . $e->getMessage());
 
         $success = 0;
         $failed = 0;
@@ -180,7 +180,7 @@ public function batch_with_retry(array $items, string $endpoint, string $license
                 $success++;
             } catch (\Exception $itemError) {
                 $failed++;
-                Log::error("Item failed: " . json_encode($item) . " - " . $itemError->getMessage());
+                LogService::store('batch_item_failed', "Item failed: " . json_encode($item) . " - " . $itemError->getMessage());
             }
         }
 
@@ -205,7 +205,7 @@ public function process_in_batches(array $items, string $endpoint, string $licen
 
     foreach ($chunks as $index => $chunk) {
         $chunkNumber = $index + 1;
-        Log::info("Processing batch {$chunkNumber}/{$totalChunks} ({count($chunk)} items)...");
+        LogService::store('Batch Operation', "Processing batch {$chunkNumber}/{$totalChunks} (" . count($chunk) . " items)");
 
         try {
             $response = $api->post("{$endpoint}?licenseNumber={$license}", $chunk);
@@ -215,7 +215,7 @@ public function process_in_batches(array $items, string $endpoint, string $licen
                 $allCreatedIds = array_merge($allCreatedIds, $response);
             }
 
-            Log::info("Batch {$chunkNumber} completed successfully");
+            LogService::store('Batch Operation', "Batch {$chunkNumber} completed successfully");
 
         } catch (\Exception $e) {
             // Check if it's a 413 error (shouldn't happen with proper chunking)
@@ -223,19 +223,13 @@ public function process_in_batches(array $items, string $endpoint, string $licen
                 Log::critical("HTTP 413 despite chunking to 10! Chunk size: " . count($chunk));
             }
 
-            Log::error("Batch {$chunkNumber} failed: " . $e->getMessage(), [
-                'chunk' => $chunk
-            ]);
+            LogService::store('batch_chunk_failed', "Batch {$chunkNumber} failed: " . $e->getMessage());
 
             throw $e;
         }
     }
 
-    Log::info("All batches completed", [
-        'total_items' => count($items),
-        'total_batches' => $totalChunks,
-        'created_ids' => count($allCreatedIds)
-    ]);
+    LogService::store('Batch Operation', "All batches completed. Total items: " . count($items) . ", batches: {$totalChunks}, created IDs: " . count($allCreatedIds));
 
     return $allCreatedIds;
 }

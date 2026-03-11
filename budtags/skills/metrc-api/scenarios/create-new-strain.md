@@ -18,8 +18,8 @@
 ### Step 1: Prepare Strain Data
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
 
 $newStrains = [
@@ -50,13 +50,24 @@ $newStrains = [
 try {
     $api->post("/strains/v2/create?licenseNumber={$license}", $newStrains);
 
-    Log::info("Created " . count($newStrains) . " new strains");
+    LogService::store(
+        'strains_created',
+        "Created " . count($newStrains) . " new strains",
+        null,
+        request()->user()->active_org_id
+    );
 
     return redirect()->back()->with('message', count($newStrains) . ' strains created successfully');
 
 } catch (\Exception $e) {
-    Log::error("Strain creation failed: " . $e->getMessage());
-    return redirect()->back()->with('error', $e->getMessage());
+    LogService::store(
+        'strains_creation_failed',
+        "Strain creation failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
+
+    return redirect()->back()->with('message', 'Failed to create strains: ' . $e->getMessage());
 }
 ```
 
@@ -66,18 +77,18 @@ try {
 
 ```php
 // Check if strain already exists
-$existingStrains = $api->get("/strains/v2/active?licenseNumber={$license}");
+$existingStrains = $api->strains(session('facility'));
 $existingNames = array_column($existingStrains, 'Name');
 
 foreach ($newStrains as $strain) {
     if (in_array($strain['Name'], $existingNames)) {
-        throw new Exception("Strain '{$strain['Name']}' already exists");
+        return redirect()->back()->with('message', "Strain '{$strain['Name']}' already exists");
     }
 
     // Validate percentages sum to 1.0 (100%)
     $total = $strain['IndicaPercentage'] + $strain['SativaPercentage'];
     if (abs($total - 1.0) > 0.01) {
-        throw new Exception("Indica + Sativa must equal 100%");
+        return redirect()->back()->with('message', 'Indica + Sativa must equal 100%');
     }
 }
 ```

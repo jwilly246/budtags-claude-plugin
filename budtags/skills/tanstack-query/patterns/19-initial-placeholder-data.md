@@ -98,25 +98,33 @@ useQuery({
 ### Package Detail from List
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function PackageDetails({ packageId }: { packageId: number }) {
   const queryClient = useQueryClient()
   const license = usePage<PageProps>().props.session.license
 
+  // Use queryOptions factory for typed cache access
+  const listOpts = metrcQueries.packages(license)
+
   const { data: pkg } = useQuery({
-    queryKey: ['metrc', 'package', license, packageId],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.package_by_id(license, packageId)
+    queryKey: ['metrc-package-detail', license, packageId],
+    queryFn: async ({ signal }) => {
+      const response = await axios.get(`/metrc/packages/${packageId}`, {
+        params: { license },
+        signal,
+      })
+      return response.data
     },
-    // Use list data as initial data
+    // Seed from the list cache so the detail renders immediately
     initialData: () => {
-      const packages = queryClient.getQueryData(['metrc', 'packages', license])
+      const packages = queryClient.getQueryData(listOpts.queryKey)
       return packages?.find((p: Package) => p.Id === packageId)
     },
-    // Mark when list was fetched
+    // Respect when the list was last fetched so staleness is correct
     initialDataUpdatedAt: () =>
-      queryClient.getQueryState(['metrc', 'packages', license])?.dataUpdatedAt,
+      queryClient.getQueryState(listOpts.queryKey)?.dataUpdatedAt,
   })
 
   return <PackageDetailsView pkg={pkg} />
@@ -126,16 +134,20 @@ function PackageDetails({ packageId }: { packageId: number }) {
 ### Paginated Packages with Previous Data
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+
 function PaginatedPackages() {
   const [page, setPage] = useState(1)
   const license = usePage<PageProps>().props.session.license
 
   const { data, isPlaceholderData } = useQuery({
-    queryKey: ['metrc', 'packages', license, page],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages_paginated(license, page)
+    queryKey: metrcPackageKeys.paginated(license, page, 25),
+    queryFn: async ({ signal }) => {
+      const response = await axios.get('/metrc/packages', {
+        params: { license, page, perPage: 25 },
+        signal,
+      })
+      return response.data
     },
     placeholderData: (previousData) => previousData,
   })

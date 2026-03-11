@@ -157,21 +157,21 @@ GET /[category]/v2/[endpoint]?licenseNumber={{license}}&pageNumber=1&pageSize=50
 - **Response**: May include pagination metadata (total pages, total records)
 
 ### Iteration Pattern
-```javascript
-let pageNumber = 1;
-const pageSize = 50;
-let hasMore = true;
+```php
+$pageNumber = 1;
+$pageSize = 50;
+$allResults = [];
 
-while (hasMore) {
-  const response = await fetch(`/endpoint?pageNumber=${pageNumber}&pageSize=${pageSize}`);
-  const data = await response.json();
+do {
+    $results = $api->get($endpoint, [
+        'licenseNumber' => $license,
+        'pageNumber' => $pageNumber,
+        'pageSize' => $pageSize,
+    ]);
 
-  if (data.length < pageSize) {
-    hasMore = false; // Last page
-  }
-
-  pageNumber++;
-}
+    $allResults = array_merge($allResults, $results);
+    $pageNumber++;
+} while (count($results) === $pageSize);
 ```
 
 ---
@@ -224,7 +224,7 @@ Different Metrc license types have access to different endpoints:
 4. **Processing/Manufacturing** licenses work with packages but cannot access plant-specific data
 
 ### Example Error Scenario
-```javascript
+```
 // This will FAIL with 401 if licenseNumber is a Processing license:
 GET /plants/v2/vegetative?licenseNumber=AU-P-000001
 
@@ -232,16 +232,16 @@ GET /plants/v2/vegetative?licenseNumber=AU-P-000001
 ```
 
 ### Best Practice
-```javascript
+```php
 // Check license type before making plant-related API calls
-const licenseType = license.split('-')[1]; // Extract 'C', 'P', or 'R'
+$licenseType = explode('-', $license)[1]; // Extract 'C', 'P', or 'R'
 
-if (licenseType === 'C') {
-  // Safe to call plant endpoints
-  const plants = await api.get('/plants/v2/vegetative');
+if ($licenseType === 'C') {
+    // Safe to call plant endpoints
+    $plants = $api->one_day_of_plants($facility, now()->format('Y-m-d'));
 } else {
-  // Skip plant endpoints for non-cultivation licenses
-  console.warn('Plant endpoints not available for this license type');
+    // Skip plant endpoints for non-cultivation licenses
+    LogService::store('license_mismatch', 'Plant endpoints not available for this license type');
 }
 ```
 
@@ -420,18 +420,70 @@ $fullPackage = $api->get("/packages/v2/{$label}?licenseNumber={$license}");
 
 ---
 
+## BudTags User Context Management (CRITICAL)
+
+### The `set_user()` Requirement
+
+BudTags wraps Metrc API calls in the `MetrcApi` service class. **Every caller must set user context** before making API calls:
+
+```php
+// In controllers — ALWAYS before any API interaction
+$api->set_user(request()->user());
+
+// In queue jobs — User must be passed explicitly (no request() available)
+$api->set_user($this->user);
+```
+
+### Three User Context Patterns in MetrcApi
+
+| Pattern | Method | Risk if `set_user()` Omitted |
+|---------|--------|------------------------------|
+| `$this->user` (direct access) | `one_day_of_packages()`, auto-label dispatch | **NULL CRASH** — `null->active_org` |
+| `$this->user ?? request()->user()` | `headers()` authentication | Works in HTTP context, **CRASHES in jobs** |
+| `set_user($user)` | Caller responsibility | Must always be called first |
+
+### Why This Is Dangerous
+
+The `headers()` method has a fallback: `$this->user ?? request()->user()`. This means basic API calls _appear to work_ without `set_user()` in controller context. But deeper methods access `$this->user` directly — causing crashes when they hit `$this->user->active_org`.
+
+**Real bug (Feb 2026):** `set_user()` was accidentally removed from `MetrcController::get_packages()` during cleanup. The job completed successfully (jobs always call `set_user()`), but the HTTP refetch crashed in `one_day_of_packages()` → 500 error → packages never appeared in the UI.
+
+### Rules
+
+1. **Every controller method using MetrcApi**: Call `$api->set_user(request()->user())` before any API interaction
+2. **Every queue job using MetrcApi**: Accept User via constructor, call `$api->set_user($this->user)` in `handle()`
+3. **Inside MetrcApi**: Guard `$this->user` access with null check when the code path may run without user context
+4. **Code review**: When removing or refactoring controller code, verify `set_user()` is preserved
+5. **Base controller helpers**: Use `$this->user()` (returns `request()->user()`), `$this->org()`, `$this->license()`
+
+### Defensive Pattern Inside MetrcApi
+
+```php
+// ✅ SAFE — guard against missing user context
+if ($this->user !== null) {
+    $org = $this->user->active_org;
+    // user-dependent logic like auto-label generation
+}
+
+// ❌ DANGEROUS — crashes if set_user() not called
+$org = $this->user->active_org;
+```
+
+---
+
 ## Summary: Golden Rules for Metrc API Integration
 
-1. ✅ **ALWAYS include `licenseNumber`** query parameter
-2. ✅ **Use ISO 8601 dates** for all date/time fields
-3. ✅ **Check license type** before calling plant-specific endpoints
-4. ✅ **Implement pagination** for large result sets
-5. ✅ **Use batch operations** (arrays) for multiple entities
-6. ✅ **Handle rate limits** with exponential backoff
-7. ✅ **Validate tags** are available before assigning
-8. ✅ **Set proper Content-Type**: `application/json`
-9. ✅ **Log and handle errors** gracefully (401, 403, 429)
-10. ✅ **Test in Sandbox** environment before production
+1. ✅ **ALWAYS call `set_user()`** before using MetrcApi in controllers and jobs
+2. ✅ **ALWAYS include `licenseNumber`** query parameter
+3. ✅ **Use ISO 8601 dates** for all date/time fields
+4. ✅ **Check license type** before calling plant-specific endpoints
+5. ✅ **Implement pagination** for large result sets
+6. ✅ **Use batch operations** (arrays) for multiple entities
+7. ✅ **Handle rate limits** with exponential backoff
+8. ✅ **Validate tags** are available before assigning
+9. ✅ **Set proper Content-Type**: `application/json`
+10. ✅ **Log and handle errors** gracefully (401, 403, 429)
+11. ✅ **Test in Sandbox** environment before production
 
 ---
 

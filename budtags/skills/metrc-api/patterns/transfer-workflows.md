@@ -38,40 +38,40 @@ Creating an outgoing transfer is a **multi-step process** involving several API 
 
 ### Step 1: Create the Transfer
 
-```javascript
-POST /transfers/v1/external/outgoing
+```php
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
+$license = session('license');
 
-{
-  "LicenseNumber": "123-ABC",
-  "DestinationFacilityLicenseNumber": "456-DEF",
-  "DestinationFacilityName": "Recipient Facility Name",
-  "TransferTypeName": "Transfer",
-  "ShipmentTypeName": "Wholesale Product",
-  "PlannedRoute": "Take Highway 1 to Main St",
-  "EstimatedDepartureDateTime": "2025-01-15T10:00:00",
-  "EstimatedArrivalDateTime": "2025-01-15T14:00:00",
-  "Transporters": [
-    {
-      "TransporterFacilityLicenseNumber": null,
-      "DriverName": "John Smith",
-      "DriverLicenseNumber": "D1234567",
-      "PhoneNumber": "555-1234",
-      "VehicleMake": "Toyota",
-      "VehicleModel": "Tacoma",
-      "VehicleLicensePlateNumber": "ABC123"
-    }
-  ],
-  "Packages": [
-    {
-      "PackageLabel": "1A4000000000001000012345",
-      "WholesalePrice": 100.00
-    },
-    {
-      "PackageLabel": "1A4000000000001000067890",
-      "WholesalePrice": 150.00
-    }
-  ]
-}
+$transferData = [
+    [
+        'LicenseNumber' => $license,
+        'DestinationFacilityLicenseNumber' => '456-DEF',
+        'DestinationFacilityName' => 'Recipient Facility Name',
+        'TransferTypeName' => 'Transfer',
+        'ShipmentTypeName' => 'Wholesale Product',
+        'PlannedRoute' => 'Take Highway 1 to Main St',
+        'EstimatedDepartureDateTime' => now()->addHour()->utc()->format('Y-m-d\TH:i:s\Z'),
+        'EstimatedArrivalDateTime' => now()->addHours(5)->utc()->format('Y-m-d\TH:i:s\Z'),
+        'Transporters' => [
+            [
+                'TransporterFacilityLicenseNumber' => null,
+                'DriverName' => 'John Smith',
+                'DriverLicenseNumber' => 'D1234567',
+                'PhoneNumber' => '555-1234',
+                'VehicleMake' => 'Toyota',
+                'VehicleModel' => 'Tacoma',
+                'VehicleLicensePlateNumber' => 'ABC123',
+            ],
+        ],
+        'Packages' => [
+            ['PackageLabel' => '1A4000000000001000012345', 'WholesalePrice' => 100.00],
+            ['PackageLabel' => '1A4000000000001000067890', 'WholesalePrice' => 150.00],
+        ],
+    ],
+];
+
+$response = $api->post("/transfers/v2/external/outgoing?licenseNumber={$license}", $transferData);
 ```
 
 **Response:**
@@ -94,20 +94,18 @@ POST /transfers/v1/external/outgoing
 
 If you need to modify the transfer after creation:
 
-```javascript
-PUT /transfers/v1/external/outgoing
+```php
+$updateData = [
+    [
+        'Id' => 12345,  // TransferId from Step 1
+        'LicenseNumber' => $license,
+        'PlannedRoute' => 'UPDATED: Take Highway 2 instead',
+        'EstimatedDepartureDateTime' => now()->addHours(2)->utc()->format('Y-m-d\TH:i:s\Z'),
+        'EstimatedArrivalDateTime' => now()->addHours(6)->utc()->format('Y-m-d\TH:i:s\Z'),
+    ],
+];
 
-{
-  "Id": 12345,  // TransferId from Step 1
-  "LicenseNumber": "123-ABC",
-  "DestinationFacilityLicenseNumber": "456-DEF",
-  "DestinationFacilityName": "Recipient Facility Name",
-  "TransferTypeName": "Transfer",
-  "ShipmentTypeName": "Wholesale Product",
-  "PlannedRoute": "UPDATED: Take Highway 2 instead",
-  "EstimatedDepartureDateTime": "2025-01-15T11:00:00",  // Changed time
-  "EstimatedArrivalDateTime": "2025-01-15T15:00:00"
-}
+$api->put("/transfers/v2/external/outgoing?licenseNumber={$license}", $updateData);
 ```
 
 **Note:** You can only update certain fields. Cannot modify packages or transporters after creation - must delete and recreate.
@@ -116,34 +114,36 @@ PUT /transfers/v1/external/outgoing
 
 Once the transfer is ready to depart:
 
-```javascript
-PUT /transfers/v1/external/outgoing/depart
+```php
+$departData = [
+    [
+        'Id' => 12345,
+        'ActualDepartureDateTime' => now()->utc()->format('Y-m-d\TH:i:s\Z'),
+    ],
+];
 
-{
-  "Id": 12345,  // TransferId
-  "ActualDepartureDateTime": "2025-01-15T10:30:00"
-}
+$api->put("/transfers/v2/external/outgoing/depart?licenseNumber={$license}", $departData);
 ```
 
 ### Step 4: Complete the Transfer (At Destination)
 
 The receiving facility must accept the transfer:
 
-```javascript
-PUT /transfers/v1/external/incoming/{id}/deliveries/{deliveryId}/packages/wholesale
+```php
+$receiveData = [
+    [
+        'PackageLabel' => '1A4000000000001000012345',
+        'ShipperWholesalePrice' => 100.00,
+        'ReceivedDateTime' => now()->utc()->format('Y-m-d\TH:i:s\Z'),
+    ],
+    [
+        'PackageLabel' => '1A4000000000001000067890',
+        'ShipperWholesalePrice' => 150.00,
+        'ReceivedDateTime' => now()->utc()->format('Y-m-d\TH:i:s\Z'),
+    ],
+];
 
-[
-  {
-    "PackageLabel": "1A4000000000001000012345",
-    "ShipperWholesalePrice": 100.00,
-    "ReceivedDateTime": "2025-01-15T14:30:00"
-  },
-  {
-    "PackageLabel": "1A4000000000001000067890",
-    "ShipperWholesalePrice": 150.00,
-    "ReceivedDateTime": "2025-01-15T14:30:00"
-  }
-]
+$api->put("/transfers/v2/external/incoming/{$transferId}/deliveries/{$deliveryId}/packages/wholesale?licenseNumber={$license}", $receiveData);
 ```
 
 ---
@@ -154,62 +154,57 @@ To track packages leaving your inventory via outgoing transfers, you must make *
 
 ### The Cascading Call Pattern
 
-**⚠️ Rate Limiting Warning:** This pattern requires multiple API calls and can quickly hit rate limits for facilities with many transfers.
+**Rate Limiting Warning:** This pattern requires multiple API calls and can quickly hit rate limits for facilities with many transfers.
 
-```javascript
-async function trackOutgoingTransfers(facility) {
-  const transferredPackages = [];
+```php
+public function track_outgoing_transfers(string $facility): array
+{
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
+    $license = session('license');
+    $transferredPackages = [];
 
-  // Step 1: Get all outgoing transfers
-  const transfers = await axios.get('/transfers/v1/outgoing', {
-    params: { licenseNumber: facility }
-  });
+    // Step 1: Get all outgoing transfers
+    $transfers = $api->fetch_transfers_bulk($facility, 'outgoing');
 
-  console.log(`Found ${transfers.data.length} outgoing transfers`);
+    LogService::store('Transfer Tracking', "Found " . count($transfers) . " outgoing transfers");
 
-  // Step 2: For each transfer, get its deliveries
-  for (const transfer of transfers.data) {
-    try {
-      const deliveries = await axios.get(`/transfers/v1/${transfer.Id}/deliveries`);
+    // Step 2: For each transfer, get its deliveries
+    foreach ($transfers as $transfer) {
+        try {
+            $deliveries = $api->get("/transfers/v2/{$transfer['Id']}/deliveries", [
+                'licenseNumber' => $license,
+            ]);
 
-      console.log(`Transfer ${transfer.Id} has ${deliveries.data.length} deliveries`);
+            // Step 3: For each delivery, get its packages
+            foreach ($deliveries as $delivery) {
+                $packages = $api->get("/transfers/v2/deliveries/{$delivery['Id']}/packages", [
+                    'licenseNumber' => $license,
+                ]);
 
-      // Step 3: For each delivery, get its packages
-      for (const delivery of deliveries.data) {
-        const packages = await axios.get(`/transfers/v1/deliveries/${delivery.Id}/packages`);
+                // Store package data with transfer/delivery context
+                foreach ($packages as $package) {
+                    $transferredPackages[] = [
+                        ...$package,
+                        'transfer_id' => $transfer['Id'],
+                        'delivery_id' => $delivery['Id'],
+                        'destination_facility' => $transfer['DestinationFacilityName'],
+                        'status' => $transfer['ShipmentTransactionType'],
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            LogService::store('transfer_tracking_error', "Error processing transfer {$transfer['Id']}: " . $e->getMessage());
 
-        console.log(`Delivery ${delivery.Id} has ${packages.data.length} packages`);
-
-        // Store package data with transfer/delivery context
-        transferredPackages.push(...packages.data.map(pkg => ({
-          ...pkg,
-          transferId: transfer.Id,
-          deliveryId: delivery.Id,
-          destinationFacility: transfer.DestinationFacilityName,
-          status: transfer.ShipmentTransactionType
-        })));
-
-        // IMPORTANT: Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-
-      // Add delay between transfers
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-    } catch (error) {
-      console.error(`Error processing transfer ${transfer.Id}:`, error.message);
-
-      // Handle rate limiting
-      if (error.response?.status === 429) {
-        const retryAfter = parseInt(error.response.headers['retry-after'] || 60);
-        console.log(`Rate limited. Waiting ${retryAfter} seconds...`);
-        await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
-        // Retry logic here...
-      }
+            // Handle rate limiting
+            if (str_contains($e->getMessage(), '429')) {
+                LogService::store('metrc_rate_limited', 'Rate limited during transfer tracking');
+                sleep(60); // Use Retry-After header value in practice
+            }
+        }
     }
-  }
 
-  return transferredPackages;
+    return $transferredPackages;
 }
 ```
 
@@ -222,67 +217,32 @@ async function trackOutgoingTransfers(facility) {
 
 **Total API calls:**
 1. `GET /outgoing` = **1 call**
-2. `GET /transfers/{id}/deliveries` × 10 = **10 calls**
-3. `GET /deliveries/{id}/packages` × 20 = **20 calls**
+2. `GET /transfers/{id}/deliveries` x 10 = **10 calls**
+3. `GET /deliveries/{id}/packages` x 20 = **20 calls**
 4. **Total: 31 API calls**
-
-**Time estimate** (with 500ms delays):
-- 31 calls × 500ms = **15.5 seconds minimum**
 
 ### Optimization Strategies
 
 #### 1. Cache Transfer Data
 
-```javascript
-// Cache transfers for 1 hour to avoid redundant calls
-const cacheKey = `transfers:outgoing:${facility}`;
-const cachedTransfers = await redis.get(cacheKey);
+```php
+$cacheKey = "transfers:outgoing:{$facility}";
 
-if (cachedTransfers) {
-  return JSON.parse(cachedTransfers);
-}
-
-const transfers = await trackOutgoingTransfers(facility);
-
-await redis.setex(cacheKey, 3600, JSON.stringify(transfers));
-
-return transfers;
+$transfers = Cache::remember($cacheKey, now()->addHour(), function () use ($facility) {
+    return $this->track_outgoing_transfers($facility);
+});
 ```
 
 #### 2. Use lastModifiedStart Filter
 
-```javascript
+```php
 // Only fetch transfers modified in last hour
-const oneHourAgo = new Date();
-oneHourAgo.setHours(oneHourAgo.getHours() - 1);
-
-const transfers = await axios.get('/transfers/v1/outgoing', {
-  params: {
-    licenseNumber: facility,
-    lastModifiedStart: oneHourAgo.toISOString(),
-    lastModifiedEnd: new Date().toISOString()
-  }
-});
+$transfers = $api->get("/transfers/v2/outgoing", [
+    'licenseNumber' => $license,
+    'lastModifiedStart' => now()->subHour()->format('Y-m-d'),
+    'lastModifiedEnd' => now()->format('Y-m-d'),
+]);
 ```
-
-#### 3. Parallel Requests (Use with Caution)
-
-```javascript
-// Process transfers in parallel (respects rate limits via connection pooling)
-const transferPromises = transfers.data.map(async (transfer) => {
-  const deliveries = await axios.get(`/transfers/v1/${transfer.Id}/deliveries`);
-
-  const packagePromises = deliveries.data.map(async (delivery) => {
-    return await axios.get(`/transfers/v1/deliveries/${delivery.Id}/packages`);
-  });
-
-  return await Promise.all(packagePromises);
-});
-
-const allPackages = await Promise.all(transferPromises);
-```
-
-**Trade-off:** Faster but higher risk of hitting rate limits. Monitor 429 responses carefully.
 
 ---
 
@@ -290,46 +250,45 @@ const allPackages = await Promise.all(transferPromises);
 
 Incoming transfers are simpler because the receiving facility typically doesn't need cascading calls.
 
-```javascript
-async function trackIncomingTransfers(facility) {
-  const incoming = await axios.get('/transfers/v1/incoming', {
-    params: { licenseNumber: facility }
-  });
+```php
+public function track_incoming_transfers(string $facility): array
+{
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
 
-  // Filter for pending transfers
-  const pending = incoming.data.filter(t =>
-    t.ShipmentTransactionType === 'Pending'
-  );
+    $incoming = $api->fetch_transfers_bulk($facility, 'incoming');
 
-  return {
-    total: incoming.data.length,
-    pending: pending.length,
-    transfers: incoming.data
-  };
+    // Filter for pending transfers
+    $pending = collect($incoming)->filter(fn($t) => !$t['ReceivedDateTime'])->values()->all();
+
+    return [
+        'total' => count($incoming),
+        'pending' => count($pending),
+        'transfers' => $incoming,
+    ];
 }
 ```
 
 ### Accepting Incoming Packages
 
-```javascript
-async function acceptIncomingDelivery(transferId, deliveryId, packages) {
-  // packages = [{ PackageLabel, ShipperWholesalePrice, ReceivedDateTime }]
+```php
+public function accept_incoming_delivery(int $transferId, int $deliveryId, array $packages): void
+{
+    $api = app(\App\Services\Api\MetrcApi::class);
+    $api->set_user(request()->user());
+    $license = session('license');
 
-  // Must chunk to 10 packages max (object limiting)
-  const chunks = [];
-  for (let i = 0; i < packages.length; i += 10) {
-    chunks.push(packages.slice(i, i + 10));
-  }
+    // Must chunk to 10 packages max (object limiting)
+    $chunks = array_chunk($packages, 10);
 
-  for (const chunk of chunks) {
-    await axios.put(
-      `/transfers/v1/external/incoming/${transferId}/deliveries/${deliveryId}/packages/wholesale`,
-      chunk
-    );
+    foreach ($chunks as $chunk) {
+        $api->put(
+            "/transfers/v2/external/incoming/{$transferId}/deliveries/{$deliveryId}/packages/wholesale?licenseNumber={$license}",
+            $chunk
+        );
+    }
 
-    // Add delay between chunks
-    await new Promise(resolve => setTimeout(resolve, 500));
-  }
+    LogService::store('transfer_accepted', "Accepted delivery {$deliveryId} with " . count($packages) . " packages");
 }
 ```
 
@@ -355,16 +314,16 @@ async function acceptIncomingDelivery(transferId, deliveryId, packages) {
 **Cause:** Not providing all required transporter fields.
 
 **Solution:** Ensure all fields are present:
-```javascript
-{
-  "TransporterFacilityLicenseNumber": null,  // OK if non-licensed driver
-  "DriverName": "REQUIRED",
-  "DriverLicenseNumber": "REQUIRED",
-  "PhoneNumber": "REQUIRED",
-  "VehicleMake": "REQUIRED",
-  "VehicleModel": "REQUIRED",
-  "VehicleLicensePlateNumber": "REQUIRED"
-}
+```php
+[
+    'TransporterFacilityLicenseNumber' => null,  // OK if non-licensed driver
+    'DriverName' => 'REQUIRED',
+    'DriverLicenseNumber' => 'REQUIRED',
+    'PhoneNumber' => 'REQUIRED',
+    'VehicleMake' => 'REQUIRED',
+    'VehicleModel' => 'REQUIRED',
+    'VehicleLicensePlateNumber' => 'REQUIRED',
+]
 ```
 
 ### 3. Package Not in Active Inventory
@@ -374,16 +333,12 @@ async function acceptIncomingDelivery(transferId, deliveryId, packages) {
 **Cause:** Package has been finished, discontinued, or already transferred.
 
 **Solution:** Verify package is in active inventory before creating transfer:
-```javascript
-const pkg = await axios.get('/packages/v1/active', {
-  params: {
-    licenseNumber: facility,
-    label: packageLabel
-  }
-});
+```php
+$activePackages = $api->one_day_of_packages($facility, now()->format('Y-m-d'));
+$activeLabels = collect($activePackages)->pluck('Label')->all();
 
-if (!pkg.data || pkg.data.length === 0) {
-  throw new Error('Package not found in active inventory');
+if (!in_array($packageLabel, $activeLabels)) {
+    throw new \Exception('Package not found in active inventory');
 }
 ```
 
@@ -393,24 +348,24 @@ if (!pkg.data || pkg.data.length === 0) {
 
 **Cause:** Making too many cascading calls too quickly.
 
-**Solution:** See optimization strategies above + implement exponential backoff:
-```javascript
-async function fetchWithRetry(url, params, maxRetries = 3) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await axios.get(url, { params });
-    } catch (error) {
-      if (error.response?.status === 429 && i < maxRetries - 1) {
-        const retryAfter = parseInt(error.response.headers['retry-after'] || 60);
-        const delay = Math.min(retryAfter * 1000, Math.pow(2, i) * 1000);
-
-        console.log(`Rate limited. Retry ${i + 1}/${maxRetries} in ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      } else {
-        throw error;
-      }
+**Solution:** See optimization strategies above + implement retry with Retry-After header:
+```php
+private function fetch_with_retry(string $endpoint, array $params, int $maxRetries = 3): array
+{
+    for ($i = 0; $i < $maxRetries; $i++) {
+        try {
+            return $api->get($endpoint, $params);
+        } catch (\Exception $e) {
+            if (str_contains($e->getMessage(), '429') && $i < $maxRetries - 1) {
+                LogService::store('metrc_rate_limited', "Rate limited on {$endpoint}. Retry " . ($i + 1) . "/{$maxRetries}");
+                sleep(60); // Use Retry-After header value in practice
+            } else {
+                throw $e;
+            }
+        }
     }
-  }
+
+    throw new \Exception("Max retries exceeded for {$endpoint}");
 }
 ```
 
@@ -419,7 +374,6 @@ async function fetchWithRetry(url, params, maxRetries = 3) {
 ## Related Patterns
 
 - **[Object Limiting](./object-limiting.md)** - Handle 10 object limit when accepting packages
-- **[Rate Limiting](./rate-limiting.md)** - Essential for cascading API call patterns
 - **[Inventory Management](./inventory-management.md)** - Track packages leaving via transfers
 - **[Error Handling](./error-handling.md)** - Comprehensive error handling strategies
 
@@ -428,15 +382,15 @@ async function fetchWithRetry(url, params, maxRetries = 3) {
 ## Quick Reference
 
 ```
-✅ DO:
-- Add delays between cascading API calls (500ms minimum)
+DO:
+- Add delays between cascading API calls
 - Cache transfer data to avoid redundant calls
 - Use lastModifiedStart filter to reduce API calls
 - Chunk packages into batches of 10 when accepting
 - Handle 429 rate limit errors with Retry-After header
 - Verify packages are in active inventory before transferring
 
-❌ DON'T:
+DON'T:
 - Make cascading calls without rate limit protection
 - Modify transfers in "Departed" or "Received" state
 - Send more than 10 packages per request when accepting
@@ -462,7 +416,6 @@ async function fetchWithRetry(url, params, maxRetries = 3) {
 
 **Tracking Transfers:**
 - [ ] Use lastModifiedStart filter to reduce API calls
-- [ ] Add 500ms delays between cascading calls
 - [ ] Implement rate limit retry logic
 - [ ] Cache results for 1 hour
 - [ ] Monitor for HTTP 429 errors

@@ -77,7 +77,7 @@ public function storeItemMapping(Request $request)
         $validated
     );
 
-    return redirect()->back()->with('success', 'Item mapping saved');
+    return redirect()->back()->with('message', 'Item mapping saved');
 }
 ```
 
@@ -267,7 +267,7 @@ public function syncQuantities()
         );
     }
 
-    return redirect()->back()->with('success',
+    return redirect()->back()->with('message',
         "Successfully synced {$result['synced']} items ({$result['skipped']} skipped - no mapping)"
     );
 }
@@ -304,9 +304,9 @@ class SyncMetrcToQuickBooks
                 $qbo->set_user($user);
                 $result = $qbo->sync_quantities_from_metrc();
 
-                \Log::info("QBO Sync for Org {$org->id}", $result);
+                LogService::store('QBO Sync', "Synced for Org {$org->id}");
             } catch (\Exception $e) {
-                \Log::error("QBO Sync failed for Org {$org->id}: {$e->getMessage()}");
+                LogService::store('QBO Sync Failed', "Failed for Org {$org->id}: {$e->getMessage()}");
             }
         }
     }

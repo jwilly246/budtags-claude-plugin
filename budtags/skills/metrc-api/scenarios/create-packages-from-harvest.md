@@ -48,8 +48,8 @@
 **Endpoint**: `GET /tags/v2/package/available`
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
 
 // Get available tags
@@ -60,7 +60,7 @@ $availableTags = $api->get("/tags/v2/package/available", [
 // Ensure we have enough tags
 $requiredTags = count($packagesToCreate);
 if (count($availableTags) < $requiredTags) {
-    throw new Exception("Not enough package tags available. Need: {$requiredTags}, Have: " . count($availableTags));
+    return redirect()->back()->with('message', "Not enough package tags available. Need: {$requiredTags}, Have: " . count($availableTags));
 }
 
 // Take tags we need
@@ -124,31 +124,6 @@ $packages[] = [
         ]
     ]
 ];
-
-// Example: Create shake package
-$packages[] = [
-    'Tag' => $tagsToUse[2]['Label'],
-    'Location' => 'Vault A',
-    'Item' => 'Blue Dream Shake',
-    'Quantity' => 80.0,
-    'UnitOfMeasure' => 'Grams',
-    'PatientLicenseNumber' => null,
-    'Note' => null,
-    'IsProductionBatch' => false,
-    'ProductionBatchNumber' => null,
-    'IsTradeSample' => false,
-    'IsDonation' => false,
-    'ProductRequiresRemediation' => false,
-    'UseSameItem' => false,
-    'ActualDate' => now()->format('Y-m-d'),
-    'Ingredients' => [
-        [
-            'HarvestName' => $harvestName,
-            'Weight' => 80.0,
-            'UnitOfMeasure' => 'Grams'
-        ]
-    ]
-];
 ```
 
 ---
@@ -159,17 +134,26 @@ $packages[] = [
 
 ```php
 try {
-    $response = $api->post("/harvests/v2/packages?licenseNumber={$license}", $packages);
+    $api->post("/harvests/v2/packages?licenseNumber={$license}", $packages);
 
-    Log::info("Created {count($packages)} packages from harvest: {$harvestName}");
+    LogService::store(
+        'create_packages_from_harvest',
+        "Created " . count($packages) . " packages from harvest: {$harvestName}",
+        null,
+        request()->user()->active_org_id
+    );
 
     return redirect()->back()->with('message', count($packages) . ' packages created successfully');
 
 } catch (\Exception $e) {
-    Log::error("Package creation failed: " . $e->getMessage());
-    Log::error("Packages data: " . json_encode($packages));
+    LogService::store(
+        'create_packages_from_harvest_failed',
+        "Package creation failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
 
-    return redirect()->back()->with('error', 'Failed to create packages: ' . $e->getMessage());
+    return redirect()->back()->with('message', 'Failed to create packages: ' . $e->getMessage());
 }
 ```
 
@@ -185,17 +169,15 @@ sleep(2);
 $createdPackages = [];
 foreach ($tagsToUse as $tag) {
     try {
-        $package = $api->get("/packages/v2/{$tag['Label']}?licenseNumber={$license}");
+        $package = $api->package(session('facility'), $tag['Label']);
         $createdPackages[] = $package;
     } catch (\Exception $e) {
-        Log::warning("Package not found yet: {$tag['Label']}");
+        // Package not found yet — may still be processing
     }
 }
 
 if (count($createdPackages) === count($packages)) {
-    Log::info("All packages verified successfully");
-} else {
-    Log::warning("Expected " . count($packages) . " packages, found " . count($createdPackages));
+    LogService::store('packages_verified', "All " . count($packages) . " packages verified successfully");
 }
 ```
 
@@ -217,7 +199,7 @@ $finishData = [
 
 $api->put("/harvests/v2/finish?licenseNumber={$license}", $finishData);
 
-Log::info("Harvest finished: {$harvestName}");
+LogService::store('harvest_finished', "Harvest finished: {$harvestName}");
 ```
 
 ---
@@ -227,9 +209,9 @@ Log::info("Harvest finished: {$harvestName}");
 ```php
 class HarvestController extends Controller
 {
-    public function create_packages(Request $request)
+    public function create_packages()
     {
-        $validated = $request->validate([
+        $validated = request()->validate([
             'harvest_name' => 'required|string',
             'packages' => 'required|array|min:1',
             'packages.*.item' => 'required|string',
@@ -239,8 +221,8 @@ class HarvestController extends Controller
             'packages.*.note' => 'nullable|string',
         ]);
 
-        $api = new MetrcApi();
-        $api->set_user($request->user());
+        $api = app(\App\Services\Api\MetrcApi::class);
+        $api->set_user(request()->user());
         $license = session('license');
 
         // Get available tags
@@ -250,7 +232,7 @@ class HarvestController extends Controller
 
         $packagesNeeded = count($validated['packages']);
         if (count($availableTags) < $packagesNeeded) {
-            return redirect()->back()->with('error', "Not enough tags. Need {$packagesNeeded}, have " . count($availableTags));
+            return redirect()->back()->with('message', "Not enough tags. Need {$packagesNeeded}, have " . count($availableTags));
         }
 
         // Build package data
@@ -289,19 +271,20 @@ class HarvestController extends Controller
                 'create_packages_from_harvest',
                 "Created {$packagesNeeded} packages from harvest: {$validated['harvest_name']}",
                 null,
-                $request->user()->active_org_id
+                request()->user()->active_org_id
             );
 
             return redirect()->back()->with('message', "{$packagesNeeded} packages created successfully");
 
         } catch (\Exception $e) {
-            Log::error("Harvest package creation failed", [
-                'harvest' => $validated['harvest_name'],
-                'packages' => $metrcPackages,
-                'error' => $e->getMessage()
-            ]);
+            LogService::store(
+                'create_packages_from_harvest_failed',
+                "Harvest package creation failed: " . $e->getMessage(),
+                null,
+                request()->user()->active_org_id
+            );
 
-            return redirect()->back()->with('error', 'Failed to create packages: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Failed to create packages: ' . $e->getMessage());
         }
     }
 }
@@ -315,44 +298,18 @@ class HarvestController extends Controller
 
 **Solution**: Order more package tags from Metrc or finish/archive old packages to free up tags
 
-```php
-// Check tag availability first
-$neededTags = 10;
-$availableTags = $api->get("/tags/v2/package/available?licenseNumber={$license}");
-
-if (count($availableTags) < $neededTags) {
-    // Alert user or order more tags
-}
-```
-
 ### Issue 2: "Item not found"
 
 **Solution**: Ensure items exist in Metrc before creating packages
 
 ```php
-// Verify items exist
 $items = $api->get("/items/v2/active?licenseNumber={$license}");
 $itemNames = array_column($items, 'Name');
-
-foreach ($packages as $package) {
-    if (!in_array($package['Item'], $itemNames)) {
-        throw new Exception("Item not found in Metrc: {$package['Item']}");
-    }
-}
 ```
 
 ### Issue 3: "Harvest weight exceeded"
 
 **Solution**: Total package weights cannot exceed harvest total weight
-
-```php
-$totalPackageWeight = array_sum(array_column($packages, 'Quantity'));
-$harvestWeight = $harvest['TotalWetWeight'];
-
-if ($totalPackageWeight > $harvestWeight) {
-    throw new Exception("Package total ({$totalPackageWeight}g) exceeds harvest weight ({$harvestWeight}g)");
-}
-```
 
 ---
 

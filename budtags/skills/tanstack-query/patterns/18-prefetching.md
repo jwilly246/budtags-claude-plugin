@@ -164,28 +164,12 @@ packages?.forEach(pkg => {
 ```typescript
 function PackagesList() {
   const queryClient = useQueryClient()
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
-  const { data: packages } = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
-  })
+  const { data: packages } = useQuery(metrcQueries.packages(license))
 
   const handleHover = (packageId: number) => {
-    queryClient.prefetchQuery({
-      queryKey: ['metrc', 'package', license, packageId],
-      queryFn: async () => {
-        const api = new MetrcApi()
-        api.set_user(user)
-        return api.package_by_id(license, packageId)
-      },
-      staleTime: 5 * 60 * 1000,
-    })
+    queryClient.prefetchQuery(metrcQueries.packageById(license, packageId))
   }
 
   return (
@@ -208,29 +192,26 @@ function PackagesList() {
 ### Prefetch Lab Results
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+import { STALE_TIME } from '@/constants/query-config'
+
 function PackageDetails({ packageId }: { packageId: number }) {
   const queryClient = useQueryClient()
-  const { user } = usePage<PageProps>().props
+  const license = usePage<PageProps>().props.session.license
 
-  const { data: pkg } = useQuery({
-    queryKey: ['package', packageId],
-    queryFn: () => fetchPackage(packageId),
-  })
+  const { data: pkg } = useQuery(metrcQueries.packageById(license, packageId))
 
   // Prefetch lab results when package loads
   useEffect(() => {
     if (pkg?.LabTestId) {
       queryClient.prefetchQuery({
-        queryKey: ['lab', pkg.LabTestId],
-        queryFn: async () => {
-          const api = new ConfidentApi()
-          api.set_user(user)
-          return api.get_test(pkg.LabTestId)
-        },
-        staleTime: 10 * 60 * 1000, // Lab results rarely change
+        queryKey: ['lab-results', pkg.LabTestId],
+        queryFn: ({ signal }) =>
+          axios.get(`/lab-results/${pkg.LabTestId}`, { signal }).then(r => r.data),
+        staleTime: STALE_TIME.LONG, // Lab results rarely change
       })
     }
-  }, [pkg?.LabTestId, user, queryClient])
+  }, [pkg?.LabTestId, queryClient])
 
   return <div>...</div>
 }
@@ -241,27 +222,76 @@ function PackageDetails({ packageId }: { packageId: number }) {
 ```typescript
 function OrganizationDashboard() {
   const queryClient = useQueryClient()
-  const { user } = usePage<PageProps>().props
   const licenses = usePage<PageProps>().props.session.licenses
 
   useEffect(() => {
-    // Prefetch all licenses' packages
+    // Prefetch all licenses' packages using queryOptions factories
     licenses.forEach(license => {
-      queryClient.prefetchQuery({
-        queryKey: ['metrc', 'packages', license],
-        queryFn: async () => {
-          const api = new MetrcApi()
-          api.set_user(user)
-          return api.packages(license)
-        },
-        staleTime: 5 * 60 * 1000,
-      })
+      queryClient.prefetchQuery(metrcQueries.packages(license))
     })
-  }, [licenses, user, queryClient])
+  }, [licenses, queryClient])
 
   return <div>Dashboard</div>
 }
 ```
+
+### usePrefetchPages Utility
+
+BudTags provides a reusable `usePrefetchPages` hook in `resources/js/Hooks/metrc/prefetch.ts` for paginated data prefetching. It prefetches the previous page, next page, and page after next relative to the current page:
+
+```typescript
+export function usePrefetchPages(
+    getQueryOptions: (page: number) => { queryKey: QueryKey; [key: string]: unknown },
+    currentPage: number,
+    enabled: boolean,
+    license: string | null,
+) {
+    const queryClient = useQueryClient();
+    useEffect(() => {
+        if (!enabled || !license) return;
+        [currentPage - 1, currentPage + 1, currentPage + 2]
+            .filter(page => page >= 1)
+            .forEach((page) => queryClient.prefetchQuery(getQueryOptions(page)));
+    }, [license, currentPage, enabled, getQueryOptions]);
+}
+```
+
+Compose a domain-specific prefetch hook on top of it:
+
+```typescript
+export function usePrefetchPackages(
+    license: string | null,
+    currentPage: number,
+    perPage: number,
+    enabled: boolean,
+) {
+    const getQueryOptions = useCallback(
+        (page: number) => metrcQueries.packagesPaginated(license, page, perPage),
+        [license, perPage],
+    );
+    usePrefetchPages(getQueryOptions, currentPage, enabled, license);
+}
+```
+
+Use in a paginated component:
+
+```typescript
+function PackagesTable({ license, page, perPage }: Props) {
+    const { data, isLoading } = useQuery(
+        metrcQueries.packagesPaginated(license, page, perPage)
+    );
+
+    // Prefetch adjacent pages in the background
+    usePrefetchPackages(license, page, perPage, !!license);
+
+    return <DataTable data={data?.data ?? []} isLoading={isLoading} />
+}
+```
+
+Key points:
+- `getQueryOptions` must be wrapped in `useCallback` to keep the dependency array stable
+- The utility skips pages below 1 automatically
+- Pass the same `queryOptions` factory used in `useQuery` so keys match and the cache is shared
 
 ### Prefetch Before Modal Open
 

@@ -1,6 +1,6 @@
 # Pattern 13: Mutations
 
-> **⚠️ BudTags Note:** Examples in this file show `confirm()` for simplicity. In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use a modal-based confirmation component or the `useConfirmDelete` hook instead.
+> **⚠️ BudTags Note:** In BudTags, **NEVER use `confirm()` or `window.confirm()`**. Use the two-click confirmation pattern for destructive actions (see "Delete with Confirmation" below).
 
 ## useMutation Hook
 
@@ -227,61 +227,54 @@ mutation.reset() // Clear to idle state
 
 ## BudTags Examples
 
-### Create Metrc Package
+### Accept Marketplace Order
+
+Package creation in BudTags uses Inertia forms, not React Query mutations. Use React Query mutations for API-driven actions like accepting marketplace orders.
 
 ```typescript
-function CreatePackageForm() {
-  const queryClient = useQueryClient()
-  const { user } = usePage<PageProps>().props
-  const license = usePage<PageProps>().props.session.license
-  const { data, setData } = useForm({
-    tag: '',
-    quantity: 0,
-    itemId: 0,
-  })
+import { marketplaceOrderKeys } from '@/Hooks/marketplace/keys';
+import { marketplaceOrderQueries } from '@/Hooks/marketplace/queries';
 
-  const mutation = useMutation({
-    mutationFn: async (packageData) => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.create_package(license, packageData)
-    },
-    onSuccess: () => {
-      // Invalidate packages list
-      queryClient.invalidateQueries({ queryKey: ['metrc', 'packages', license] })
+export function useAcceptOrder() {
+    const queryClient = useQueryClient();
+    const { user } = usePage<PageProps>().props;
+    const orgId = user.active_org_id ?? '';
 
-      // Show success
-      toast.success('Package created successfully')
-
-      // Reset form
-      setData({ tag: '', quantity: 0, itemId: 0 })
-    },
-    onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to create package')
-    },
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    mutation.mutate(data)
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <InputText value={data.tag} onChange={(e) => setData('tag', e.target.value)} />
-      <button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Creating...' : 'Create Package'}
-      </button>
-    </form>
-  )
+    return useMutation({
+        mutationFn: async ({ id }: { id: string }) => {
+            const { data } = await axios.post(`/marketplace/seller/orders/${id}/accept`);
+            return data;
+        },
+        // Optimistic update
+        onMutate: async ({ id }) => {
+            await queryClient.cancelQueries({ queryKey: marketplaceOrderKeys.detail(orgId, 'seller', id) });
+            const detailOpts = marketplaceOrderQueries.detail(orgId, 'seller', id);
+            const previous = queryClient.getQueryData(detailOpts.queryKey);
+            queryClient.setQueryData(detailOpts.queryKey, (old: any) => ({ ...old, status: 'accepted' }));
+            return { previous };
+        },
+        onError: (_err, { id }, context) => {
+            if (context?.previous) {
+                queryClient.setQueryData(marketplaceOrderKeys.detail(orgId, 'seller', id), context.previous);
+            }
+        },
+        onSettled: (_data, _error, { id }) => {
+            queryClient.invalidateQueries({ queryKey: marketplaceOrderKeys.detail(orgId, 'seller', id) });
+            queryClient.invalidateQueries({ queryKey: marketplaceOrderKeys.lists(orgId, 'seller') });
+        },
+    });
 }
 ```
 
 ### Modal with Mutation
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys';
+
 function AdjustPackageModal({ pkg, isOpen, onClose }: Props) {
   const queryClient = useQueryClient()
+  const { user } = usePage<PageProps>().props
+  const license = usePage<PageProps>().props.session.license
   const { data, setData } = useForm({
     quantity: 0,
     reason: '',
@@ -291,7 +284,7 @@ function AdjustPackageModal({ pkg, isOpen, onClose }: Props) {
     mutationFn: (adjustData) =>
       axios.post(`/metrc/packages/${pkg.Id}/adjust`, adjustData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['metrc', 'packages'] })
+      queryClient.invalidateQueries({ queryKey: metrcPackageKeys.byLicense(license) })
       toast.success('Package adjusted')
       onClose()
     },
@@ -327,46 +320,61 @@ function AdjustPackageModal({ pkg, isOpen, onClose }: Props) {
 
 ### Delete with Confirmation
 
+Never use `confirm()`. Use the two-click confirmation pattern instead:
+
 ```typescript
-function DeletePackageButton({ pkg }: { pkg: Package }) {
-  const queryClient = useQueryClient()
+import { metrcPackageKeys } from '@/Hooks/metrc/keys';
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => axios.delete(`/packages/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['packages'] })
-      toast.success('Package deleted')
-    },
-    onError: () => {
-      toast.error('Failed to delete package')
-    },
-  })
+// ✅ CORRECT - Two-click confirmation (no browser confirm dialog)
+function DeleteButton({ id, onDeleted }: { id: number; onDeleted?: () => void }) {
+    const [pendingDelete, setPendingDelete] = useState<number | null>(null);
+    const queryClient = useQueryClient();
+    const license = usePage<PageProps>().props.session.license;
 
-  const handleDelete = () => {
-    if (confirm(`Delete package ${pkg.Label}?`)) {
-      deleteMutation.mutate(pkg.Id)
-    }
-  }
+    const deleteMutation = useMutation({
+        mutationFn: async (id: number) => {
+            await axios.delete(`/marketplace/seller/products/${id}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: metrcPackageKeys.byLicense(license) });
+            onDeleted?.();
+        },
+    });
 
-  return (
-    <button onClick={handleDelete} disabled={deleteMutation.isPending}>
-      {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-    </button>
-  )
+    const handleClick = () => {
+        if (pendingDelete === id) {
+            deleteMutation.mutate(id);
+            setPendingDelete(null);
+        } else {
+            setPendingDelete(id);
+        }
+    };
+
+    return (
+        <Button
+            onClick={handleClick}
+            variant={pendingDelete === id ? 'warning' : 'danger'}
+        >
+            {pendingDelete === id ? 'Click again to confirm' : 'Delete'}
+        </Button>
+    );
 }
 ```
 
 ### Bulk Mutation
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys';
+
 function FinishPackages({ packageIds }: { packageIds: number[] }) {
   const queryClient = useQueryClient()
+  const license = usePage<PageProps>().props.session.license
 
   const finishMutation = useMutation({
     mutationFn: (ids: number[]) =>
       axios.post('/metrc/packages/finish', { ids }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['metrc', 'packages'] })
+      queryClient.invalidateQueries({ queryKey: metrcPackageKeys.byLicense(license) })
       toast.success(`Finished ${packageIds.length} packages`)
     },
     onError: () => {

@@ -190,22 +190,20 @@ const updateMutation = useMutation({
 
 ## BudTags Examples
 
+Always import key factories and use them for invalidation — never write inline key arrays for Metrc queries.
+
 ### After Creating Package
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys';
+
 const createMutation = useMutation({
-  mutationFn: async (data) => {
-    const api = new MetrcApi()
-    api.set_user(user)
-    return api.create_package(license, data)
-  },
+  mutationFn: (data) => axios.post(`/metrc/packages/${license}`, data),
   onSuccess: () => {
     // Invalidate package list for this license
     queryClient.invalidateQueries({
-      queryKey: ['metrc', 'packages', license],
+      queryKey: metrcPackageKeys.byLicense(license),
     })
-
-    toast.success('Package created')
   },
 })
 ```
@@ -213,20 +211,15 @@ const createMutation = useMutation({
 ### After Adjusting Package
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys';
+
 const adjustMutation = useMutation({
   mutationFn: (data) => axios.post(`/metrc/packages/adjust`, data),
   onSuccess: () => {
-    // Invalidate package lists
+    // Invalidate all package queries for this license
     queryClient.invalidateQueries({
-      queryKey: ['metrc', 'packages'],
+      queryKey: metrcPackageKeys.byLicense(license),
     })
-
-    // Invalidate specific package detail
-    queryClient.invalidateQueries({
-      queryKey: ['metrc', 'package', license, data.id],
-    })
-
-    toast.success('Package adjusted')
   },
 })
 ```
@@ -251,22 +244,19 @@ const handleOrgChange = (newOrgId: number) => {
 ### After License Switch
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys';
+import { metrcQueries } from '@/Hooks/metrc/queries';
+
 const handleLicenseChange = (newLicense: string) => {
   const oldLicense = session.license
 
-  // Remove old license data
+  // Remove old license data using key factories
   queryClient.removeQueries({
-    queryKey: ['metrc', 'packages', oldLicense],
-  })
-  queryClient.removeQueries({
-    queryKey: ['metrc', 'plants', oldLicense],
+    queryKey: metrcPackageKeys.byLicense(oldLicense),
   })
 
-  // Prefetch new license data
-  queryClient.prefetchQuery({
-    queryKey: ['metrc', 'packages', newLicense],
-    queryFn: () => fetchPackages(newLicense),
-  })
+  // Prefetch new license data using queryOptions factory
+  queryClient.prefetchQuery(metrcQueries.packages(newLicense))
 }
 ```
 

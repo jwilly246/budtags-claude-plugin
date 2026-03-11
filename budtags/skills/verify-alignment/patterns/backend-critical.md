@@ -400,6 +400,51 @@ If a page checks 5 different permissions, that's potentially 5 API calls saved p
 
 ---
 
+## Pattern 10: MetrcApi User Context (CRITICAL)
+
+**Rule:** Every controller method that uses MetrcApi MUST call `$api->set_user()` before any API interaction. Omitting this causes silent failures or null-reference crashes.
+
+### Why This Is Critical
+
+MetrcApi has an internal `$this->user` property set by `set_user()`. Some internal methods access `$this->user` directly (no fallback). If `set_user()` was not called, `$this->user` is null → crash when hitting `$this->user->active_org`.
+
+The bug is subtle because `MetrcApi::headers()` has a safe fallback (`$this->user ?? request()->user()`), so basic API calls appear to work. But deeper code paths (auto-label generation, cache handling, job dispatches) access `$this->user` directly.
+
+### ✅ CORRECT
+
+```php
+public function get_packages(MetrcApi $api): JsonResponse {
+    $facility = $this->license();
+    $user = $this->user();
+
+    // REQUIRED: set_user before any MetrcApi interaction
+    // Without this, deeper methods crash on $this->user->active_org
+    $api->set_user($user);
+
+    return $this->get_packages_with_job($api, $facility, $user, false);
+}
+```
+
+### ❌ WRONG
+
+```php
+// Missing set_user() — basic API calls may work via headers() fallback,
+// but one_day_of_packages() will crash on $this->user->active_org
+public function get_packages(MetrcApi $api): JsonResponse {
+    $facility = $this->license();
+    $user = $this->user();
+    return $this->get_packages_with_job($api, $facility, $user, false);
+}
+```
+
+### Queue Jobs — Always Explicit
+
+Jobs have no HTTP context. `request()->user()` returns null. Jobs MUST:
+1. Accept `User` via constructor
+2. Call `$api->set_user($this->user)` in `handle()`
+
+---
+
 ## Verification Checklist
 
 When reviewing backend code, verify:
@@ -426,6 +471,12 @@ When reviewing backend code, verify:
 - [ ] Uses `active_org_id` property (not loading relationship for ID)
 - [ ] Uses `request()->user()` (not `auth()->user()`)
 - [ ] Comments explain security boundaries
+
+### MetrcApi User Context
+- [ ] Every controller method using MetrcApi calls `$api->set_user()` BEFORE any API interaction
+- [ ] Queue jobs accept User via constructor and call `set_user()` in `handle()`
+- [ ] Code inside MetrcApi guards `$this->user` access with null checks
+- [ ] Refactoring/cleanup preserves `set_user()` calls
 
 ### Session-Cached Permissions
 - [ ] Permission checks read from session, not API

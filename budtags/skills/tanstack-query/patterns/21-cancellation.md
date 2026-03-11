@@ -146,23 +146,19 @@ queryFn: async ({ signal }) => {
 ### Metrc API with Cancellation
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function useMetrcPackages(license: string) {
-  const { user } = usePage<PageProps>().props
-
+  // Spread queryOptions so queryKey, queryFn, and staleTime are all applied
+  // The queryFn defined in metrcQueries already receives { signal } and passes
+  // it to axios, so cancellation is handled automatically.
   return useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async ({ signal }) => {
-      const api = new MetrcApi()
-      api.set_user(user)
-
-      // Pass signal to API call
-      const packages = await api.packages(license, { signal })
-      return packages
-    },
+    ...metrcQueries.packages(license),
+    enabled: !!license,
   })
 }
 
-// If component unmounts or license changes, request is cancelled
+// If component unmounts or license changes, axios cancels the in-flight request
 ```
 
 ### Search with Debounce + Cancellation
@@ -228,22 +224,13 @@ const updateMutation = useMutation({
 ### Custom Cancellable Operation
 
 ```typescript
+// Pass signal directly to axios — no manual Promise.race needed
 queryFn: async ({ signal }) => {
-  const api = new MetrcApi()
-  api.set_user(user)
-
-  // Start fetch
-  const packagesPromise = api.packages(license)
-
-  // Create cancellation listener
-  const cancelPromise = new Promise((_, reject) => {
-    signal?.addEventListener('abort', () => {
-      reject(new Error('Query cancelled'))
-    })
+  const response = await axios.get('/metrc/packages', {
+    params: { license },
+    signal, // axios respects AbortSignal natively
   })
-
-  // Race: fetch vs cancellation
-  return await Promise.race([packagesPromise, cancelPromise])
+  return response.data
 }
 ```
 

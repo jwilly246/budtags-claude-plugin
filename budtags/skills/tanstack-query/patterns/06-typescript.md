@@ -111,7 +111,12 @@ if (error) {
 }
 ```
 
-## queryOptions Helper for Type Safety
+## queryOptions Helper for Type Safety (Primary BudTags Pattern)
+
+> **BudTags:** `queryOptions` is the primary pattern for all query definitions. Every
+> query should be defined in a `queries.ts` file using `queryOptions`, consumed via
+> spread in components or wrapped in a hook. Do not inline `queryKey`/`queryFn`/`staleTime`
+> directly into `useQuery` calls — centralise them here.
 
 ```typescript
 import { queryOptions, useQuery } from '@tanstack/react-query'
@@ -228,7 +233,54 @@ mutation.mutate({
 
 ## BudTags Type Patterns
 
-### Metrc API Types
+### Metrc API Types and 3-Layer Architecture
+
+The BudTags frontend never calls the Metrc API directly. All Metrc data flows through
+Laravel backend routes (e.g. `/metrc/items`, `/metrc/packages/{license}`). The frontend
+calls those Laravel routes via axios.
+
+The 3-layer pattern is: **`queries.ts` (queryOptions factory) → hook wrapper → component**.
+
+```typescript
+// ── queryOptions provides end-to-end type inference ──
+// File: Hooks/metrc/queries.ts
+import { queryOptions } from '@tanstack/react-query';
+import { STALE_TIME } from '@/constants/query-config';
+import { metrcItemKeys } from './keys';
+
+type Item = { Id: number; Name: string; ProductCategoryName: string };
+
+const fetchItems = async (signal?: AbortSignal): Promise<Item[]> => {
+    const { data } = await axios.get('/metrc/items', { signal });
+    return data.items || [];
+};
+
+export const metrcQueries = {
+    items: (license: string | null) => queryOptions({
+        queryKey: metrcItemKeys.byLicense(license),
+        queryFn: ({ signal }) => fetchItems(signal),
+        staleTime: STALE_TIME.REFERENCE,
+    }),
+};
+
+// ── Hook wrapper — type inference flows through spread ──
+export function useMetrcItems(enabled = true) {
+    const license = usePage<PageProps>().props.session?.license ?? null;
+    return useQuery({ ...metrcQueries.items(license), enabled });
+    // Return type is UseQueryResult<Item[], Error> — fully inferred
+}
+
+// ── Typed cache access via queryOptions ──
+const cached = queryClient.getQueryData(metrcQueries.items(license).queryKey);
+// Type: Item[] | undefined — no manual cast needed!
+
+queryClient.setQueryData(metrcQueries.items(license).queryKey, (old) => {
+    // old: Item[] | undefined — fully typed
+    return old?.filter(item => item.Name !== 'Removed');
+});
+```
+
+Shared Metrc types live in `types-metrc.tsx`:
 
 ```typescript
 // types-metrc.tsx (shared types)
@@ -247,17 +299,6 @@ export type Plant = {
   Label: string
   StrainName: string
   PlantedDate: string
-}
-
-// Use in queries
-function useMetrcPackages(license: string) {
-  return useQuery<Package[]>({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: async () => {
-      const api = new MetrcApi()
-      return api.packages(license)
-    },
-  })
 }
 ```
 

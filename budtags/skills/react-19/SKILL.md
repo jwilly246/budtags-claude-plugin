@@ -1,7 +1,7 @@
 ---
 name: react-19
 description: React 19 changes, new hooks, Actions, Activity component, and migration guides for upgrading from React 18
-version: 1.0.0
+version: 1.0.1
 category: project
 auto_activate:
   patterns:

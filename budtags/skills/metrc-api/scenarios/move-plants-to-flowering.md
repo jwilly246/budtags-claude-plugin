@@ -30,26 +30,24 @@
 ### Step 1: Get Vegetative Plants
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
+$facility = session('facility');
 
 // Check license type first!
 $licenseType = explode('-', $license)[1];
 if ($licenseType !== 'C') {
-    throw new Exception("Plant operations require cultivation license");
+    return redirect()->back()->with('message', 'Plant operations require cultivation license');
 }
 
-// Get all vegetative plants
-$vegetativePlants = $api->get("/plants/v2/vegetative", [
-    'licenseNumber' => $license
-]);
+// Get vegetative plants using public method
+$vegetativePlants = $api->one_day_of_plants($facility, \Carbon\Carbon::today());
 
-// Filter plants ready for flowering (e.g., 30+ days old)
-$readyPlants = array_filter($vegetativePlants, function($plant) {
-    $plantedDate = Carbon::parse($plant['PlantedDate']);
-    $daysOld = $plantedDate->diffInDays(now());
-    return $daysOld >= 30;
+// Filter plants ready for flowering (e.g., vegetative phase, 30+ days old)
+$readyPlants = collect($vegetativePlants)->filter(function ($plant) {
+    return $plant['GrowthPhase'] === 'Vegetative'
+        && \Carbon\Carbon::parse($plant['PlantedDate'])->diffInDays(now()) >= 30;
 });
 ```
 
@@ -58,16 +56,14 @@ $readyPlants = array_filter($vegetativePlants, function($plant) {
 ### Step 2: Verify Flowering Location
 
 ```php
-// Get all locations
-$locations = $api->get("/locations/v2/active", [
-    'licenseNumber' => $license
-]);
+// Get all locations using public method
+$locations = $api->locations($facility);
 
 // Find flowering room
 $floweringRoom = collect($locations)->firstWhere('Name', 'Flowering Room A');
 
 if (!$floweringRoom) {
-    throw new Exception("Flowering location not found. Create it in Metrc first.");
+    return redirect()->back()->with('message', 'Flowering location not found. Create it in Metrc first.');
 }
 ```
 
@@ -88,12 +84,6 @@ foreach ($readyPlants as $plant) {
         'GrowthDate' => now()->format('Y-m-d')
     ];
 }
-
-// Limit batch size
-if (count($phaseChanges) > 100) {
-    $phaseChanges = array_slice($phaseChanges, 0, 100);
-    Log::warning("Processing first 100 plants only. Remaining plants will need separate batch.");
-}
 ```
 
 ---
@@ -104,41 +94,31 @@ if (count($phaseChanges) > 100) {
 
 ```php
 try {
-    $api->post("/plants/v2/changegrowthphases?licenseNumber={$license}", $phaseChanges);
+    // Chunk into batches of 10 (Metrc limit)
+    $chunks = array_chunk($phaseChanges, 10);
 
-    Log::info("Moved " . count($phaseChanges) . " plants to flowering");
+    foreach ($chunks as $chunk) {
+        $api->change_plant_growth_phase($facility, $chunk);
+    }
+
+    LogService::store(
+        'move_plants_to_flowering',
+        "Moved " . count($phaseChanges) . " plants to flowering",
+        null,
+        request()->user()->active_org_id
+    );
 
     return redirect()->back()->with('message', count($phaseChanges) . ' plants moved to flowering successfully');
 
 } catch (\Exception $e) {
-    Log::error("Phase change failed: " . $e->getMessage());
-    Log::error("Phase change data: " . json_encode($phaseChanges));
+    LogService::store(
+        'move_plants_to_flowering_failed',
+        "Phase change failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
 
-    return redirect()->back()->with('error', 'Failed to move plants: ' . $e->getMessage());
-}
-```
-
----
-
-### Step 5: Verify Plants Moved
-
-```php
-// Wait for Metrc to process
-sleep(2);
-
-// Get flowering plants to verify
-$floweringPlants = $api->get("/plants/v2/flowering?licenseNumber={$license}");
-
-// Check if our plants are now in flowering
-$movedPlantIds = array_column($phaseChanges, 'Id');
-$floweringPlantIds = array_column($floweringPlants, 'Id');
-
-$successCount = count(array_intersect($movedPlantIds, $floweringPlantIds));
-
-Log::info("Verified {$successCount} of " . count($movedPlantIds) . " plants in flowering phase");
-
-if ($successCount < count($movedPlantIds)) {
-    Log::warning("Not all plants transitioned successfully");
+    return redirect()->back()->with('message', 'Failed to move plants: ' . $e->getMessage());
 }
 ```
 
@@ -149,23 +129,24 @@ if ($successCount < count($movedPlantIds)) {
 ```php
 class PlantController extends Controller
 {
-    public function move_to_flowering(Request $request)
+    public function move_to_flowering()
     {
-        $validated = $request->validate([
+        $validated = request()->validate([
             'plant_ids' => 'required|array|min:1',
             'plant_ids.*' => 'required|integer',
             'new_location' => 'required|string',
             'growth_date' => 'nullable|date'
         ]);
 
-        $api = new MetrcApi();
-        $api->set_user($request->user());
+        $api = app(\App\Services\Api\MetrcApi::class);
+        $api->set_user(request()->user());
         $license = session('license');
+        $facility = session('facility');
 
-        // Check license type
+        // Check license type — only cultivation can access plant endpoints
         $licenseType = explode('-', $license)[1];
         if ($licenseType !== 'C') {
-            return redirect()->back()->with('error', 'Plant operations require cultivation license');
+            return redirect()->back()->with('message', 'Plant operations require cultivation license');
         }
 
         // Build phase change data
@@ -180,26 +161,31 @@ class PlantController extends Controller
             ];
         }
 
-        // Submit to Metrc
+        // Submit to Metrc (chunks of 10)
         try {
-            $api->post("/plants/v2/changegrowthphases?licenseNumber={$license}", $phaseChanges);
+            $chunks = array_chunk($phaseChanges, 10);
+            foreach ($chunks as $chunk) {
+                $api->change_plant_growth_phase($facility, $chunk);
+            }
 
             LogService::store(
                 'move_plants_to_flowering',
                 "Moved " . count($phaseChanges) . " plants to flowering in {$validated['new_location']}",
                 null,
-                $request->user()->active_org_id
+                request()->user()->active_org_id
             );
 
             return redirect()->back()->with('message', count($phaseChanges) . " plants moved to flowering");
 
         } catch (\Exception $e) {
-            Log::error("Phase change failed", [
-                'plants' => $phaseChanges,
-                'error' => $e->getMessage()
-            ]);
+            LogService::store(
+                'move_plants_to_flowering_failed',
+                "Phase change failed: " . $e->getMessage(),
+                null,
+                request()->user()->active_org_id
+            );
 
-            return redirect()->back()->with('error', 'Failed to move plants: ' . $e->getMessage());
+            return redirect()->back()->with('message', 'Failed to move plants: ' . $e->getMessage());
         }
     }
 }
@@ -211,37 +197,24 @@ class PlantController extends Controller
 
 ### Issue 1: "Invalid growth phase transition"
 
-**Solution**: Can't skip phases. If plants are in Clone phase, must go to Seedling → Vegetative → Flowering
-
-```php
-// Check current phase first
-if ($plant['GrowthPhase'] === 'Clone') {
-    // Must go to Seedling first, then Vegetative, then Flowering
-}
-```
+**Solution**: Can't skip phases. Clone → Seedling → Vegetative → Flowering
 
 ### Issue 2: "Location not found"
 
 **Solution**: Ensure location exists and is active
 
 ```php
-$locations = $api->get("/locations/v2/active?licenseNumber={$license}");
+$locations = $api->locations($facility);
 $locationNames = array_column($locations, 'Name');
 
 if (!in_array($newLocation, $locationNames)) {
-    throw new Exception("Location '{$newLocation}' not found");
+    return redirect()->back()->with('message', "Location '{$newLocation}' not found");
 }
 ```
 
 ### Issue 3: "Plant already in flowering"
 
 **Solution**: Filter out plants already in flowering phase
-
-```php
-$vegetativePlants = array_filter($allPlants, function($plant) {
-    return $plant['GrowthPhase'] === 'Vegetative';
-});
-```
 
 ---
 

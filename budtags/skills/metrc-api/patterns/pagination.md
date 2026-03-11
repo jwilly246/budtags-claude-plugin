@@ -124,7 +124,7 @@ public function sync_packages_with_progress(string $license): void
     $total = 0;
 
     do {
-        Log::info("Fetching packages page {$pageNumber}...");
+        LogService::store('Package Sync', "Fetching packages page {$pageNumber}");
 
         $packages = $this->api->get("/packages/v2/active", [
             'licenseNumber' => $license,
@@ -135,7 +135,7 @@ public function sync_packages_with_progress(string $license): void
         $count = count($packages);
         $total += $count;
 
-        Log::info("Fetched {$count} packages (total: {$total})");
+        LogService::store('Package Sync', "Fetched {$count} packages (total: {$total})");
 
         // Process packages...
         foreach ($packages as $package) {
@@ -148,7 +148,7 @@ public function sync_packages_with_progress(string $license): void
         $pageNumber++;
     } while ($count === $pageSize);
 
-    Log::info("Sync complete. Total packages: {$total}");
+    LogService::store('Package Sync', "Sync complete. Total packages: {$total}");
 }
 ```
 
@@ -255,23 +255,24 @@ public function get_all_with_rate_limiting(string $endpoint, string $license): a
 
 ---
 
-## Frontend Pagination (React/Inertia)
+## Frontend Pagination (React Query)
+
+For frontend pagination of Metrc data, use React Query for caching and server state management:
 
 ```tsx
-const PackagesTable: React.FC = () => {
-    const [page, setPage] = useState(1);
-    const [packages, setPackages] = useState([]);
+import { useQuery, keepPreviousData } from '@tanstack/react-query';
 
-    useEffect(() => {
-        axios.get('/api/metrc/packages', {
-            params: {
-                page: page,
-                per_page: 50
-            }
-        }).then(response => {
-            setPackages(response.data);
-        });
-    }, [page]);
+function PackagesTable() {
+    const [page, setPage] = useState(1);
+
+    const { data: packages = [], isLoading, isPlaceholderData } = useQuery({
+        queryKey: ['metrc-packages', page],
+        queryFn: async () => {
+            const response = await fetch(`/api/metrc/packages?page=${page}&per_page=50`);
+            return response.json();
+        },
+        placeholderData: keepPreviousData,
+    });
 
     return (
         <div>
@@ -280,12 +281,15 @@ const PackagesTable: React.FC = () => {
                 Previous
             </button>
             <span>Page {page}</span>
-            <button onClick={() => setPage(p => p + 1)}>
+            <button
+                onClick={() => setPage(p => p + 1)}
+                disabled={isPlaceholderData || packages.length < 50}
+            >
                 Next
             </button>
         </div>
     );
-};
+}
 ```
 
 ---

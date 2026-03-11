@@ -108,6 +108,9 @@ const updateMutation = useMutation({
 ### Finish Package Optimistically
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function useFinishPackage() {
   const queryClient = useQueryClient()
   const license = usePage<PageProps>().props.session.license
@@ -115,14 +118,17 @@ function useFinishPackage() {
   return useMutation({
     mutationFn: (id: number) => axios.post(`/metrc/packages/${id}/finish`),
     onMutate: async (id) => {
+      // Use queryOptions factory for typed cache access
+      const opts = metrcQueries.packages(license)
+
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['metrc', 'packages', license] })
+      await queryClient.cancelQueries({ queryKey: opts.queryKey })
 
       // Snapshot previous packages
-      const previousPackages = queryClient.getQueryData(['metrc', 'packages', license])
+      const previousPackages = queryClient.getQueryData(opts.queryKey)
 
       // Optimistically update
-      queryClient.setQueryData(['metrc', 'packages', license], (old: Package[]) =>
+      queryClient.setQueryData(opts.queryKey, (old: Package[]) =>
         old.map(pkg =>
           pkg.Id === id
             ? { ...pkg, FinishedDate: new Date().toISOString() }
@@ -134,15 +140,13 @@ function useFinishPackage() {
     },
     onError: (err, id, context) => {
       // Rollback on error
-      queryClient.setQueryData(
-        ['metrc', 'packages', license],
-        context.previousPackages
-      )
+      const opts = metrcQueries.packages(license)
+      queryClient.setQueryData(opts.queryKey, context.previousPackages)
       toast.error('Failed to finish package')
     },
     onSettled: () => {
-      // Always refetch
-      queryClient.invalidateQueries({ queryKey: ['metrc', 'packages', license] })
+      // Always refetch — use key factory directly for invalidation
+      queryClient.invalidateQueries({ queryKey: metrcPackageKeys.byLicense(license) })
     },
   })
 }
@@ -264,6 +268,9 @@ function EditableCell({ package, field }: { package: Package; field: keyof Packa
 ### Bulk Selection with Optimistic UI
 
 ```typescript
+import { metrcPackageKeys } from '@/Hooks/metrc/keys'
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function useBulkFinish() {
   const queryClient = useQueryClient()
   const license = usePage<PageProps>().props.session.license
@@ -272,13 +279,16 @@ function useBulkFinish() {
     mutationFn: (ids: number[]) =>
       axios.post('/metrc/packages/bulk-finish', { ids }),
     onMutate: async (ids) => {
-      await queryClient.cancelQueries({ queryKey: ['metrc', 'packages', license] })
+      // Use queryOptions factory for typed cache access
+      const opts = metrcQueries.packages(license)
 
-      const previousPackages = queryClient.getQueryData(['metrc', 'packages', license])
+      await queryClient.cancelQueries({ queryKey: opts.queryKey })
+
+      const previousPackages = queryClient.getQueryData(opts.queryKey)
 
       const finishedDate = new Date().toISOString()
 
-      queryClient.setQueryData(['metrc', 'packages', license], (old: Package[]) =>
+      queryClient.setQueryData(opts.queryKey, (old: Package[]) =>
         old.map(pkg =>
           ids.includes(pkg.Id)
             ? { ...pkg, FinishedDate: finishedDate }
@@ -289,17 +299,16 @@ function useBulkFinish() {
       return { previousPackages }
     },
     onError: (err, ids, context) => {
-      queryClient.setQueryData(
-        ['metrc', 'packages', license],
-        context.previousPackages
-      )
+      const opts = metrcQueries.packages(license)
+      queryClient.setQueryData(opts.queryKey, context.previousPackages)
       toast.error('Failed to finish packages')
     },
     onSuccess: (data, ids) => {
       toast.success(`Finished ${ids.length} packages`)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['metrc', 'packages', license] })
+      // Use key factory directly for invalidation
+      queryClient.invalidateQueries({ queryKey: metrcPackageKeys.byLicense(license) })
     },
   })
 }

@@ -85,7 +85,8 @@ $now = now()->utc()->format('Y-m-d\TH:i:s\Z');
 $date = Carbon::parse('2025-01-15')->format('Y-m-d');
 
 // Date from user input
-$inputDate = Carbon::createFromFormat('m/d/Y', $request->date)->format('Y-m-d');
+$validated = request()->validate(['date' => 'required|date']);
+$inputDate = Carbon::createFromFormat('m/d/Y', $validated['date'])->format('Y-m-d');
 
 // Add days to current date
 $futureDate = now()->addDays(30)->format('Y-m-d');
@@ -109,7 +110,8 @@ function validate_metrc_date(string $date): bool
 }
 
 // Usage
-if (!validate_metrc_date($request->actual_date)) {
+$actualDate = request()->input('actual_date');
+if (!validate_metrc_date($actualDate)) {
     throw new \Exception("Invalid date format. Use YYYY-MM-DD");
 }
 ```

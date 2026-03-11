@@ -1,7 +1,7 @@
 ---
 name: metrc-api
 description: Use this skill when working with Metrc cannabis tracking API integration, finding specific endpoints, understanding request/response formats, or implementing Metrc workflows.
-version: 2.0.1
+version: 2.0.2
 category: project
 agent: metrc-specialist
 auto_activate:
@@ -440,6 +440,85 @@ Would you like to see this applied to a specific endpoint?
 ❌ Using wrong date format (must be ISO 8601)
 ❌ Not handling pagination for large datasets
 ❌ Missing Content-Type header on POST/PUT
+❌ Inventing MetrcApi method names — use the real ones below
+```
+
+---
+
+## MetrcApi Public Method Quick Reference
+
+**IMPORTANT**: `App\Services\Api\MetrcApi` has 147+ public methods. The `get()`/`post()`/`put()` methods are **PROTECTED** — they enforce caching, rate limiting, and metrics internally. Always use public methods.
+
+### Read Methods (GET wrappers)
+
+```php
+// Packages
+$api->one_day_of_packages($facility, $carbonDate);         // Active packages for one day
+$api->one_day_of_inactive_packages($facility, $carbonDate); // Inactive packages for one day
+$api->package($label);                                       // Single package by label
+$api->intransit_packages($facility);                         // In-transit packages
+$api->package_adjustments($facility);                        // Adjustment history
+$api->adjustment_reasons($facility);                         // Adjustment reason options
+$api->lab_results($packageId, $facility);                    // Lab results for a package
+
+// Plants (CULTIVATION ONLY)
+$api->plants($facility);                                     // All flowering plants
+$api->plants_vegetative($facility);                          // Vegetative plants
+$api->plant($facility, $tag);                                // Single plant by tag
+$api->plant_batches($facility);                              // Plant batches
+
+// Transfers
+$api->fetch_transfers_bulk($facility, $type, $start, $end, $totalPages); // Bulk transfer fetch
+$api->one_day_of_transfers($facility, $type, $carbonDate);  // Transfers for one day
+$api->deliveries($transferId, $license);                     // Deliveries for a transfer
+$api->delivery_packages($deliveryId, $license);              // Packages in a delivery
+$api->delivery_packages_wholesale($deliveryId, $license);    // Wholesale package details
+
+// Reference Data
+$api->strains($facility);                                    // All strains
+$api->strain($facility, $id);                                // Single strain
+$api->locations($facility);                                  // All locations
+$api->categories($facility);                                 // Item categories
+$api->active_items($facility);                               // Active items
+$api->facilities();                                          // All facilities
+$api->waste_reasons($facility);                              // Waste reasons
+$api->waste_methods();                                       // Waste methods
+$api->employees($facility);                                  // Employees
+$api->sales_deliveries($facility);                           // Sales deliveries (RETAIL ONLY)
+```
+
+### Write Methods (POST/PUT wrappers)
+
+```php
+// Package Operations
+$api->packages_adjust($license, $adjustments);               // Adjust package quantities
+$api->create_packages($license, $packages);                  // Create new packages
+$api->create_packages_from_harvest($license, $packages);     // Packages from harvest
+$api->create_testing_packages($license, $packages);          // Testing packages
+
+// Plant Operations (CULTIVATION ONLY)
+$api->move_plants($license, $plants);                        // Move plants to location
+$api->change_plant_growth_phase($license, $plants);          // Vegetative → Flowering
+$api->harvest_plant($license, $plants);                      // Harvest plants
+$api->destroy_plants($license, $plants);                     // Destroy plants
+$api->waste_plants($license, $wasteData);                    // Record plant waste
+
+// Item Operations
+$api->create_items($license, $items);                        // Create items
+$api->delete_item($license, $itemId);                        // Delete item
+
+// Harvest Operations
+$api->record_waste($license, $harvests);                     // Record harvest waste
+```
+
+### Cache/Pagination Methods
+
+```php
+// Memory-safe paginated access (for large datasets)
+$api->get_cached_packages_page($facility, $page, $perPage);
+$api->get_cached_plants_page($facility, $page, $perPage, $growthPhase);
+$api->get_cached_harvests($facility);
+$api->get_cached_packages_count($facility);
 ```
 
 ---

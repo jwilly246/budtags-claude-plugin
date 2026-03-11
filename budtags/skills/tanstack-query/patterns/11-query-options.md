@@ -275,20 +275,22 @@ useQuery({
 
 ## BudTags Configuration Examples
 
+Query options factories live in `@/Hooks/metrc/queries` and centralize all key and queryFn config. Use the spread pattern to apply them, then override individual options as needed.
+
 ### Metrc Packages Query
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+import { STALE_TIME } from '@/constants/query-config'
+
+// Spread the factory, then override specific options
 useQuery({
-  queryKey: ['metrc', 'packages', license],
-  queryFn: async () => {
-    const api = new MetrcApi()
-    api.set_user(user)
-    return api.packages(license)
-  },
-  staleTime: 5 * 60 * 1000,    // Metrc data fresh for 5 minutes
-  gcTime: 10 * 60 * 1000,      // Keep in cache for 10 minutes
-  retry: 1,                     // Metrc is rate-limited, don't retry aggressively
-  refetchOnWindowFocus: false,  // Users switch tabs frequently
+  ...metrcQueries.packages(license),
+  enabled: !!license,
+  staleTime: STALE_TIME.FIVE_MINUTES,   // Metrc data fresh for 5 minutes
+  gcTime: STALE_TIME.TEN_MINUTES,       // Keep in cache for 10 minutes
+  retry: 1,                              // Metrc is rate-limited, don't retry aggressively
+  refetchOnWindowFocus: false,           // Users switch tabs frequently
 })
 ```
 
@@ -311,30 +313,26 @@ useQuery({
 ### Conditional Metrc Query
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+import { STALE_TIME } from '@/constants/query-config'
+
+// Only run for cultivation licenses
 useQuery({
-  queryKey: ['metrc', 'plants', license],
-  queryFn: async () => {
-    const api = new MetrcApi()
-    api.set_user(user)
-    return api.plants(license)
-  },
-  // Only run for cultivation licenses
-  enabled: license?.startsWith('au-c-'),
-  staleTime: 5 * 60 * 1000,
+  ...metrcQueries.plants(license),
+  enabled: !!license && license.startsWith('au-c-'),
+  staleTime: STALE_TIME.FIVE_MINUTES,
 })
 ```
 
 ### Transform Package Data
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
+// Transform to just labels for a dropdown — select doesn't affect the cache
 const { data: packageLabels } = useQuery({
-  queryKey: ['metrc', 'packages', license],
-  queryFn: async () => {
-    const api = new MetrcApi()
-    api.set_user(user)
-    return api.packages(license)
-  },
-  // Transform to just labels for dropdown
+  ...metrcQueries.packages(license),
+  enabled: !!license,
   select: (packages) => packages.map(p => ({
     value: p.Id,
     label: p.Label,

@@ -27,8 +27,8 @@
 ### Common Adjustment Scenarios
 
 ```php
-$api = new MetrcApi();
-$api->set_user($user);
+$api = app(\App\Services\Api\MetrcApi::class);
+$api->set_user(request()->user());
 $license = session('license');
 
 // Scenario 1: Weight loss from drying
@@ -74,15 +74,26 @@ $reconciliationAdjustment = [
 
 ```php
 try {
-    $api->post("/packages/v2/adjust?licenseNumber={$license}", $dryingAdjustment);
+    $api->packages_adjust(session('facility'), $dryingAdjustment);
 
-    Log::info("Package adjusted: {$dryingAdjustment[0]['Label']}");
+    LogService::store(
+        'package_adjusted',
+        "Package adjusted: {$dryingAdjustment[0]['Label']}",
+        null,
+        request()->user()->active_org_id
+    );
 
     return redirect()->back()->with('message', 'Package adjusted successfully');
 
 } catch (\Exception $e) {
-    Log::error("Package adjustment failed: " . $e->getMessage());
-    return redirect()->back()->with('error', $e->getMessage());
+    LogService::store(
+        'package_adjustment_failed',
+        "Package adjustment failed: " . $e->getMessage(),
+        null,
+        request()->user()->active_org_id
+    );
+
+    return redirect()->back()->with('message', 'Failed to adjust package: ' . $e->getMessage());
 }
 ```
 
@@ -91,14 +102,14 @@ try {
 ## Batch Adjustments
 
 ```php
-// Adjust multiple packages at once
+// Adjust multiple packages at once (max 10 per request)
 $batchAdjustments = [
     ['Label' => 'TAG-001', 'Quantity' => -1.5, 'UnitOfMeasure' => 'Grams', 'AdjustmentReason' => 'Drying', 'AdjustmentDate' => now()->format('Y-m-d')],
     ['Label' => 'TAG-002', 'Quantity' => -2.0, 'UnitOfMeasure' => 'Grams', 'AdjustmentReason' => 'Drying', 'AdjustmentDate' => now()->format('Y-m-d')],
     ['Label' => 'TAG-003', 'Quantity' => -1.8, 'UnitOfMeasure' => 'Grams', 'AdjustmentReason' => 'Drying', 'AdjustmentDate' => now()->format('Y-m-d')],
 ];
 
-$api->post("/packages/v2/adjust?licenseNumber={$license}", $batchAdjustments);
+$api->packages_adjust(session('facility'), $batchAdjustments);
 ```
 
 ---

@@ -137,11 +137,11 @@ function MetrcDataFetch({ license, organization }) {
   });
 
   const { data, refetch } = useQuery({
-    queryKey: ['metrc', license],
-    queryFn: async () => {
-      const result = await fetchMetrcData(license);
-      logFetch(result); // Always has latest organization
-      return result;
+    queryKey: ['metrc-data', license],
+    queryFn: async ({ signal }) => {
+      const { data } = await axios.get('/metrc/data', { params: { license }, signal });
+      logFetch(data); // Always has latest organization
+      return data;
     },
   });
 }

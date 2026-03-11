@@ -138,46 +138,16 @@ function App() {
 ### Metrc Dashboard
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function MetrcDashboard() {
-  const { user } = usePage<PageProps>().props
   const license = usePage<PageProps>().props.session.license
 
-  // Parallel queries for all Metrc data
-  const packagesQuery = useQuery({
-    queryKey: ['metrc', 'packages', license],
-    queryFn: () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.packages(license)
-    },
-  })
-
-  const plantsQuery = useQuery({
-    queryKey: ['metrc', 'plants', license],
-    queryFn: () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.plants(license)
-    },
-  })
-
-  const harvestsQuery = useQuery({
-    queryKey: ['metrc', 'harvests', license],
-    queryFn: () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.harvests(license)
-    },
-  })
-
-  const locationsQuery = useQuery({
-    queryKey: ['metrc', 'locations', license],
-    queryFn: () => {
-      const api = new MetrcApi()
-      api.set_user(user)
-      return api.locations(license)
-    },
-  })
+  // Parallel queries for all Metrc data — spread from centralized query factories
+  const packagesQuery = useQuery({ ...metrcQueries.packages(license), enabled: !!license })
+  const plantsQuery = useQuery({ ...metrcQueries.plants(license), enabled: !!license })
+  const harvestsQuery = useQuery({ ...metrcQueries.harvests(license), enabled: !!license })
+  const locationsQuery = useQuery({ ...metrcQueries.locations(license), enabled: !!license })
 
   const isLoading =
     packagesQuery.isLoading ||
@@ -217,19 +187,15 @@ function MetrcDashboard() {
 ### Multi-License Comparison
 
 ```typescript
+import { metrcQueries } from '@/Hooks/metrc/queries'
+
 function MultiLicenseComparison() {
-  const { user } = usePage<PageProps>().props
   const licenses = usePage<PageProps>().props.session.licenses // Array of licenses
 
   const queries = useQueries({
     queries: licenses.map(license => ({
-      queryKey: ['metrc', 'packages', license],
-      queryFn: async () => {
-        const api = new MetrcApi()
-        api.set_user(user)
-        return api.packages(license)
-      },
-      staleTime: 5 * 60 * 1000,
+      ...metrcQueries.packages(license),
+      enabled: !!license,
     })),
   })
 
