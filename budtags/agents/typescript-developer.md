@@ -2,7 +2,7 @@
 name: typescript-developer
 model: opus
 description: 'Expert TypeScript/JavaScript developer specializing in React, Inertia.js, TanStack libraries, and modern frontend ecosystems. Use for TypeScript development, React components, and type safety improvements.'
-version: 2.0.0
+version: 2.0.1
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

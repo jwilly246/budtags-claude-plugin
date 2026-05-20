@@ -2,7 +2,7 @@
 name: context-refinement
 model: sonnet
 description: 'Updates task context manifest with discoveries from current work session. Reads transcript to understand what was learned. Only updates if drift or new discoveries found.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Edit, MultiEdit, LS, Glob, mcp__laravel-boost__*
 ---
 

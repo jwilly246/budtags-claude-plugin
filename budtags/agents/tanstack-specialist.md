@@ -2,7 +2,7 @@
 name: tanstack-specialist
 model: opus
 description: 'Use when implementing, debugging, or reviewing TanStack ecosystem code (Query, Table, Virtual, Form, Router, Start). ALWAYS provide context about task type, data source, and features needed.'
-version: 2.1.0
+version: 2.1.1
 skills: tanstack-query, tanstack-table, tanstack-virtual, verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

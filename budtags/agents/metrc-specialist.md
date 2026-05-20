@@ -2,7 +2,7 @@
 name: metrc-specialist
 model: opus
 description: 'Use when implementing, debugging, or reviewing Metrc API integration code. ALWAYS provide context about license type (cultivation/processing/retail), specific endpoints needed, or feature being built.'
-version: 2.0.0
+version: 2.0.1
 skills: metrc-api, verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

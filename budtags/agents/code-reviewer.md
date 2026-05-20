@@ -2,7 +2,7 @@
 name: code-reviewer
 model: opus
 description: 'General-purpose code reviewer for best practices, clean code principles, security issues, performance problems, and maintainability. Use for general PRs. For BudTags-specific patterns, use budtags-specialist.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 

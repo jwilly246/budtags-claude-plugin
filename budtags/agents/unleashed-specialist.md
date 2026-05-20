@@ -2,7 +2,7 @@
 name: unleashed-specialist
 model: opus
 description: 'Use when implementing, debugging, or reviewing Unleashed Software API integration code. ALWAYS provide context about specific operations needed (orders, products, stock, customers) or feature being built.'
-version: 1.0.0
+version: 1.0.1
 skills: unleashed, verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

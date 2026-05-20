@@ -2,7 +2,7 @@
 name: fullstack-developer
 model: opus
 description: 'Expert full-stack developer for Laravel + Inertia.js + React + TypeScript applications. Use when features require coordinated frontend and backend changes or end-to-end feature ownership.'
-version: 2.0.0
+version: 2.0.1
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

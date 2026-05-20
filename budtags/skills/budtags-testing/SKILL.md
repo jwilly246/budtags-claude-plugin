@@ -1,7 +1,7 @@
 ---
 name: budtags-testing
 description: BudTags PHPUnit testing patterns, Mockery mocking, multi-tenancy aware test helpers, Metrc API mocking, and model factories
-version: 2.3.0
+version: 2.3.1
 category: project
 auto_activate:
   patterns:

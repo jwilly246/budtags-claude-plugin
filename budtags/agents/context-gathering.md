@@ -2,7 +2,7 @@
 name: context-gathering
 model: opus
 description: 'Use when creating a new task OR when starting/switching to a task that lacks a context manifest. ALWAYS provide the task file path so the agent can read it and update it directly with the context manifest.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Glob, Grep, LS, Bash, Edit, MultiEdit, mcp__laravel-boost__*
 ---
 

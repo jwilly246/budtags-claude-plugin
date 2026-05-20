@@ -2,7 +2,7 @@
 name: quickbooks-specialist
 model: opus
 description: 'Use when implementing, debugging, or reviewing QuickBooks Online integration code. ALWAYS provide context about the task type (OAuth setup, invoice creation, customer sync, Metrc integration) and specific operations needed.'
-version: 2.0.0
+version: 2.0.1
 skills: quickbooks, verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

@@ -2,7 +2,7 @@
 name: php-developer
 model: opus
 description: 'Expert PHP developer specializing in Laravel 11+, PHPUnit, Composer, and modern PHP 8+ features. Use for Laravel applications, RESTful APIs, and enterprise PHP solutions.'
-version: 2.0.0
+version: 2.0.1
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

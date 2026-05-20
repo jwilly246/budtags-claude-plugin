@@ -2,7 +2,7 @@
 name: security-auditor
 model: opus
 description: 'Performs comprehensive security audits checking for vulnerabilities, compliance issues, and security best practices. Use PROACTIVELY when code involves authentication, cryptography, sensitive data handling, or external integrations.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 

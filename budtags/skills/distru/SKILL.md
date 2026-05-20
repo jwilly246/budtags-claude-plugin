@@ -2,6 +2,7 @@
 name: distru
 description: Use this skill when working with Distru cannabis ERP API integration, managing sales orders, syncing products and inventory, importing assemblies/manufacturing data, or handling companies/contacts from Distru.
 agent: distru-specialist
+version: 1.0.0
 ---
 
 # Distru API Reference Skill

@@ -2,6 +2,7 @@
 name: canix
 description: Use this skill when working with Canix cannabis ERP API integration, managing sales/purchase orders, syncing items/products, tracking inventory/packages, or handling cultivation and manufacturing data from Canix.
 agent: canix-specialist
+version: 1.0.0
 ---
 
 # Canix API Reference Skill

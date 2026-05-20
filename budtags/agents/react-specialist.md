@@ -2,7 +2,7 @@
 name: react-specialist
 model: opus
 description: 'Use when implementing, debugging, or reviewing React/Inertia/TypeScript frontend code. ALWAYS provide context about component type (modal, form, data table, dashboard), specific patterns needed, or feature being built.'
-version: 2.0.0
+version: 2.0.1
 skills: verify-alignment
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---

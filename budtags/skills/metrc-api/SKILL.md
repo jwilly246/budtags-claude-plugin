@@ -1,7 +1,7 @@
 ---
 name: metrc-api
 description: Use this skill when working with Metrc cannabis tracking API integration, finding specific endpoints, understanding request/response formats, or implementing Metrc workflows.
-version: 2.0.2
+version: 2.0.3
 category: project
 agent: metrc-specialist
 auto_activate:

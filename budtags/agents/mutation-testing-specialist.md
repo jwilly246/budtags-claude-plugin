@@ -2,7 +2,7 @@
 name: mutation-testing-specialist
 model: opus
 description: 'Expert mutation testing specialist using PITest, Stryker, and mutmut to measure and improve test quality through mutation analysis. Use PROACTIVELY when test coverage appears high but bugs still escape to production.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 

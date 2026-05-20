@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked. Orchestrator personally reviews each subagent's work (composer check + diff audit + SHARED_CONTEXT audit) before committing.
-version: 1.9.0
+version: 1.9.1
 category: workflow
 auto_activate:
   keywords:

@@ -2,7 +2,7 @@
 name: knowledge-researcher
 model: opus
 description: 'Expert in searching, analyzing, and synthesizing organizational knowledge. Queries the knowledge base for patterns, anti-patterns, performance baselines, validated assumptions, technology comparisons, and refactoring opportunities.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 

@@ -2,7 +2,7 @@
 name: debugger
 model: opus
 description: 'Expert debugging specialist for identifying and fixing complex bugs across all technology stacks. Use PROACTIVELY when encountering production issues, race conditions, memory leaks, intermittent failures, or hard-to-reproduce bugs.'
-version: 2.0.0
+version: 2.0.1
 tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 
