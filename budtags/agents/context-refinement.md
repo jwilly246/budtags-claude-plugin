@@ -3,7 +3,7 @@ name: context-refinement
 model: sonnet
 description: 'Updates task context manifest with discoveries from current work session. Reads transcript to understand what was learned. Only updates if drift or new discoveries found.'
 version: 2.0.0
-tools: Read, Edit, MultiEdit, LS, Glob
+tools: Read, Edit, MultiEdit, LS, Glob, mcp__laravel-boost__*
 ---
 
 [Agent Mission]|role:Context drift detection and manifest updates

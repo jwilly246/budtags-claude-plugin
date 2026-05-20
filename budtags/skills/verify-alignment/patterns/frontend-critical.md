@@ -24,28 +24,28 @@ Critical patterns for React components, Inertia integration, and modal behavior.
 import { useForm } from '@inertiajs/react';
 import { useModalState } from '@/Hooks/useModalState';
 
+// Outer: handles Modal visibility
 const MyModal: React.FC<{ isOpen: boolean; onClose: () => void; items: Item[] }> = ({
     isOpen, onClose, items
-}) => {
-    const { cancelButtonRef, getTodayDate } = useModalState(isOpen);
+}) => (
+    <Modal show={isOpen} onClose={onClose} title="My Modal">
+        {isOpen && <MyModalForm items={items} onClose={onClose} />}
+    </Modal>
+);
+
+// Inner: form logic — remounts on each open with fresh useForm state (NO useEffect)
+function MyModalForm({ items, onClose }: { items: Item[]; onClose: () => void }) {
+    const { cancelButtonRef, getTodayDate } = useModalState(true);
     const { data, setData, post } = useForm({
         name: '',
         quantity: 0,
-        item_ids: [],
+        item_ids: items.map(i => i.Id),  // computed at mount — no useEffect
     });
-
-    useEffect(() => {
-        if (isOpen) {
-            setData('item_ids', items.map(i => i.Id));
-        }
-    }, [isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/api/endpoint', {
-            onSuccess: () => {
-                onClose();
-            },
+            onSuccess: () => onClose(),
             onError: (errors) => {
                 toast.error(Object.values(errors)[0] as string);
             }
@@ -53,13 +53,11 @@ const MyModal: React.FC<{ isOpen: boolean; onClose: () => void; items: Item[] }>
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose}>
-            <form onSubmit={handleSubmit}>
-                <InputSelect value={data.name} onChange={(e) => setData('name', e.target.value)} />
-                <Button ref={cancelButtonRef}>Cancel</Button>
-                <Button primary>Save</Button>
-            </form>
-        </Modal>
+        <form onSubmit={handleSubmit}>
+            <InputSelect value={data.name} onChange={(e) => setData('name', e.target.value)} />
+            <Button ref={cancelButtonRef}>Cancel</Button>
+            <Button primary>Save</Button>
+        </form>
     );
 };
 ```
@@ -428,43 +426,43 @@ const isSubmitting = isPending || mutation.isPending;
 
 ---
 
-## Pattern 7: Smart Defaults in useEffect (Modals)
+## Pattern 7: Smart Defaults in Modals (Outer/Inner Split)
 
-**Rule:** Pre-fill smart defaults when modal opens. Only depend on `isOpen`.
+**Rule:** Pre-fill smart defaults at mount time in the inner component. NO useEffect.
 
-### ✅ CORRECT
+### ✅ CORRECT — Compute defaults in useForm initializer
 
 ```typescript
-const { data, setData, post } = useForm({
-    location_id: '',
-    date: '',
-});
+// Inner form component (remounts on each modal open)
+function MyModalForm({ items, onClose }) {
+    const { getTodayDate } = useModalState(true);
 
-useEffect(() => {
-    if (isOpen) {
-        // Smart default: Auto-select if all items in same location
+    // Smart default: Auto-select if all items in same location
+    const defaultLocation = (() => {
         const locations = items.map(i => i.LocationId);
-        if (new Set(locations).size === 1) {
-            setData('location_id', locations[0]);
-        }
+        return new Set(locations).size === 1 ? locations[0] : '';
+    })();
 
-        setData('date', getTodayDate());
-    }
-}, [isOpen]);  // Only isOpen, not functions
+    const { data, setData, post } = useForm({
+        location_id: defaultLocation,     // computed at mount
+        date: getTodayDate(),             // computed at mount
+    });
+    // ... form JSX
+}
 ```
 
-### ❌ WRONG
+### ❌ WRONG — useEffect for form init (ESLint error: set-state-in-effect)
 
 ```typescript
-// ❌ No smart defaults - user must manually select everything
+// ❌ This triggers ESLint set-state-in-effect error
 useEffect(() => {
-    if (isOpen) {
-        // Just resets, no defaults
-    }
+    if (isOpen) setData('date', getTodayDate());
 }, [isOpen]);
 
-// ❌ Including hook functions in dependencies
-}, [isOpen, getTodayDate, setData]);  // Causes re-runs!
+// ❌ useEffect to reset form on close (use outer/inner split instead)
+useEffect(() => {
+    if (!isOpen) reset();
+}, [isOpen, reset]);
 ```
 
 ---
@@ -719,9 +717,9 @@ Extract ONLY when:
 
 ### Modal Components
 - [ ] Self-contained (handles own form state and submission)
-- [ ] Uses `useForm` hook
-- [ ] Uses `useModalState` hook
-- [ ] Pre-fills smart defaults in `useEffect`
+- [ ] Uses outer/inner component split: `{isOpen && <FormContent />}` — NO useEffect for form init/reset
+- [ ] Inner component uses `useForm` with computed initial values from props
+- [ ] Inner component uses `useModalState(true)` (always open when mounted)
 - [ ] Handles `onSuccess` and `onError`
 - [ ] Uses reusable input components
 - [ ] Only closes modal AFTER successful submission

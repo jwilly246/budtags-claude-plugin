@@ -1,0 +1,361 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - crm",
+    "version": "1.3.5"
+  },
+  "servers": [
+    {
+      "url": "https://api.canix.com/api/v1",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "GetCustomers",
+        "description": "Return active Customers",
+        "operationId": "GetCustomers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerExtended"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/customers/{customer_id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "GetCustomer",
+        "description": "Get Customer by ID",
+        "operationId": "GetCustomerById",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "path",
+            "description": "Customer ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Customer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/vendors": {
+      "get": {
+        "tags": [
+          "Vendors"
+        ],
+        "summary": "GetVendors",
+        "description": "Return active Vendors for your company",
+        "operationId": "GetVendors",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Vendor"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Vendors"
+        ],
+        "summary": "CreateVendor",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "CreateVendor",
+        "requestBody": {
+          "required": true,
+          "description": "Create a new Vendor",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/vendors/{vendor_id}": {
+      "get": {
+        "tags": [
+          "Vendors"
+        ],
+        "summary": "GetVendor",
+        "description": "Get Vendor by ID",
+        "operationId": "GetVendorById",
+        "parameters": [
+          {
+            "name": "vendor_id",
+            "in": "path",
+            "description": "Vendor ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Vendors"
+        ],
+        "summary": "UpdateVendor",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "UpdateVendor",
+        "parameters": [
+          {
+            "name": "vendor_id",
+            "in": "path",
+            "description": "ID of Vendor to update",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Update an existing Vendor",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VendorRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Vendor"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Vendors"
+        ],
+        "summary": "DeleteVendor",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "DeleteVendor",
+        "parameters": [
+          {
+            "name": "vendor_id",
+            "in": "path",
+            "description": "ID of Vendor to delete",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    }
+  }
+}

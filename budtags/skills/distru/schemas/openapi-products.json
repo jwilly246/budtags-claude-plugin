@@ -1,0 +1,41 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Distru Public API - Products", "version": "v1" },
+  "servers": [{ "url": "https://app.distru.com/public/v1" }],
+  "paths": {
+    "/products": {
+      "get": {
+        "operationId": "listProducts",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtFrom" },
+          { "name": "brand_id", "in": "query", "schema": { "type": "string" } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated products" } }
+      },
+      "post": { "operationId": "createProduct", "responses": { "201": { "description": "Created (UPSERT)" } } }
+    },
+    "/products/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "get": { "operationId": "getProduct", "responses": { "200": { "description": "Product with brand/strain/POS mappings" } } },
+      "put": { "operationId": "updateProduct", "responses": { "200": { "description": "Updated" } } }
+    },
+    "/test_results": {
+      "get": {
+        "operationId": "listTestResults",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
+        ],
+        "responses": { "200": { "description": "Paginated test results (200+ field types)" } }
+      },
+      "post": { "operationId": "createTestResult", "responses": { "201": { "description": "Created (UPSERT)" } } }
+    },
+    "/test_results/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "put": { "operationId": "updateTestResult", "responses": { "200": { "description": "Updated" } } }
+    }
+  }
+}

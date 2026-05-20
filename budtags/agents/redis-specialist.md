@@ -4,7 +4,7 @@ model: opus
 description: 'Expert Redis specialist for caching strategies, pub/sub, data structures, clustering, persistence, and performance optimization. Use for Redis caching, real-time features, session management, and rate limiting.'
 version: 2.0.0
 skills: redis
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 
 [Agent Mission]|role:Redis caching, data structures, pub/sub, clustering, and performance optimization expert

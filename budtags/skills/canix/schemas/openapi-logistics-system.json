@@ -1,0 +1,704 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - logistics-system",
+    "version": "1.3.5"
+  },
+  "servers": [
+    {
+      "url": "https://api.canix.com/api/v1",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/transfers": {
+      "get": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "GetTransfers",
+        "description": "Return active Transfers",
+        "operationId": "GetTransfers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Transfer"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/transfers/{transfer_id}": {
+      "get": {
+        "tags": [
+          "Transfers"
+        ],
+        "summary": "GetTransfer",
+        "description": "Get Transfer by ID",
+        "operationId": "GetTransferById",
+        "parameters": [
+          {
+            "name": "transfer_id",
+            "in": "path",
+            "description": "Transfer ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transfer"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/transfer_destinations": {
+      "get": {
+        "tags": [
+          "Transfer Destinations"
+        ],
+        "summary": "GetTransferDestinations",
+        "description": "Return Transfer Destinations",
+        "operationId": "GetTransferDestinations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferDestination"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/transfer_destinations/{transfer_destination_id}": {
+      "get": {
+        "tags": [
+          "Transfer Destinations"
+        ],
+        "summary": "GetTransferDestination",
+        "description": "Get Transfer Destination by ID",
+        "operationId": "GetTransferDestinationById",
+        "parameters": [
+          {
+            "name": "transfer_destination_id",
+            "in": "path",
+            "description": "Transfer Destination ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDestination"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/companies/{company_id}": {
+      "get": {
+        "tags": [
+          "Company"
+        ],
+        "summary": "GetCompany",
+        "description": "Get Company by ID",
+        "operationId": "GetCompanyById",
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "description": "Company ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Company"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/facilities": {
+      "get": {
+        "tags": [
+          "Facilities"
+        ],
+        "summary": "GetFacilities",
+        "description": "Return Facilities",
+        "operationId": "GetFacilities",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "query",
+            "description": "Facility ID (optional)",
+            "example": 123,
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Facility"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/facilities/{facility_id}": {
+      "get": {
+        "tags": [
+          "Facilities"
+        ],
+        "summary": "GetFacility",
+        "description": "Get Facility by ID",
+        "operationId": "GetFacilityById",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "path",
+            "description": "Facility ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Facility"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/submissions/{submission_id}": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "GetSubmission",
+        "description": "Get Submission by ID. A submission represents an asynchronous action (such as creating a package,\nadjusting inventory, submitting a transfer, etc.) that may be pending, successful, failed, or\nrequire approval. Use this endpoint to poll the status of a submission after initiating an action.\n",
+        "operationId": "GetSubmissionById",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "description": "Submission UUID",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "U3VibWlzc2lvbjo0NTY3ODk="
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Submission"
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successful submission",
+                    "value": {
+                      "uuid": "U3VibWlzc2lvbjo0NTY3ODk=",
+                      "status": "SUCCESS",
+                      "readable_name": "Create Package",
+                      "description": "Package created from harvest\nTag: 1A40000000000000001",
+                      "error_message": "",
+                      "result": {
+                        "package_id": 12345,
+                        "tag": "1A40000000000000001"
+                      },
+                      "created_at": "2024-01-15T10:30:00.000Z",
+                      "last_run_at": "2024-01-15T10:30:05.000Z"
+                    }
+                  },
+                  "pending": {
+                    "summary": "Pending submission",
+                    "value": {
+                      "uuid": "U3VibWlzc2lvbjo0NTY3OTA=",
+                      "status": "PENDING",
+                      "readable_name": "Adjust Package",
+                      "description": "Adjusting package weight",
+                      "error_message": "",
+                      "result": null,
+                      "created_at": "2024-01-15T10:30:00.000Z",
+                      "last_run_at": null
+                    }
+                  },
+                  "failed": {
+                    "summary": "Failed submission",
+                    "value": {
+                      "uuid": "U3VibWlzc2lvbjo0NTY3OTE=",
+                      "status": "FAILED",
+                      "readable_name": "Create Transfer",
+                      "description": "Transfer to ABC Dispensary",
+                      "error_message": "Invalid destination license number",
+                      "result": null,
+                      "created_at": "2024-01-15T10:30:00.000Z",
+                      "last_run_at": "2024-01-15T10:30:10.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "422": {
+            "description": "Unable to fetch submission data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Unable to fetch submission data"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/audited_actions": {
+      "get": {
+        "tags": [
+          "Audited Actions"
+        ],
+        "summary": "GetAuditedActions",
+        "description": "Returns Package Adjustments, Package Splits, Package Combines, Location Changes for Plant Batches, Plants and Packages, Immatures Destroyed in Plant Batches, Submitted by Email, Submitted by Name, Approved by Email and Approved by Name",
+        "operationId": "GetAuditedActions",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditedAction"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/standard_costs/{standard_cost_id}": {
+      "get": {
+        "tags": [
+          "Standard Costs"
+        ],
+        "summary": "GetStandardCost",
+        "description": "Get details of a specific Standard Cost",
+        "operationId": "GetStandardCost",
+        "parameters": [
+          {
+            "name": "standard_cost_id",
+            "in": "path",
+            "description": "ID of Standard Cost to retrieve",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemStandardCost"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Standard Costs"
+        ],
+        "summary": "UpdateStandardCost",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "UpdateStandardCost",
+        "parameters": [
+          {
+            "name": "standard_cost_id",
+            "in": "path",
+            "description": "ID of Standard Cost to update",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Update an existing Standard Cost",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cost",
+                  "start_date"
+                ],
+                "properties": {
+                  "cost": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 10.5,
+                    "description": "The standard cost amount"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-02-03",
+                    "description": "Start date for the standard cost"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2024-03-03",
+                    "description": "Optional end date for the standard cost"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemStandardCost"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Standard Costs"
+        ],
+        "summary": "DeleteStandardCost",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__\n\nDelete a specific Standard Cost\n",
+        "operationId": "DeleteStandardCost",
+        "parameters": [
+          {
+            "name": "standard_cost_id",
+            "in": "path",
+            "description": "ID of Standard Cost to delete",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Standard Cost successfully deleted"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    }
+  }
+}

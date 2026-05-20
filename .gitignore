@@ -9,5 +9,5 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# Evaluation/workspace artifacts
-budtags/skills/redis-workspace/
+# Evaluation/workspace artifacts (skill eval benchmark/grading/timing output)
+budtags/skills/*-workspace/

@@ -1,0 +1,4244 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - Shared Components",
+    "version": "1.3.5"
+  },
+  "components": {
+    "schemas": {
+      "AuditedAction": {
+        "title": "Audited Action",
+        "type": "object",
+        "properties": {
+          "facility_id": {
+            "type": "integer"
+          },
+          "object_id": {
+            "type": "integer"
+          },
+          "object_type": {
+            "type": "string"
+          },
+          "object_tag": {
+            "type": "string"
+          },
+          "context": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "string"
+          },
+          "submitted_date": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "approval_date": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "SalesOrder": {
+        "title": "Sales Order",
+        "required": [
+          "id",
+          "facility_id",
+          "name",
+          "status",
+          "delivery_date",
+          "other_tax_rate",
+          "local_tax_rate",
+          "state_tax_rate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "facility_id": {
+            "type": "integer",
+            "description": "Facility ID (fk)"
+          },
+          "name": {
+            "type": "string"
+          },
+          "external_identifier": {
+            "type": "string",
+            "description": "External Sales Order ID (from partner system, not unique)"
+          },
+          "status": {
+            "type": "string",
+            "description": "status, can be one of 'created', 'approved', 'filled', 'shipped', 'rejected', 'accepted', 'archived', 'requested'"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Timestamp that the record was created in Canix"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "delivery_date": {
+            "type": "string"
+          },
+          "delivery_fee": {
+            "type": "number"
+          },
+          "payment_date": {
+            "type": "string",
+            "description": "Payment due date"
+          },
+          "payment_terms": {
+            "type": "string"
+          },
+          "local_tax_rate": {
+            "type": "number"
+          },
+          "state_tax_rate": {
+            "type": "number"
+          },
+          "other_tax_rate": {
+            "type": "number"
+          },
+          "subtotal": {
+            "type": "number",
+            "description": "Subtotal of all items"
+          },
+          "total_cultivation_tax": {
+            "type": "number"
+          },
+          "total_price": {
+            "type": "number",
+            "description": "Total price (with taxes)"
+          },
+          "total_paid": {
+            "type": "number"
+          },
+          "credits": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "number"
+          },
+          "remaining_balance": {
+            "type": "number"
+          },
+          "internal_notes": {
+            "type": "string"
+          },
+          "payments": {
+            "description": "Payments collected for this order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SalesOrderPayment"
+            }
+          },
+          "sales_order_credit": {
+            "$ref": "#/components/schemas/Discount"
+          },
+          "display_status": {
+            "type": "string",
+            "description": "The display status of the order. This is the custom status name if set, otherwise the standard status value."
+          },
+          "contents": {
+            "description": "Contents of the order (i.e. line items)",
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/SalesOrderItem"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "weight_unit_id": {
+                      "type": "integer"
+                    },
+                    "weight_unit_name": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "sales_representative": {
+            "schema": null,
+            "$ref": "#/components/schemas/User"
+          },
+          "invoice_url": {
+            "type": "string",
+            "description": "URL to the latest invoice if it exists",
+            "example": "https://www.app.canix.com/sales/invoice/view/123456"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        },
+        "example": {
+          "id": 84,
+          "name": 1074,
+          "external_identifier": "SAP-ORDER-12345",
+          "facility_id": 14,
+          "status": "created",
+          "customer": {
+            "id": 345,
+            "contact_name": "John Smith",
+            "company_name": "Zen Ltd",
+            "facility_license_number": 2020124,
+            "license_type": 3,
+            "customer_number": 247123,
+            "updated_at": "2020-04-24 02:18:42.703000+00:00",
+            "license_expiration_date": "2020-04-24",
+            "phone": 1222312,
+            "email": "john.doe@twww.com\",",
+            "territory": "abc",
+            "address": {
+              "street": "123 Cumberland St",
+              "street2": "West",
+              "city": "DL",
+              "county": "LN",
+              "state": "OK",
+              "postal_code": 111001
+            },
+            "notes": "great customer!",
+            "outstanding_balance": 0
+          },
+          "delivery_date": "2021-05-24T19:58:00.000Z",
+          "delivery_fee": 2000,
+          "payment_date": "2021-05-24T19:58:00.000Z",
+          "payment_terms": "NET-14",
+          "local_tax_rate": 0,
+          "state_tax_rate": 0.27,
+          "other_tax_rate": 0,
+          "subtotal": 2124.22,
+          "total_cultivation_tax": 0,
+          "total_price": 2697.76,
+          "total_paid": 100.0,
+          "credits": 0,
+          "discount": 0,
+          "internal_notes": "",
+          "remaining_balance": 2597.76,
+          "contents": [
+            {
+              "id": 100,
+              "weight": 20,
+              "weight_unit": "Each",
+              "unit_price": 20,
+              "total_price": 400,
+              "item": {
+                "id": 7036,
+                "name": "Blue Dream - Trim",
+                "sku": "22657"
+              },
+              "package_ids": [
+                123,
+                456
+              ],
+              "discount": {
+                "type": "fixed",
+                "amount": 10.0,
+                "reason": "10$ off"
+              },
+              "updated_at": "2021-05-24T19:58:00.000Z",
+              "order": 1
+            }
+          ],
+          "payments": [
+            {
+              "date": "2021-05-24T19:58:00.000Z",
+              "amount": 100
+            }
+          ],
+          "sales_representative": {
+            "id": "123,",
+            "name": "John Doe",
+            "email": "j@d.com"
+          },
+          "sales_order_credit": {
+            "type": "percentage",
+            "amount": 25.0,
+            "reason": "25% off"
+          },
+          "display_status": "Pending Review",
+          "invoice_url": "https://www.app.canix.com/sales/invoice/view/123456",
+          "updated_at": "2021-05-24T19:58:00.000Z"
+        }
+      },
+      "SalesOrderItem": {
+        "title": "Sales Order Item",
+        "required": [
+          "id",
+          "sales_order_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Unit name or abbreviation"
+              },
+              {
+                "type": "integer",
+                "description": "Unit id"
+              }
+            ]
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total_price": {
+            "type": "number",
+            "description": "Total price (unit * weight)"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Sales_order_item"
+          },
+          "package_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Position of the item in the order"
+          },
+          "discount": {
+            "$ref": "#/components/schemas/Discount"
+          }
+        },
+        "example": {
+          "id": 100,
+          "weight": 20,
+          "weight_unit": "Each",
+          "unit_price": 20,
+          "total_price": 400,
+          "item": {
+            "id": 7036,
+            "name": "Blue Dream - Trim",
+            "sku": "22657"
+          },
+          "package_ids": [
+            123,
+            456
+          ],
+          "discount": {
+            "type": "percentage",
+            "amount": 25.0,
+            "reason": "25% off"
+          },
+          "updated_at": "2021-05-24T19:58:00.000Z",
+          "order": 1
+        }
+      },
+      "Discount": {
+        "title": "Discount",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "fixed",
+              "percentage"
+            ]
+          },
+          "amount": {
+            "type": "number"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "type": "fixed",
+          "amount": 10.0,
+          "reason": "Black Friday Sale"
+        }
+      },
+      "SalesOrderPayment": {
+        "title": "Sales Order Payment",
+        "required": [
+          "amount",
+          "date"
+        ],
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "date": {
+            "type": "integer"
+          }
+        },
+        "example": {
+          "amount": 10000,
+          "date": "2021-05-24T19:58:00.000Z"
+        }
+      },
+      "Submission": {
+        "title": "Submission",
+        "description": "A submission represents an asynchronous action (such as creating a package, adjusting inventory,\nsubmitting a transfer, etc.) that may be pending, successful, failed, or require approval.\n",
+        "type": "object",
+        "required": [
+          "uuid",
+          "status",
+          "created_at"
+        ],
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "The unique identifier for the submission",
+            "example": "U3VibWlzc2lvbjo0NTY3ODk="
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubmissionStatus"
+          },
+          "readable_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable name describing the submission action",
+            "example": "Create Package"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the submission, may include multiple lines",
+            "example": "Package created from harvest\nTag: 1A40000000000000001"
+          },
+          "error_message": {
+            "type": "string",
+            "description": "Error message if the submission failed, empty string otherwise",
+            "example": ""
+          },
+          "result": {
+            "type": "object",
+            "nullable": true,
+            "description": "Result data from a successful submission (e.g., created record IDs)",
+            "additionalProperties": true,
+            "example": {
+              "package_id": 12345,
+              "tag": "1A40000000000000001"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the submission was created",
+            "example": "2024-01-15T10:30:00.000Z"
+          },
+          "last_run_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the submission was last executed (null if not yet run)",
+            "example": "2024-01-15T10:30:05.000Z"
+          }
+        },
+        "example": {
+          "uuid": "U3VibWlzc2lvbjo0NTY3ODk=",
+          "status": "SUCCESS",
+          "readable_name": "Create Package",
+          "description": "Package created from harvest\nTag: 1A40000000000000001",
+          "error_message": "",
+          "result": {
+            "package_id": 12345,
+            "tag": "1A40000000000000001"
+          },
+          "created_at": "2024-01-15T10:30:00.000Z",
+          "last_run_at": "2024-01-15T10:30:05.000Z"
+        }
+      },
+      "SubmissionStatus": {
+        "title": "Submission Status",
+        "type": "string",
+        "description": "The current status of the submission:\n- **CREATED**: Transaction queued for processing\n- **PENDING_APPROVAL**: Transaction awaiting admin approval\n- **PENDING**: Transaction pending response from compliance system\n- **RETRYING**: Transaction failed but will be automatically retried\n- **FAILED**: Transaction failed permanently\n- **SUCCESS**: Transaction completed successfully\n- **DENIED**: Transaction was reviewed by an admin and denied\n- **ABORTED**: Transaction has been aborted\n- **PARTIAL_FAILURE**: Some steps succeeded but others failed\n",
+        "enum": [
+          "CREATED",
+          "PENDING_APPROVAL",
+          "PENDING",
+          "RETRYING",
+          "FAILED",
+          "SUCCESS",
+          "DENIED",
+          "ABORTED",
+          "PARTIAL_FAILURE"
+        ],
+        "example": "SUCCESS"
+      },
+      "CreatePurchaseOrderRequestBody": {
+        "title": "Purchase Order Request Body",
+        "required": [
+          "facility_id",
+          "vendor_id",
+          "status",
+          "requested_delivery_date",
+          "payment_terms"
+        ],
+        "type": "object",
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Facility ID (fk)"
+          },
+          "name": {
+            "type": "string",
+            "example": "PO 00001",
+            "description": "Optional name for the purchase order"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "RELEASED",
+              "REQUESTED",
+              "PARTIALLY_RECEIVED",
+              "RECEIVED",
+              "PAID",
+              "ARCHIVED"
+            ],
+            "description": "Status of the purchase order"
+          },
+          "vendor_id": {
+            "type": "integer",
+            "example": 123,
+            "description": "Vendor ID (fk)"
+          },
+          "requested_delivery_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2021-06-07",
+            "description": "Expected delivery date for the purchase order"
+          },
+          "internal_notes": {
+            "type": "string",
+            "example": "Follow up",
+            "description": "Optional internal notes for the purchase order"
+          },
+          "payment_terms": {
+            "type": "string",
+            "pattern": "^(NET|COD|CONSIGNMENT|PREPAYMENT)",
+            "example": "NET15",
+            "description": "Payment terms - must start with one of 'NET', 'COD', 'CONSIGNMENT', 'PREPAYMENT'"
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date",
+            "example": "2021-06-22",
+            "description": "Date when the Purchase Order was paid. Required if payment_terms is PREPAYMENT"
+          },
+          "delivery_fee": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "example": 1.5,
+            "description": "Optional delivery fee amount"
+          },
+          "local_tax_rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.01,
+            "description": "Input 0.01 to represent 1% tax rate. Will enable excise_tax if greater than 0"
+          },
+          "state_tax_rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.01,
+            "description": "Input 0.01 to represent 1% tax rate. Will enable excise_tax if greater than 0"
+          },
+          "other_tax_rate": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1,
+            "example": 0.01,
+            "description": "Input 0.01 to represent 1% tax rate"
+          },
+          "purchase_order_items_attributes": {
+            "description": "Contents of the order (i.e. line items)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderItemRequestBody"
+            }
+          }
+        }
+      },
+      "PurchaseOrder": {
+        "title": "Purchase Order",
+        "required": [
+          "id",
+          "facility_id",
+          "name",
+          "status",
+          "requested_delivery_date",
+          "other_tax_rate",
+          "local_tax_rate",
+          "state_tax_rate"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 350
+          },
+          "facility_id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Facility ID (fk)"
+          },
+          "name": {
+            "type": "string",
+            "example": "PO 00001"
+          },
+          "status": {
+            "type": "string",
+            "description": "status, can be one of: 'CREATED', 'RELEASED', 'REQUESTED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'PAID', 'ARCHIVED'"
+          },
+          "vendor": {
+            "$ref": "#/components/schemas/Vendor"
+          },
+          "requested_delivery_date": {
+            "type": "string",
+            "example": "2021-06-07T07:00:00.000Z"
+          },
+          "internal_notes": {
+            "type": "string",
+            "example": "Follow up"
+          },
+          "payment_terms": {
+            "type": "string",
+            "example": "NET15",
+            "description": "Has to start with one of 'NET', 'COD', 'CONSIGNMENT', 'PREPAYMENT'"
+          },
+          "payment_date": {
+            "type": "string",
+            "example": "2021-06-22",
+            "description": "Date when the Purchase Order was paid. (Required if payment_terms is PREPAYMENT)"
+          },
+          "delivery_fee": {
+            "type": "number",
+            "example": 1.5
+          },
+          "local_tax_rate": {
+            "type": "number",
+            "example": 0.01,
+            "description": "Input 0.01 to represent 1% tax rate"
+          },
+          "state_tax_rate": {
+            "type": "number",
+            "example": 0.01,
+            "description": "Input 0.01 to represent 1% tax rate"
+          },
+          "other_tax_rate": {
+            "type": "number",
+            "example": 0.01,
+            "description": "Input 0.01 to represent 1% tax rate"
+          },
+          "subtotal": {
+            "type": "number",
+            "description": "Subtotal of all items"
+          },
+          "total_price": {
+            "type": "number",
+            "description": "Total price (with taxes)"
+          },
+          "total_paid": {
+            "type": "number"
+          },
+          "payments": {
+            "description": "Payments for this order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderPayment"
+            }
+          },
+          "contents": {
+            "description": "Contents of the order (i.e. line items)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderItem"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Timestamp that the record was created in Canix"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "PurchaseOrderItemRequestBody": {
+        "title": "Purchase Order Item Request Body",
+        "required": [
+          "item_id",
+          "weight",
+          "weight_unit_id",
+          "price"
+        ],
+        "type": "object",
+        "properties": {
+          "item_id": {
+            "type": "integer",
+            "example": 7036,
+            "description": "Item ID (fk)"
+          },
+          "weight": {
+            "type": "number",
+            "example": 200
+          },
+          "weight_unit_id": {
+            "type": "integer",
+            "example": 15,
+            "description": "Weight Unit ID (fk)"
+          },
+          "price": {
+            "type": "number",
+            "example": 10.25,
+            "description": "Total price for that item weight"
+          },
+          "notes": {
+            "type": "string",
+            "example": "my notes for this order item",
+            "description": "Note to describe the order item"
+          }
+        }
+      },
+      "PurchaseOrderItem": {
+        "title": "Purchase Order Item",
+        "required": [
+          "id",
+          "purchase_order_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 13
+          },
+          "weight": {
+            "type": "number",
+            "example": 200
+          },
+          "weight_unit": {
+            "type": "string",
+            "example": "Grams"
+          },
+          "total_price": {
+            "type": "number",
+            "example": 10.25,
+            "description": "Total price for that item weight"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item",
+            "description": "Purchased cannabis item (if `non_cannabis_product` is unset)"
+          },
+          "non_cannabis_product": {
+            "$ref": "#/components/schemas/NonCannabisProduct",
+            "description": "Purchased non-cannabis item (if `item` is unset)"
+          }
+        }
+      },
+      "Package": {
+        "title": "Package",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "item": {
+            "$ref": "#/components/schemas/Item"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "original_weight": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "packaged_date": {
+            "type": "string"
+          },
+          "production_batch_date": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "The production batch date for the package."
+          },
+          "expiration_date": {
+            "type": "string"
+          },
+          "received_date": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "production_batch": {
+            "type": "string"
+          },
+          "lot_id": {
+            "type": "string"
+          },
+          "cultivation_tax": {
+            "type": "number"
+          },
+          "available_for_sale": {
+            "type": "boolean"
+          },
+          "cannabis_cogs": {
+            "type": "number"
+          },
+          "non_cannabis_inventory_cogs": {
+            "type": "number"
+          },
+          "source_packages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourcePackage"
+            }
+          },
+          "destination_packages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DestinationPackage"
+            }
+          },
+          "source_facility": {
+            "type": "string",
+            "description": "Originating facility license number"
+          },
+          "source_facility_name": {
+            "type": "string",
+            "description": "Originating facility name"
+          },
+          "source_harvests": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/Brand"
+          },
+          "lab_test_url": {
+            "type": "string",
+            "description": "URL to the latest lab test if it exists",
+            "example": "https://www.lab.com/lab-test/123456"
+          },
+          "coa_url": {
+            "type": "string",
+            "nullable": true,
+            "description": "URL to the Certificate of Analysis (COA) document. Returns either a direct URL or a presigned S3 URL (valid for 24 hours) if available.",
+            "example": "https://s3.amazonaws.com/bucket/coa/abc123.pdf?X-Amz-Signature=..."
+          },
+          "test_results": {
+            "$ref": "#/components/schemas/TestResults"
+          },
+          "cogs": {
+            "type": "object",
+            "example": {
+              "labor": 10.0,
+              "non_cannabis": 120.0,
+              "cannabis": 30.0,
+              "total": 160.0
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "tested_package_tag": {
+            "type": "string",
+            "description": "Tag identifying the package that has been tested"
+          },
+          "test_status": {
+            "type": "string",
+            "description": "Status of the test (e.g., passed, failed, pending)"
+          },
+          "test_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date when the test was conducted"
+          },
+          "lab_test_info": {
+            "$ref": "#/components/schemas/LabTestInfo"
+          }
+        }
+      },
+      "PackageAdjustmentRequestBody": {
+        "title": "Package Adjustment Request Body",
+        "type": "object",
+        "required": [
+          "adjusted_weight",
+          "reason_id",
+          "adjusted_at"
+        ],
+        "properties": {
+          "adjusted_weight": {
+            "type": "number",
+            "description": "The new weight value for the package",
+            "example": 10.5
+          },
+          "reason_id": {
+            "type": "integer",
+            "description": "The ID of the adjustment reason",
+            "example": 1
+          },
+          "adjusted_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the adjustment occurred",
+            "example": "2025-02-04T23:14:02Z"
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note about the adjustment",
+            "example": "Adjustment due to scale calibration"
+          }
+        }
+      },
+      "SourcePackage": {
+        "title": "Source Package",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "item": {
+            "$ref": "#/components/schemas/IdName"
+          }
+        }
+      },
+      "DestinationPackage": {
+        "title": "Destination Package",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "item": {
+            "$ref": "#/components/schemas/IdName"
+          }
+        }
+      },
+      "Customer": {
+        "title": "Customer",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "contact_name": {
+            "type": "string"
+          },
+          "company_name": {
+            "type": "string"
+          },
+          "facility_license_number": {
+            "type": "string"
+          },
+          "license_type": {
+            "type": "string"
+          },
+          "customer_number": {
+            "type": "string"
+          },
+          "license_expiration_date": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "territory": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "outstanding_balance": {
+            "type": "number"
+          },
+          "dba": {
+            "type": "string",
+            "example": "Doing Business As"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "CustomerExtended": {
+        "title": "Customer Extended",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Customer"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "outstanding_balance": {
+                "type": "number"
+              }
+            }
+          }
+        ]
+      },
+      "Vendor": {
+        "title": "Vendor",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Canna Cones"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "contact_name": {
+            "type": "string",
+            "example": "John Smith"
+          },
+          "email": {
+            "type": "string",
+            "example": "john@cannacones.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": 16501109234
+          },
+          "license_number": {
+            "type": "string",
+            "example": "X-000012"
+          },
+          "license_expiration_date": {
+            "type": "string",
+            "example": "2022-03-16 07:00:00+00:00"
+          },
+          "address": {
+            "type": "string",
+            "example": "63 Bluxome St."
+          },
+          "address2": {
+            "type": "string",
+            "example": "Suite A"
+          },
+          "city": {
+            "type": "string",
+            "example": "San Francisco"
+          },
+          "postal_code": {
+            "type": "string",
+            "example": 94107
+          },
+          "state": {
+            "type": "string",
+            "example": "CA"
+          },
+          "country": {
+            "type": "string",
+            "example": "US"
+          },
+          "website_url": {
+            "type": "string",
+            "example": "cannacones.com"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Best vendor"
+          },
+          "min_lead_time": {
+            "type": "object",
+            "example": {
+              "value": 2,
+              "unit": "week"
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Sales_order_item": {
+        "title": "Item",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 7036,
+          "name": "Blue Dream - Trim",
+          "sku": "22657"
+        }
+      },
+      "Item": {
+        "title": "Item",
+        "required": [
+          "id",
+          "name",
+          "facility_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "item_type": {
+            "type": "string"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/IdName"
+          },
+          "quantity_type": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "current_standard_cost": {
+            "$ref": "#/components/schemas/ItemStandardCost"
+          },
+          "accounting_inventory_type": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "facility_id": {
+            "type": "integer"
+          },
+          "strain": {
+            "$ref": "#/components/schemas/Strain"
+          },
+          "type": {
+            "$ref": "#/components/schemas/ItemType"
+          },
+          "sub_type": {
+            "$ref": "#/components/schemas/ItemSubType"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "unit_weight": {
+            "type": "number"
+          },
+          "unit_weight_unit": {
+            "type": "string"
+          },
+          "case_quantity": {
+            "type": "string"
+          },
+          "case_quantity_unit": {
+            "type": "string"
+          },
+          "unit_cbd_weight": {
+            "type": "number"
+          },
+          "unit_cbd_weight_unit": {
+            "type": "string"
+          },
+          "unit_thc_weight": {
+            "type": "number"
+          },
+          "unit_thc_weight_unit": {
+            "type": "string"
+          },
+          "unit_cbd_percent": {
+            "type": "number"
+          },
+          "unit_thc_percent": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          },
+          "serving_size": {
+            "type": "number"
+          },
+          "number_of_doses": {
+            "type": "number"
+          },
+          "public_ingredients": {
+            "type": "string"
+          },
+          "supply_duration_days": {
+            "type": "number"
+          },
+          "administration_method": {
+            "type": "string"
+          },
+          "allergens": {
+            "type": "string"
+          },
+          "transfer_source_license": {
+            "type": "string",
+            "description": "Facility license number of the originating facility. Non-editable."
+          },
+          "bills_of_materials": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "package_weight": {
+                  "type": "number"
+                },
+                "unit": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "sage_item": {
+            "type": "object",
+            "properties": {
+              "external_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "leaflink_item": {
+            "type": "object",
+            "properties": {
+              "external_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "dutchie_product": {
+            "type": "object",
+            "properties": {
+              "external_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "phenotype": {
+            "type": "string"
+          },
+          "total_for_sale": {
+            "type": "number",
+            "description": "Total quantity marked as available to sell"
+          },
+          "ordered": {
+            "type": "number",
+            "description": "Total quantity ordered from in-progress sales orders"
+          },
+          "backordered": {
+            "type": "number",
+            "description": "Total quantity backordered from in-progress sales orders"
+          },
+          "unordered": {
+            "type": "number",
+            "description": "Quantity available to sell minus ordered quantity (minimum 0)"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        },
+        "example": {
+          "id": 7036,
+          "name": "Blue Dream - Trim",
+          "sku": "22657",
+          "current_standard_costing": {
+            "id": {
+              "type": "integer",
+              "example": 123
+            },
+            "standard_cost_amount": {
+              "type": "number",
+              "example": 12.1111
+            },
+            "standard_cost_currency": {
+              "type": "string",
+              "example": "USD"
+            },
+            "start_date": {
+              "type": "string",
+              "example": "2023-04-19"
+            },
+            "end_date": {
+              "type": "string"
+            },
+            "example": "2023-05-19"
+          },
+          "is_active": true,
+          "facility_id": 14,
+          "type": {
+            "id": 884,
+            "name": "Clone - Cutting",
+            "quantity_type": "CountBased",
+            "product_category": "Plants"
+          },
+          "sub_type": null,
+          "brand": null,
+          "quantity_type": "CountBased",
+          "notes": "",
+          "accounting_inventory_type": "raw_materials",
+          "strain": null,
+          "weight_unit": "Each",
+          "unit_weight": 10,
+          "unit_weight_unit": "Grams",
+          "case_quantity": 100,
+          "case_unit": "Each",
+          "description": "Clone",
+          "allergens": "Can s 2",
+          "transfer_source_license": "1234567890",
+          "bills_of_materials": [
+            {
+              "url": "https://www.app.canix.com/inventory/non-cannabis/bill-of-materials/123",
+              "name": "Bill of Materials",
+              "package_weight": 10,
+              "unit": "g"
+            }
+          ],
+          "sage_item": {
+            "external_id": "1234567890",
+            "name": "Sage Item"
+          },
+          "leaflink_item": null,
+          "dutchie_product": null,
+          "phenotype": "Indica",
+          "total_for_sale": 100,
+          "ordered": 25,
+          "backordered": 10,
+          "unordered": 75,
+          "updated_at": "2021-03-16T23:49:03.175Z"
+        }
+      },
+      "ItemStandardCost": {
+        "title": "ItemStandardCost",
+        "required": [
+          "id",
+          "standard_cost_amount",
+          "standard_cost_currency",
+          "start_date"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "standard_cost_amount": {
+            "type": "number",
+            "example": 12.1111
+          },
+          "standard_cost_currency": {
+            "type": "string",
+            "example": "USD"
+          },
+          "start_date": {
+            "type": "string",
+            "example": "2023-04-19"
+          },
+          "end_date": {
+            "type": "string",
+            "example": "2023-05-19"
+          }
+        }
+      },
+      "CreateMETRCItemPhotosRequestBody": {
+        "title": "CreateMETRCItemPhotosRequestBody",
+        "required": [
+          "facility_id",
+          "photos"
+        ],
+        "properties": {
+          "facility_id": {
+            "type": "integer"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "attachment_type": {
+                  "enum": [
+                    "product",
+                    "label",
+                    "packaging"
+                  ],
+                  "description": "The type of attachment intended for the item. Must be one of the following: product, label, packaging"
+                },
+                "filename": {
+                  "type": "string"
+                },
+                "encoded_image_base64": {
+                  "type": "string",
+                  "description": "A Base64 string containing the encoded image"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateMETRCItemFilesRequestBody": {
+        "title": "CreateMETRCItemFileRequestBody",
+        "required": [
+          "facility_id",
+          "files"
+        ],
+        "properties": {
+          "facility_id": {
+            "type": "integer"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filename": {
+                  "type": "string"
+                },
+                "encoded_file_base64": {
+                  "type": "string",
+                  "description": "A Base64 string containing the encoded file"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ItemType": {
+        "title": "ItemType",
+        "required": [
+          "id",
+          "name",
+          "facility_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quantity_type": {
+            "type": "string"
+          },
+          "requires_strain": {
+            "type": "boolean"
+          },
+          "requires_unit_volume": {
+            "type": "boolean"
+          },
+          "requires_unit_weight": {
+            "type": "boolean"
+          },
+          "requires_unit_thc_weight": {
+            "type": "boolean"
+          },
+          "requires_unit_cbd_weight": {
+            "type": "boolean"
+          },
+          "requires_unit_cbd_percent": {
+            "type": "boolean"
+          },
+          "requires_unit_thc_percent": {
+            "type": "boolean"
+          },
+          "requires_public_ingredients": {
+            "type": "boolean"
+          },
+          "requires_administration_method": {
+            "type": "boolean"
+          },
+          "requires_serving_size": {
+            "type": "boolean"
+          },
+          "requires_supply_duration_days": {
+            "type": "boolean"
+          },
+          "requires_number_of_doses": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "ItemSubType": {
+        "title": "ItemSubType",
+        "required": [
+          "id",
+          "name",
+          "weight_unit",
+          "item_category"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/ItemType"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Brand": {
+        "title": "Brand",
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "CrossStrain": {
+        "title": "Cross Strain",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "example": "Lemon Skunk",
+            "description": "Strain name"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Terpenes .63%",
+            "description": "Notes"
+          },
+          "sku": {
+            "type": "string",
+            "example": "BIOJJ",
+            "description": "SKU"
+          },
+          "testing_status": {
+            "type": "string",
+            "example": "InHouse",
+            "description": "Testing status: InHouse, ThirdParty, None, NA"
+          },
+          "indica_percent": {
+            "type": "number",
+            "example": 45.0,
+            "description": "Indica Percentage"
+          },
+          "sativa_percent": {
+            "type": "number",
+            "example": 55.0,
+            "description": "Sativa Percentage"
+          }
+        }
+      },
+      "Strain": {
+        "title": "Strain",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "example": "Lemon Skunk",
+            "description": "Strain name"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Terpenes .63%",
+            "description": "Notes"
+          },
+          "sku": {
+            "type": "string",
+            "example": "BIOJJ",
+            "description": "SKU"
+          },
+          "testing_status": {
+            "type": "string",
+            "example": "InHouse",
+            "description": "Testing status: InHouse, ThirdParty, None, NA"
+          },
+          "indica_percent": {
+            "type": "number",
+            "example": 45.0,
+            "description": "Indica Percentage"
+          },
+          "sativa_percent": {
+            "type": "number",
+            "example": 55.0,
+            "description": "Sativa Percentage"
+          },
+          "cross_strains": {
+            "type": "array",
+            "description": "Cross strains",
+            "items": {
+              "$ref": "#/components/schemas/CrossStrain"
+            }
+          }
+        }
+      },
+      "ParentLocation": {
+        "title": "Parent Location",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Pro System"
+          },
+          "sqft": {
+            "type": "number",
+            "example": 14.4
+          },
+          "num_lights": {
+            "type": "integer",
+            "example": 42
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "Location": {
+        "title": "Location",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Pro System"
+          },
+          "sqft": {
+            "type": "number",
+            "example": 14.4
+          },
+          "num_lights": {
+            "type": "integer",
+            "example": 42
+          },
+          "parent_location": {
+            "$ref": "#/components/schemas/ParentLocation"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "NonCannabisProduct": {
+        "title": "Non Cannabis Product",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Pro System"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "facilities": {
+            "$ref": "#/components/schemas/Facility",
+            "description": "All facilities that the product is available in"
+          },
+          "category": {
+            "$ref": "#/components/schemas/NonCannabisProductCategory"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "sku": {
+            "type": "string",
+            "example": "0.5EC"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Optional notes for the product",
+            "example": "This product requires special handling"
+          },
+          "available_quantity": {
+            "type": "number",
+            "example": 196
+          },
+          "weight_unit": {
+            "type": "string",
+            "example": "Each"
+          },
+          "par": {
+            "type": "number",
+            "example": 100
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "current_standard_costing": {
+            "$ref": "#/components/schemas/NonCannabisProductStandardCosting"
+          },
+          "submits_to_metrc": {
+            "type": "boolean",
+            "description": "This field is only applicable to products that are submitted to METRC"
+          },
+          "additive_type": {
+            "type": "string",
+            "example": "fertilizer",
+            "description": "This field is only applicable to products that are submitted to METRC"
+          },
+          "product_trade_name": {
+            "type": "string",
+            "description": "This field is only applicable to products that are submitted to METRC"
+          },
+          "epa_registration_name": {
+            "type": "string",
+            "description": "This field is only applicable to products that are submitted to METRC"
+          },
+          "product_supplier": {
+            "type": "string",
+            "description": "This field is only applicable to products that are submitted to METRC"
+          },
+          "application_device": {
+            "type": "string",
+            "description": "This field is only applicable to products that are submitted to METRC"
+          },
+          "active_ingredients": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "percentage": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NonCannabisProductStandardCosting": {
+        "title": "NonCannabisProductStandardCosting",
+        "required": [
+          "id",
+          "standard_cost_amount",
+          "standard_cost_currency",
+          "start_date"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "standard_cost_amount": {
+            "type": "number",
+            "example": 12.1111
+          },
+          "standard_cost_currency": {
+            "type": "string",
+            "example": "USD"
+          },
+          "start_date": {
+            "type": "string",
+            "example": "2023-04-19"
+          },
+          "end_date": {
+            "type": "string",
+            "example": "2023-05-19"
+          }
+        }
+      },
+      "NonCannabisProductCategory": {
+        "title": "Non Cannabis Product Category",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Preroll Materials"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "PlantBatch": {
+        "title": "Plant Batch",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "1A4FF0000000022000000719"
+          },
+          "mature_count": {
+            "type": "integer",
+            "example": 21
+          },
+          "immature_count": {
+            "type": "integer",
+            "example": 2
+          },
+          "vegetative_count": {
+            "type": "integer",
+            "example": 23
+          },
+          "flowering_count": {
+            "type": "integer",
+            "example": 25
+          },
+          "source": {
+            "type": "string",
+            "example": "Clone"
+          },
+          "planted_date": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "destroyed_count": {
+            "type": "integer",
+            "example": 5
+          },
+          "notes": {
+            "type": "string",
+            "example": "nice batch!"
+          },
+          "strain": {
+            "$ref": "#/components/schemas/Strain"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "lot_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Plant": {
+        "title": "Plant",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "tag": {
+            "type": "string",
+            "example": "1A4FF0000000022000000719"
+          },
+          "plant_batch": {
+            "$ref": "#/components/schemas/PlantBatch"
+          },
+          "weight": {
+            "type": "integer",
+            "example": 2
+          },
+          "weight_unit": {
+            "type": "string",
+            "example": "Grams"
+          },
+          "growth_phase": {
+            "type": "string",
+            "example": "Flowering"
+          },
+          "state": {
+            "type": "string",
+            "example": "Tracked"
+          },
+          "strain": {
+            "$ref": "#/components/schemas/Strain"
+          },
+          "location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "planted_date": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "vegetative_date": {
+            "type": "string",
+            "example": "2015-12-23 07:00:00+00:00"
+          },
+          "flowering_date": {
+            "type": "string",
+            "example": "2016-04-18 06:00:00+00:00"
+          },
+          "harvested_date": {
+            "type": "string",
+            "example": "2018-04-18 06:00:00+00:00"
+          },
+          "destroyed_date": {
+            "type": "string",
+            "example": "2019-04-18 06:00:00+00:00"
+          },
+          "notes": {
+            "type": "string",
+            "example": "nice plant!"
+          },
+          "age_in_days": {
+            "type": "number",
+            "example": 2039
+          },
+          "harvest": {
+            "$ref": "#/components/schemas/Harvest"
+          },
+          "lot_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Harvest": {
+        "title": "Harvest",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Offline Manicure"
+          },
+          "strain": {
+            "$ref": "#/components/schemas/Strain"
+          },
+          "drying_location": {
+            "$ref": "#/components/schemas/Location"
+          },
+          "harvest_date": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "plant_count": {
+            "type": "number",
+            "example": 3
+          },
+          "average_plant_weight": {
+            "type": "number",
+            "example": 107.7
+          },
+          "notes": {
+            "type": "string",
+            "example": "nice harvest!"
+          },
+          "waste_weight": {
+            "type": "number",
+            "example": 100
+          },
+          "total_wet_weight": {
+            "type": "number",
+            "example": 100
+          },
+          "total_packaged_weight": {
+            "type": "number",
+            "example": 100
+          },
+          "finished_date": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "package_count": {
+            "type": "integer",
+            "example": 100
+          },
+          "lot_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Transfer": {
+        "title": "Transfer",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Transfer"
+          },
+          "manifest_number": {
+            "type": "string",
+            "example": "0000000028"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "destinations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferDestination"
+            }
+          },
+          "sales_order": {
+            "$ref": "#/components/schemas/SalesOrder"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "TransferDestination": {
+        "title": "Transfer Destination",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "destination_facility": {
+            "type": "string",
+            "example": "401-N0909"
+          },
+          "transfer_type": {
+            "type": "string",
+            "example": "Affilliated"
+          },
+          "route": {
+            "type": "string",
+            "example": 55
+          },
+          "departure_time": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageTransfer"
+            }
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "PackageTransfer": {
+        "title": "Package Transfer",
+        "required": [
+          "id",
+          "facility_id"
+        ],
+        "properties": {
+          "package": {
+            "$ref": "#/components/schemas/Package"
+          },
+          "status": {
+            "type": "string"
+          },
+          "sale_price": {
+            "type": "number",
+            "example": 12.34
+          },
+          "shipped_weight": {
+            "type": "number",
+            "example": 10.0
+          },
+          "shipped_weight_unit": {
+            "type": "string",
+            "example": "Grams"
+          },
+          "received_weight": {
+            "type": "number",
+            "example": 10.0
+          },
+          "received_weight_unit": {
+            "type": "string",
+            "example": "Grams"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Company": {
+        "title": "Company",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Test Company"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2018-11-04 08:00:00+00:00"
+          },
+          "updated_at": {
+            "type": "string",
+            "example": "2018-11-06 08:00:00+00:00"
+          }
+        }
+      },
+      "Facility": {
+        "title": "Facility",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Test Facility"
+          },
+          "license_number": {
+            "type": "string",
+            "example": "4a-x123"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "Address": {
+        "title": "Address",
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "123 Cumberland St"
+          },
+          "street2": {
+            "type": "string",
+            "example": "West"
+          },
+          "city": {
+            "type": "string",
+            "example": "Somerset"
+          },
+          "county": {
+            "type": "string",
+            "example": "KY"
+          },
+          "state": {
+            "type": "string",
+            "example": "CO"
+          },
+          "country": {
+            "type": "string",
+            "example": "USA"
+          },
+          "postal_code": {
+            "type": "string",
+            "example": 42504
+          }
+        }
+      },
+      "User": {
+        "title": "User",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "j@d.com"
+          }
+        }
+      },
+      "IdName": {
+        "title": "IdName",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "RecordCount": {
+        "title": "Record Count",
+        "required": [
+          "Count"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer",
+            "example": 123
+          }
+        }
+      },
+      "JobStatus": {
+        "title": "JobStatus",
+        "properties": {
+          "complete": {
+            "type": "boolean",
+            "example": true
+          },
+          "bid": {
+            "type": "string",
+            "example": "bc7f822afbb40747"
+          },
+          "total": {
+            "type": "integer",
+            "example": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "failures": {
+            "type": "integer",
+            "example": 0
+          },
+          "created_at": {
+            "type": "number",
+            "example": 1367700200.1111438
+          },
+          "fail_info": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TestResultValue": {
+        "title": "TestResultValue",
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "format": "double",
+            "example": 0.17501406232422
+          },
+          "measure": {
+            "type": "string",
+            "enum": [
+              "mg",
+              "mg/g",
+              "mg/serving",
+              "percent"
+            ],
+            "example": "mg/g"
+          }
+        }
+      },
+      "TestResults": {
+        "title": "TestResults",
+        "type": "object",
+        "properties": {
+          "thc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            },
+            "example": [
+              {
+                "value": 12.345,
+                "measure": "percent"
+              },
+              {
+                "value": 0.12345,
+                "measure": "mg/g"
+              },
+              {
+                "value": 5.6789,
+                "measure": "mg"
+              }
+            ]
+          },
+          "cbd": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            },
+            "example": [
+              {
+                "value": 34.567,
+                "measure": "percent"
+              },
+              {
+                "value": 2.3456,
+                "measure": "mg/g"
+              },
+              {
+                "value": 9.1234,
+                "measure": "mg"
+              }
+            ]
+          },
+          "cbn": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "cbg": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "cbga": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "cbc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "cbca": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "cbda": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "thca": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "delta_8_thc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "delta_9_thc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "delta_9_thca": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "delta_8_thca": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "thcv": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "thcva": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "total_cbd": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "total_cbg": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "total_delta_9_thc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "total_thc": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "total_cannabinoid": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestResultValue"
+            }
+          },
+          "test_status": {
+            "type": "string",
+            "description": "Status of the test (e.g., passed, failed, pending)"
+          },
+          "tested_package_tag": {
+            "type": "string",
+            "description": "Tag identifying the package that has been tested"
+          },
+          "test_date": {
+            "type": "string",
+            "format": "date",
+            "description": "Date when the test was conducted"
+          },
+          "terpenes": {
+            "type": "object",
+            "properties": {
+              "measure": {
+                "type": "string",
+                "example": "percent"
+              },
+              "top_three": {
+                "type": "string",
+                "example": {
+                  "beta_myrcene": "0.05104502943",
+                  "delta_limonene": "0.04842733428",
+                  "linalool": "0.01920111092"
+                }
+              },
+              "values": {
+                "type": "string",
+                "example": {
+                  "nerol": "0.0",
+                  "cedrol": "0.0",
+                  "guaiol": "0.0",
+                  "borneol": "0.00097078668",
+                  "camphor": "0.0",
+                  "menthol": "0.0060455321",
+                  "3_carene": "0.0",
+                  "camphene": "0.0014924041",
+                  "geraniol": "0.00146493673",
+                  "linalool": "0.01920111092",
+                  "pulegone": "0.0",
+                  "sabinene": "0.0",
+                  "farnesene": "0.0",
+                  "valencene": "0.0",
+                  "eucalyptol": "0.0",
+                  "isoborneol": "0.0",
+                  "isopulegol": "0.0",
+                  "l_fenchone": "0.00107440035",
+                  "beta_pinene": "0.00758444019",
+                  "cis_ocimene": "0.0",
+                  "terpinolene": "0.0008523121",
+                  "alpha_pinene": "0.00507601301",
+                  "beta_myrcene": "0.05104502943",
+                  "alpha_cedrene": "0.0",
+                  "cis_nerolidol": "0.0",
+                  "trans_ocimene": "0.0",
+                  "alpha_humulene": "0.00563652811",
+                  "delta_limonene": "0.04842733428",
+                  "alpha_bisabolol": "0.00210912557",
+                  "alpha_terpineol": "0.0",
+                  "gamma_terpinene": "0.0",
+                  "gamma_terpineol": "0.0",
+                  "geranyl_acetate": "0.0",
+                  "trans_nerolidol": "0.0",
+                  "sabinene_hydrate": "0.0",
+                  "alpha_phellandrene": "0.0",
+                  "beta_caryophyllene": "0.01474344681",
+                  "caryophyllene_oxide": "0.00080207704",
+                  "endo_fenchyl_alcohol": "0.00415234658"
+                }
+              }
+            }
+          }
+        }
+      },
+      "LabTestInfo": {
+        "type": "object",
+        "properties": {
+          "testing_facility_name": {
+            "type": "string",
+            "description": "Name of the facility where the testing was conducted.F"
+          },
+          "testing_facility_license": {
+            "type": "string",
+            "description": "License number of the testing facility."
+          }
+        },
+        "required": [
+          "testing_facility_name",
+          "testing_facility_license"
+        ]
+      },
+      "ManuBatchRun": {
+        "title": "Manufacturing Run",
+        "required": [
+          "id",
+          "facility_id",
+          "name",
+          "status",
+          "order",
+          "manufacturing_batch_id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "facility_id": {
+            "type": "integer",
+            "description": "Facility ID (fk)"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "description": "status, can be one of 'OPEN', 'SUBMITTED', 'SUBMITTED_FOR_APPROVAL', 'ERRORED'"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Timestamp that the record was created in Canix"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Timestamp that the record was last updated in Canix"
+          },
+          "location_id": {
+            "type": "integer"
+          },
+          "bill_of_materials_id": {
+            "type": "integer"
+          },
+          "manufacturing_batch_id": {
+            "type": "integer"
+          },
+          "order": {
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "total_cannabis_costs": {
+            "type": "number"
+          },
+          "total_labor_costs": {
+            "type": "number"
+          },
+          "total_nci_costs": {
+            "type": "number"
+          },
+          "machine_info": {
+            "$ref": "#/components/schemas/Machine"
+          },
+          "cannabis_inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManuBatchRunCannabisInput"
+            }
+          },
+          "non_cannabis_inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManuBatchRunNonCannabisInput"
+            }
+          },
+          "cannabis_outputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ManuBatchRunCannabisOutput"
+            }
+          },
+          "labors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Labor"
+            }
+          },
+          "wastes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Waste"
+            }
+          }
+        },
+        "example": {
+          "id": 10,
+          "facility_id": 14,
+          "name": 1074,
+          "status": "OPEN",
+          "start_date": "2022-05-24",
+          "end_date": "2022-05-30",
+          "created_at": "2022-05-22T19:58:00.000Z",
+          "updated_at": "2021-05-23T05:12:01.000Z",
+          "location_id": 2,
+          "bill_of_materials_id": 12,
+          "manufacturing_batch_id": 9,
+          "order": 2,
+          "notes": "",
+          "total_cannabis_costs": 14.3,
+          "total_nci_costs": 2.5,
+          "total_labor_costs": 9.05,
+          "yield": 75.0,
+          "machine_info": {
+            "temperature": 20.1,
+            "temperature_unit": "Celcius",
+            "solvent_id": 150,
+            "solvent_quantity": 10.5,
+            "solvent_weight_unit": "Grams",
+            "time_in_solvent_ms": 2400,
+            "time_in_solvent_display_units": "Second"
+          },
+          "cannabis_inputs": [
+            {
+              "package_id": 3501,
+              "package_tag": "1A4FF0000000022000000719",
+              "quantity": 2.54,
+              "weight_unit": "Grams",
+              "psi": 600.0,
+              "cost": 14.3
+            }
+          ],
+          "non_cannabis_inputs": [
+            {
+              "non_cannabis_product_name": "Fertilizer",
+              "non_cannabis_product_id": 145,
+              "lot": "DL21309",
+              "lot_id": 253,
+              "quantity": 100.5,
+              "weight_unit": "Grams",
+              "cost": 2.5
+            }
+          ],
+          "cannabis_outputs": [
+            {
+              "package_id": 5200,
+              "package_tag": "1A4FF0000000022000001419",
+              "quantity": 500,
+              "weight_unit": "Grams"
+            }
+          ],
+          "labors": [
+            {
+              "employee_name": "Jane Doe",
+              "hours_worked": 0.5,
+              "cost": 10
+            },
+            {
+              "employee_name": "John Doe",
+              "hours_worked": 1,
+              "cost": 20
+            }
+          ],
+          "wastes": [
+            {
+              "package_id": 4601,
+              "package_tag": "1A4FF0000000022000004423",
+              "quantity": 50,
+              "weight_unit": "Grams",
+              "reason": "Waste Destruction",
+              "date": "2022-05-24",
+              "notes": "waste from production"
+            }
+          ]
+        }
+      },
+      "Machine": {
+        "title": "Machine Info",
+        "type": "object",
+        "properties": {
+          "temperature": {
+            "type": "number"
+          },
+          "temperature_unit": {
+            "type": "string",
+            "description": "Options are 'Celcius' and 'Fahrenheit'"
+          },
+          "solvent_id": {
+            "type": "integer"
+          },
+          "solvent_quantity": {
+            "type": "number"
+          },
+          "solvent_weight_unit": {
+            "type": "string"
+          },
+          "time_in_solvent_ms": {
+            "type": "integer"
+          },
+          "time_in_solvent_display_units": {
+            "type": "string",
+            "description": "Options are 'Week', 'Day', 'Hour', 'Minute' and 'Second'"
+          }
+        },
+        "example": {
+          "temperature": 20.1,
+          "temperature_unit": "Celcius",
+          "solvent_id": 150,
+          "solvent_quantity": 10.5,
+          "solvent_weight_unit": "Grams",
+          "time_in_solvent_ms": 2400,
+          "time_in_solvent_display_units": "Second"
+        }
+      },
+      "ManuBatchRunCannabisInput": {
+        "title": "Cannabis Input",
+        "type": "object",
+        "required": [
+          "quantity",
+          "weight_unit"
+        ],
+        "properties": {
+          "package_id": {
+            "type": "integer"
+          },
+          "package_tag": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "psi": {
+            "type": "number"
+          },
+          "cost": {
+            "type": "number"
+          }
+        },
+        "example": {
+          "package_id": 3501,
+          "package_tag": "1A4FF0000000022000000719",
+          "quantity": 2.54,
+          "weight_unit": "Grams",
+          "psi": 600.0,
+          "cost": 14.3
+        }
+      },
+      "ManuBatchRunNonCannabisInput": {
+        "title": "Non Cannabis Input",
+        "type": "object",
+        "required": [
+          "non_cannabis_product_name",
+          "non_cannabis_product_id",
+          "quantity",
+          "weight_unit"
+        ],
+        "properties": {
+          "non_cannabis_product_name": {
+            "type": "string"
+          },
+          "non_cannabis_product_id": {
+            "type": "integer"
+          },
+          "lot": {
+            "type": "string"
+          },
+          "lot_id": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "cost": {
+            "type": "number"
+          }
+        },
+        "example": {
+          "non_cannabis_product_name": "Fertilizer",
+          "non_cannabis_product_id": 145,
+          "lot": "DL21309",
+          "lot_id": 253,
+          "quantity": 100.5,
+          "weight_unit": "Grams",
+          "cost": 2.5
+        }
+      },
+      "ManuBatchRunCannabisOutput": {
+        "title": "Cannabis Output",
+        "type": "object",
+        "required": [
+          "quantity",
+          "weight_unit"
+        ],
+        "properties": {
+          "package_id": {
+            "type": "integer"
+          },
+          "package_tag": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "package_id": 5200,
+          "package_tag": "1A4FF0000000022000001419",
+          "quantity": 500,
+          "weight_unit": "Grams"
+        }
+      },
+      "Labor": {
+        "title": "Labor Info",
+        "type": "object",
+        "required": [
+          "hours_worked"
+        ],
+        "properties": {
+          "employee_name": {
+            "type": "string"
+          },
+          "hours_worked": {
+            "type": "number"
+          },
+          "cost": {
+            "type": "number"
+          }
+        },
+        "example": {
+          "employee_name": "Jane Doe",
+          "hours_worked": 0.5,
+          "cost": 10
+        }
+      },
+      "Waste": {
+        "title": "Waste Info",
+        "type": "object",
+        "required": [
+          "package_id",
+          "package_tag",
+          "quantity",
+          "weight_unit"
+        ],
+        "properties": {
+          "package_id": {
+            "type": "integer"
+          },
+          "package_tag": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "package_id": 4601,
+          "package_tag": "1A4FF0000000022000004423",
+          "quantity": 50,
+          "weight_unit": "Grams",
+          "reason": "Waste Destruction",
+          "date": "2022-05-24",
+          "notes": "waste from production"
+        }
+      },
+      "ManuBatch": {
+        "title": "Manufacturing Batch Info",
+        "type": "object",
+        "required": [
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the manufacturing batch"
+          },
+          "template_name": {
+            "type": "string",
+            "description": "Name of the template used to create this batch"
+          },
+          "status": {
+            "type": "string"
+          },
+          "current_location": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Timestamp that the record was created in Canix"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Timestamp that the record was last updated in Canix"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "manufacturing_run_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        },
+        "example": {
+          "id": 2,
+          "name": "Batch 2023-001",
+          "template_name": "Standard Process Template",
+          "status": "Run 3 of 3",
+          "current_location": "processing room",
+          "start_date": "2022-05-01",
+          "end_date": "2022-05-30",
+          "created_at": "2022-04-15T12:33:00.000Z",
+          "updated_at": "2022-05-22T07:21:00.000Z",
+          "notes": "notes about this batch",
+          "manufacturing_run_ids": [
+            8,
+            9,
+            10
+          ]
+        }
+      },
+      "BillOfMaterials": {
+        "title": "Bill of Materials Info",
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "proportion_type"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "active_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "expiration_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "proportion_type": {
+            "type": "string",
+            "description": "single_instance means materials are applied to each output independently; all_instances means materials are applied across all output item quantities"
+          },
+          "last_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last updated timestamp"
+          },
+          "source_non_cannabis_products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillOfMaterialsSourceNonCannabisProduct"
+            }
+          },
+          "source_cannabis_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillOfMaterialsSourceCannabisItem"
+            }
+          },
+          "output_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BillOfMaterialsOutputItem"
+            }
+          }
+        },
+        "example": {
+          "id": 12,
+          "name": "Bulk - Dark Chocolate Peaks - 10mg",
+          "active_date": "2023-01-01",
+          "expiration_date": "2023-12-31",
+          "proportion_type": "single_instance",
+          "source_non_cannabis_products": [
+            {
+              "name": "1/8th Jar",
+              "non_cannabis_product_id": 24,
+              "quantity": 1,
+              "weight_unit": "Each",
+              "application_setting": "proportional"
+            },
+            {
+              "name": "Gloves - Large",
+              "non_cannabis_product_id": 56,
+              "quantity": 2,
+              "weight_unit": "Each",
+              "application_setting": "fixed"
+            }
+          ],
+          "source_cannabis_items": [
+            {
+              "quantity": 20,
+              "weight_unit": "Grams",
+              "item": {
+                "id": 242,
+                "name": "Hammer Bud"
+              },
+              "item_category": null,
+              "item_sub_category": null
+            },
+            {
+              "quantity": 25,
+              "weight_unit": "Grams",
+              "item": null,
+              "item_category": {
+                "id": 98,
+                "name": "B Buds"
+              },
+              "item_sub_category": null
+            }
+          ],
+          "output_items": [
+            {
+              "name": "Jarred Flower",
+              "item_id": 370,
+              "quantity": 50,
+              "weight_unit": "Grams"
+            }
+          ]
+        }
+      },
+      "BillOfMaterialsSourceNonCannabisProduct": {
+        "title": "Source Non Cannabis Product Info",
+        "type": "object",
+        "required": [
+          "non_cannabis_product_id",
+          "name",
+          "quantity",
+          "weight_unit",
+          "application_setting"
+        ],
+        "properties": {
+          "non_cannabis_product_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "application_setting": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "name": "1/8th Jar",
+          "non_cannabis_product_id": 24,
+          "quantity": 1,
+          "weight_unit": "Each",
+          "application_setting": "proportional"
+        }
+      },
+      "BillOfMaterialsSourceCannabisItem": {
+        "title": "Source Cannabis Item Info",
+        "type": "object",
+        "required": [
+          "quantity",
+          "weight_unit"
+        ],
+        "properties": {
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          },
+          "item": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "item_category": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "item_sub_category": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "quantity": 100,
+          "weight_unit": "Grams",
+          "item": {
+            "id": 242,
+            "name": "Hammer Bud"
+          },
+          "item_category": null,
+          "item_sub_category": null
+        }
+      },
+      "BillOfMaterialsOutputItem": {
+        "title": "Output Item Info",
+        "type": "object",
+        "required": [
+          "name",
+          "item_id",
+          "quantity",
+          "weight_unit"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "item_id": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "weight_unit": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "name": "Jarred Flower",
+          "item_id": 370,
+          "quantity": 50,
+          "weight_unit": "Grams"
+        }
+      },
+      "WeightUnit": {
+        "title": "Weight Unit",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID of the Weight Unit record"
+          },
+          "name": {
+            "type": "string",
+            "example": "Grams"
+          },
+          "abbreviation": {
+            "type": "string",
+            "example": "g"
+          }
+        }
+      },
+      "CreateItemRequestBody": {
+        "title": "Item Request Body",
+        "type": "object",
+        "required": [
+          "name",
+          "item_type_id",
+          "weight_unit"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Blue Dream",
+            "description": "Name of the item"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the item is active. Defaults to true if not provided"
+          },
+          "strain_id": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID of the associated strain"
+          },
+          "item_type_id": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID of the item category"
+          },
+          "item_sub_type_id": {
+            "type": "integer",
+            "example": 2,
+            "description": "ID of the item sub-category"
+          },
+          "weight_unit": {
+            "type": "string",
+            "example": "g",
+            "description": "Weight unit for the item"
+          },
+          "unit_weight_unit": {
+            "type": "string",
+            "example": "mg",
+            "description": "Weight unit for individual units"
+          },
+          "unit_weight": {
+            "type": "number",
+            "format": "float",
+            "example": 1.5,
+            "description": "Weight of individual units"
+          },
+          "sku": {
+            "type": "string",
+            "example": "BD001",
+            "description": "Stock keeping unit identifier"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Special handling required"
+          },
+          "brand_id": {
+            "type": "integer",
+            "example": 3,
+            "description": "ID of the associated brand"
+          },
+          "description": {
+            "type": "string",
+            "example": "High quality strain"
+          },
+          "serving_size": {
+            "type": "string",
+            "example": "1 capsule"
+          },
+          "number_of_doses": {
+            "type": "integer",
+            "example": 30,
+            "description": "Number of doses in the item"
+          },
+          "unit_cbd_weight": {
+            "type": "number",
+            "format": "float",
+            "example": 10.5,
+            "description": "CBD weight per unit"
+          },
+          "unit_thc_weight": {
+            "type": "number",
+            "format": "float",
+            "example": 5.0,
+            "description": "THC weight per unit"
+          },
+          "unit_cbd_percent": {
+            "type": "number",
+            "format": "float",
+            "example": 15.5,
+            "description": "CBD percentage"
+          },
+          "unit_thc_percent": {
+            "type": "number",
+            "format": "float",
+            "example": 20.0,
+            "description": "THC percentage"
+          },
+          "public_ingredients": {
+            "type": "string",
+            "example": "Cannabis extract, MCT oil"
+          },
+          "supply_duration_days": {
+            "type": "integer",
+            "example": 30,
+            "description": "Duration of supply in days"
+          },
+          "administration_method": {
+            "type": "string",
+            "example": "oral"
+          },
+          "unit_cbd_weight_unit": {
+            "type": "string",
+            "example": "mg",
+            "description": "Weight unit for CBD content"
+          },
+          "unit_thc_weight_unit": {
+            "type": "string",
+            "example": "mg",
+            "description": "Weight unit for THC content"
+          },
+          "accounting_inventory_type": {
+            "type": "string",
+            "example": "finished_good",
+            "description": "Type of inventory for accounting purposes"
+          },
+          "photo_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "description": "IDs of photos to associate with the item"
+          },
+          "metrc_item_brand": {
+            "type": "string",
+            "example": "Brand #1",
+            "description": "Item Brand for METRC"
+          }
+        }
+      },
+      "UpdateItemRequestBody": {
+        "title": "Item Update Request Body",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Blue Dream",
+            "description": "The name of the item"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the item is active"
+          },
+          "item_category_id": {
+            "type": "integer",
+            "example": 1,
+            "description": "ID of the item category"
+          },
+          "item_sub_category_id": {
+            "type": "integer",
+            "example": 2,
+            "description": "ID of the item sub category"
+          },
+          "brand_id": {
+            "type": "integer",
+            "example": 3,
+            "description": "ID of the brand"
+          },
+          "description": {
+            "type": "string",
+            "example": "High quality strain",
+            "description": "Description of the item"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Internal notes about the item"
+          },
+          "sku": {
+            "type": "string",
+            "example": "BD-001",
+            "description": "Stock keeping unit identifier"
+          },
+          "serving_size": {
+            "type": "string",
+            "example": "1g",
+            "description": "Size of a single serving"
+          },
+          "number_of_doses": {
+            "type": "integer",
+            "example": 10,
+            "description": "Number of doses in the item"
+          },
+          "unit_thc_weight": {
+            "type": "number",
+            "format": "float",
+            "example": 10.5,
+            "description": "THC weight per unit"
+          },
+          "unit_cbd_weight": {
+            "type": "number",
+            "format": "float",
+            "example": 5.2,
+            "description": "CBD weight per unit"
+          },
+          "unit_thc_percent": {
+            "type": "number",
+            "example": 18.5,
+            "description": "THC percentage"
+          },
+          "unit_cbd_percent": {
+            "type": "number",
+            "example": 2.5,
+            "description": "CBD percentage"
+          },
+          "public_ingredients": {
+            "type": "string",
+            "example": "Cannabis",
+            "description": "Public list of ingredients"
+          },
+          "supply_duration_days": {
+            "type": "integer",
+            "example": 30,
+            "description": "Duration of supply in days"
+          },
+          "administration_method": {
+            "type": "string",
+            "example": "Oral",
+            "description": "Method of administration"
+          },
+          "photo_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "example": [
+              1,
+              2,
+              3
+            ],
+            "description": "IDs of photos to associate with the item"
+          },
+          "metrc_item_brand": {
+            "type": "string",
+            "example": "Brand #1",
+            "description": "Item Brand for METRC"
+          }
+        }
+      },
+      "ItemStandardCostRequestBody": {
+        "title": "Item Standard Cost Request Body",
+        "type": "object",
+        "required": [
+          "cost",
+          "start_date"
+        ],
+        "properties": {
+          "cost": {
+            "type": "number",
+            "format": "float",
+            "description": "The standard cost value to be set",
+            "example": 10.5
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this standard cost becomes effective",
+            "example": "2024-02-03T00:00:00Z"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Optional. When this standard cost expires",
+            "example": "2024-12-31T23:59:59Z"
+          }
+        }
+      },
+      "JobRequestBody": {
+        "title": "Job Request Body",
+        "type": "object",
+        "required": [
+          "job_type",
+          "facility_id"
+        ],
+        "properties": {
+          "job_type": {
+            "type": "string",
+            "example": "harvest"
+          },
+          "facility_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "parameters": {
+            "type": "object",
+            "example": {
+              "harvest_id": 123
+            }
+          }
+        }
+      },
+      "SalesOrderRequestBody": {
+        "title": "Sales Order Request Body",
+        "type": "object",
+        "required": [
+          "customer_id",
+          "name",
+          "status",
+          "delivery_date",
+          "other_tax_rate",
+          "local_tax_rate",
+          "state_tax_rate"
+        ],
+        "properties": {
+          "customer_id": {
+            "description": "The customer company id",
+            "type": "integer",
+            "example": 2
+          },
+          "name": {
+            "type": "string",
+            "example": "Order #123"
+          },
+          "external_identifier": {
+            "type": "string",
+            "example": "SAP-ORDER-12345",
+            "description": "External Sales Order ID (from partner system, not unique)"
+          },
+          "status": {
+            "type": "string",
+            "example": "pending"
+          },
+          "delivery_fee": {
+            "type": "number",
+            "format": "float",
+            "example": 15.99
+          },
+          "delivery_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-02-04T14:00:00Z"
+          },
+          "payment_date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-02-04T14:00:00Z"
+          },
+          "sales_order_credit": {
+            "$ref": "#/components/schemas/Discount",
+            "example": {
+              "type": "percentage",
+              "amount": 25.0,
+              "reason": "25% off"
+            }
+          },
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "total_price",
+                "weight",
+                "weight_unit"
+              ],
+              "properties": {
+                "item_id": {
+                  "type": "integer",
+                  "example": 123
+                },
+                "non_cannabis_product_id": {
+                  "type": "integer",
+                  "example": 456
+                },
+                "total_price": {
+                  "type": "number",
+                  "format": "float",
+                  "example": 25.99
+                },
+                "weight": {
+                  "type": "number",
+                  "format": "float",
+                  "example": 1.5
+                },
+                "weight_unit": {
+                  "type": "string",
+                  "example": "grams"
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "Special handling required"
+                },
+                "package_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "example": [
+                    1,
+                    2,
+                    3
+                  ]
+                },
+                "discount": {
+                  "$ref": "#/components/schemas/Discount",
+                  "example": {
+                    "type": "fixed",
+                    "amount": 10.0,
+                    "reason": "10$ off"
+                  }
+                }
+              }
+            }
+          },
+          "payments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "number",
+                  "format": "float",
+                  "example": 100.0
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "example": "2025-02-04"
+                },
+                "reference_number": {
+                  "type": "string",
+                  "example": "PAY-123"
+                }
+              }
+            }
+          },
+          "other_tax_rate": {
+            "type": "number",
+            "format": "float",
+            "example": 5.0
+          },
+          "local_tax_rate": {
+            "type": "number",
+            "format": "float",
+            "example": 2.5
+          },
+          "state_tax_rate": {
+            "type": "number",
+            "format": "float",
+            "example": 7.0
+          },
+          "internal_notes": {
+            "type": "string",
+            "example": "Handle with care"
+          },
+          "payment_terms": {
+            "type": "string",
+            "example": "Net 30"
+          },
+          "payment_notes": {
+            "type": "string",
+            "example": "Payment due by end of month"
+          },
+          "terms_and_conditions": {
+            "type": "string",
+            "example": "Standard terms apply"
+          },
+          "return_policy": {
+            "type": "string",
+            "example": "30-day return policy"
+          },
+          "sales_rep_email": {
+            "type": "string",
+            "example": "john.doe@example.com",
+            "description": "Email of the sales representative"
+          }
+        }
+      },
+      "StandardCostRequestBody": {
+        "title": "Standard Cost Request Body",
+        "type": "object",
+        "required": [
+          "standard_cost_amount",
+          "effective_at"
+        ],
+        "properties": {
+          "standard_cost_amount": {
+            "type": "number",
+            "format": "float",
+            "example": 10.5
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-02-03T00:00:00Z"
+          },
+          "notes": {
+            "type": "string",
+            "example": "Updated standard cost for Q1 2024"
+          }
+        }
+      },
+      "CreateStrainRequestBody": {
+        "title": "Strain Request Body",
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "facility_id": {
+            "type": "integer",
+            "description": "ID of the facility where the strain will be created. Must be a facility with standalone, CA METRC standalone, or METRC standalone integration",
+            "example": 123
+          },
+          "name": {
+            "type": "string",
+            "example": "Blue Dream"
+          },
+          "description": {
+            "type": "string",
+            "example": "A sativa-dominant hybrid"
+          },
+          "genetics": {
+            "type": "string",
+            "example": "Blueberry x Haze"
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          },
+          "cross_strain_ids": {
+            "type": "array",
+            "description": "Array of strain IDs that are crossed with this strain. All cross strains must belong to the same facility.",
+            "items": {
+              "type": "integer"
+            },
+            "example": [
+              456,
+              789
+            ]
+          },
+          "sku": {
+            "type": "string",
+            "example": "BD-001"
+          },
+          "notes": {
+            "type": "string",
+            "example": "High-yield strain with excellent terpene profile"
+          },
+          "cbd_level": {
+            "type": "number",
+            "format": "float",
+            "description": "CBD percentage level",
+            "example": 0.5
+          },
+          "thc_level": {
+            "type": "number",
+            "format": "float",
+            "description": "THC percentage level",
+            "example": 18.5
+          },
+          "indica_percent": {
+            "type": "number",
+            "format": "float",
+            "description": "Percentage of indica genetics",
+            "example": 40.0
+          },
+          "sativa_percent": {
+            "type": "number",
+            "format": "float",
+            "description": "Percentage of sativa genetics",
+            "example": 60.0
+          },
+          "testing_status": {
+            "type": "string",
+            "description": "Current testing status of the strain",
+            "example": "Tested"
+          }
+        }
+      },
+      "StrainRequestBody": {
+        "title": "Strain Request Body",
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Blue Dream"
+          },
+          "description": {
+            "type": "string",
+            "example": "A sativa-dominant hybrid"
+          },
+          "genetics": {
+            "type": "string",
+            "example": "Blueberry x Haze"
+          },
+          "active": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "VendorRequestBody": {
+        "title": "Create Vendor Request Body",
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the vendor"
+          },
+          "contact_name": {
+            "type": "string",
+            "description": "The name of the contact person"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The vendor's email address"
+          },
+          "phone": {
+            "type": "string",
+            "description": "The vendor's phone number"
+          },
+          "license_number": {
+            "type": "string",
+            "description": "The vendor's license number"
+          },
+          "license_expiration_date": {
+            "type": "string",
+            "format": "date",
+            "description": "The expiration date of the vendor's license"
+          },
+          "address": {
+            "type": "string",
+            "description": "The vendor's street address"
+          },
+          "address2": {
+            "type": "string",
+            "description": "Additional address information"
+          },
+          "city": {
+            "type": "string",
+            "description": "The vendor's city"
+          },
+          "postal_code": {
+            "type": "string",
+            "description": "The vendor's postal/zip code"
+          },
+          "state": {
+            "type": "string",
+            "description": "The vendor's state/province"
+          },
+          "country": {
+            "type": "string",
+            "description": "The vendor's country"
+          },
+          "website_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "The vendor's website URL"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Additional notes about the vendor"
+          },
+          "min_lead_time": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "integer",
+                "description": "The numeric value of the minimum lead time"
+              },
+              "unit": {
+                "type": "string",
+                "description": "The unit of time measurement (e.g. DAY, WEEK, MONTH)"
+              }
+            }
+          }
+        }
+      },
+      "PackageAdjustment": {
+        "title": "Package Adjustment",
+        "type": "object",
+        "required": [
+          "id",
+          "reason",
+          "previous_weight",
+          "adjusted_weight",
+          "weight_unit",
+          "adjusted_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the adjustment"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/PackageAdjustReason"
+          },
+          "previous_weight": {
+            "type": "number",
+            "description": "The weight before adjustment"
+          },
+          "adjusted_weight": {
+            "type": "number",
+            "description": "The weight after adjustment"
+          },
+          "weight_unit": {
+            "type": "string",
+            "description": "The unit of measurement for the weights"
+          },
+          "adjusted_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the adjustment was made"
+          },
+          "note": {
+            "type": "string",
+            "description": "Optional note about the adjustment"
+          },
+          "package": {
+            "$ref": "#/components/schemas/Package"
+          }
+        }
+      },
+      "PackageAdjustReason": {
+        "title": "Package Adjust Reason",
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the reason"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the reason"
+          }
+        }
+      },
+      "PurchaseOrderPayment": {
+        "title": "Purchase Order Payment",
+        "type": "object",
+        "required": [
+          "amount",
+          "date"
+        ],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "float",
+            "example": 100.0
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2025-02-04"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "limitParam": {
+        "name": "limit",
+        "in": "query",
+        "description": "Max number of records to return (optional). Cannot exceed 2000",
+        "required": false,
+        "style": "form",
+        "schema": {
+          "type": "integer",
+          "default": 2000,
+          "example": 100
+        }
+      },
+      "offsetParam": {
+        "name": "offset",
+        "in": "query",
+        "description": "Offset for the returned records (optional)",
+        "schema": {
+          "type": "integer",
+          "default": 0,
+          "example": 20
+        }
+      },
+      "orderByParam": {
+        "name": "order_by",
+        "in": "query",
+        "description": "Order-by clause, in SQL format (optional)",
+        "schema": {
+          "type": "string",
+          "example": "id desc"
+        }
+      },
+      "whereParam": {
+        "name": "where",
+        "in": "query",
+        "description": "Filter results using SQL-like WHERE clause syntax (optional).\n\n**Supported operators**: =, >, <, >=, <=, BETWEEN, IN, LIKE, AND, OR\n\n**Supported patterns**:\n- Equality: `status='Active'`\n- Comparison: `updated_at >= '2024-01-01'`\n- Range: `id BETWEEN 1 AND 10000`\n- List: `status IN ('Active', 'Pending')`\n- Pattern: `sku LIKE 'ABC%'`\n- Compound: `facility_id=123 AND is_active=true`\n",
+        "schema": {
+          "type": "string",
+          "example": "status='Active' AND updated_at >= '2024-01-01'"
+        }
+      }
+    },
+    "responses": {
+      "200Ok": {
+        "description": "OK"
+      },
+      "400BadRequest": {
+        "description": "Bad request"
+      },
+      "401NotAuthenticated": {
+        "description": "Not authenticated"
+      },
+      "403AccessDenied": {
+        "description": "Access denied"
+      },
+      "404NotFound": {
+        "description": "The specified resource was not found"
+      },
+      "500ServerError": {
+        "description": "Server error"
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Canix API",
+      "description": "Canix REST API"
+    }
+  ]
+}

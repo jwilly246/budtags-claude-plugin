@@ -24,10 +24,9 @@
 
 ### Modal Components (if applicable)
 - [ ] Self-contained (handles own form state and submission)
-- [ ] Uses `useForm` hook (not multiple `useState`)
-- [ ] Uses `useModalState` hook
-- [ ] Pre-fills smart defaults in `useEffect`
-- [ ] Only depends on `isOpen` in useEffect, not functions
+- [ ] Uses outer/inner component split: `{isOpen && <FormContent />}` — NO useEffect for form init/reset
+- [ ] Inner component uses `useForm` with computed initial values from props
+- [ ] Inner component uses `useModalState(true)` (always open when mounted)
 - [ ] Handles `onSuccess` and `onError`
 - [ ] Only closes modal AFTER successful submission
 
@@ -113,18 +112,20 @@ interface MyModalProps {
     items: Item[];
 }
 
-const MyModal: React.FC<MyModalProps> = ({ isOpen, onClose, items }) => {
-    const { cancelButtonRef, getTodayDate } = useModalState(isOpen);
+// Outer: handles Modal visibility
+const MyModal: React.FC<MyModalProps> = ({ isOpen, onClose, items }) => (
+    <Modal show={isOpen} onClose={onClose} title="My Modal">
+        {isOpen && <MyModalForm items={items} onClose={onClose} />}
+    </Modal>
+);
+
+// Inner: form logic — remounts on each open with fresh useForm state
+function MyModalForm({ items, onClose }: { items: Item[]; onClose: () => void }) {
+    const { cancelButtonRef, getTodayDate } = useModalState(true);
     const { data, setData, post, processing, errors } = useForm({
-        name: '',
+        name: getTodayDate(),   // computed at mount — no useEffect needed
         quantity: 0,
     });
-
-    useEffect(() => {
-        if (isOpen) {
-            setData('name', getTodayDate());
-        }
-    }, [isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -135,9 +136,7 @@ const MyModal: React.FC<MyModalProps> = ({ isOpen, onClose, items }) => {
         }
 
         post('/api/endpoint', {
-            onSuccess: () => {
-                onClose();
-            },
+            onSuccess: () => onClose(),
             onError: (errors) => {
                 toast.error(Object.values(errors)[0] as string);
             }
@@ -145,17 +144,15 @@ const MyModal: React.FC<MyModalProps> = ({ isOpen, onClose, items }) => {
     };
 
     return (
-        <Modal show={isOpen} onClose={onClose}>
-            <form onSubmit={handleSubmit}>
-                <InputText
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    errors={errors.name}
-                />
-                <Button ref={cancelButtonRef}>Cancel</Button>
-                <Button primary disabled={processing}>Save</Button>
-            </form>
-        </Modal>
+        <form onSubmit={handleSubmit}>
+            <InputText
+                value={data.name}
+                onChange={(e) => setData('name', e.target.value)}
+                errors={errors.name}
+            />
+            <Button ref={cancelButtonRef}>Cancel</Button>
+            <Button primary disabled={processing}>Save</Button>
+        </form>
     );
-};
+}
 ```

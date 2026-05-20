@@ -26,7 +26,7 @@ When the user asks about LeafLink integration, you can:
 
 ## Available Resources
 
-This skill has access to **8 category files**, **4-6 scenario templates**, and **6 pattern files**:
+This skill has access to **9 category files**, **4-6 scenario templates**, and **6 pattern files**:
 
 ### Category Files (Modular, ~60-100 lines each)
 
@@ -43,6 +43,9 @@ This skill has access to **8 category files**, **4-6 scenario templates**, and *
 **Additional Features**:
 - `categories/promotions.md` - 5 endpoints (promo codes, discounts)
 - `categories/reports.md` - 3 endpoints (report generation, downloads)
+
+**Inbound Events**:
+- `categories/webhooks.md` - 2 event types (order, product), HMAC-SHA256 signing, envelope shape, cascade behaviors, receiver-design blueprint. Empirically validated 2026-04-14 — **load this whenever implementing or debugging the webhook receiver; the public LeafLink docs omit critical field paths**
 
 ### Scenario Templates (~100-150 lines each)
 

@@ -1,0 +1,418 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - sales-orders",
+    "version": "1.3.5"
+  },
+  "servers": [
+    {
+      "url": "https://api.canix.com/api/v1",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/sales_orders": {
+      "get": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "GetSalesOrders",
+        "description": "Return Sales Orders",
+        "operationId": "GetSalesOrders",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SalesOrder"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "CreateSalesOrder",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "CreateSalesOrder",
+        "requestBody": {
+          "required": true,
+          "description": "Create a new Sales Order",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesOrderRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/sales_orders/{sales_order_id}": {
+      "get": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "GetSalesOrder",
+        "description": "Get Sales Order by ID",
+        "operationId": "GetSalesOrderById",
+        "parameters": [
+          {
+            "name": "sales_order_id",
+            "in": "path",
+            "description": "ID of Sales Order to return",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "UpdateSalesOrder",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "UpdateSalesOrder",
+        "parameters": [
+          {
+            "name": "sales_order_id",
+            "in": "path",
+            "description": "ID of Sales Order to update",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Update an existing Sales Order",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SalesOrderRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SalesOrder"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/sales_orders/{sales_order_id}/contents": {
+      "get": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "GetSalesOrderContents",
+        "description": "Get Sales Order Contents by Sales Order ID",
+        "operationId": "GetSalesOrderContentsById",
+        "parameters": [
+          {
+            "name": "sales_order_id",
+            "in": "path",
+            "description": "Sales Order ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/SalesOrderItem"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "weight_unit_id": {
+                            "type": "integer"
+                          },
+                          "weight_unit_name": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/sales_orders/{sales_order_id}/payments": {
+      "get": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "GetSalesOrderPayments",
+        "description": "Get Sales Order Payments by Sales Order ID",
+        "operationId": "GetSalesOrderPayments",
+        "parameters": [
+          {
+            "name": "sales_order_id",
+            "in": "path",
+            "description": "Sales Order ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SalesOrderPayment"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/sales_orders/{sales_order_id}/status/{status_name}": {
+      "put": {
+        "tags": [
+          "Sales Orders"
+        ],
+        "summary": "UpdateSalesOrderStatus",
+        "description": "Update the status of a Sales Order.\nValid status values: created, approved, filled, shipped, accepted, archived, requested, canceled\nTo cancel a sales order, use status_name = \"canceled\"\nNote: Cannot cancel orders that are shipped, accepted, returned, or archived.\n__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__\n",
+        "operationId": "UpdateSalesOrderStatus",
+        "parameters": [
+          {
+            "name": "sales_order_id",
+            "in": "path",
+            "description": "ID of Sales Order to update status",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "status_name",
+            "in": "path",
+            "description": "New status for the Sales Order (created, approved, filled, shipped, accepted, archived, requested, canceled)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "created",
+                "approved",
+                "filled",
+                "shipped",
+                "accepted",
+                "archived",
+                "requested",
+                "canceled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "previous_status": {
+                      "type": "string",
+                      "description": "The previous status of the sales order"
+                    },
+                    "new_status": {
+                      "type": "string",
+                      "description": "The new status of the sales order"
+                    }
+                  },
+                  "required": [
+                    "previous_status",
+                    "new_status"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    }
+  }
+}

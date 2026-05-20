@@ -4,7 +4,7 @@ model: opus
 description: 'Expert full-stack developer for Laravel + Inertia.js + React + TypeScript applications. Use when features require coordinated frontend and backend changes or end-to-end feature ownership.'
 version: 2.0.0
 skills: verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:Laravel + Inertia + React full-stack expert

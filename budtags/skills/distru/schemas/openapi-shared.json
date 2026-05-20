@@ -1,0 +1,95 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Distru Public API - Shared Components",
+    "version": "v1",
+    "description": "Shared schemas, parameters, and responses for Distru Public API v1. Populate field-level definitions as importers capture live samples."
+  },
+  "servers": [
+    { "url": "https://app.distru.com/public/v1" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "parameters": {
+      "PageNumber": {
+        "name": "page[number]",
+        "in": "query",
+        "schema": { "type": "integer", "default": 1 },
+        "description": "1-based page index"
+      },
+      "PageSize": {
+        "name": "page[size]",
+        "in": "query",
+        "schema": { "type": "integer" },
+        "description": "Records per page. Ignored on /assemblies (fixed 500)."
+      },
+      "UpdatedAtFrom": {
+        "name": "updated_at_from",
+        "in": "query",
+        "schema": { "type": "string", "format": "date-time" },
+        "description": "ISO 8601 timestamp for incremental sync"
+      },
+      "UpdatedAtTo": {
+        "name": "updated_at_to",
+        "in": "query",
+        "schema": { "type": "string", "format": "date-time" }
+      }
+    },
+    "schemas": {
+      "PaginatedResponse": {
+        "type": "object",
+        "required": ["data"],
+        "properties": {
+          "data": { "type": "array", "items": {} },
+          "next_page": { "type": ["integer", "null"], "description": "Next page number, or null on last page" }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "line_1": { "type": "string" },
+          "line_2": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "postal_code": { "type": "string" },
+          "country": { "type": "string" }
+        }
+      },
+      "CustomFields": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Tenant-defined custom field key-value pairs"
+      },
+      "Error": {
+        "type": "object",
+        "description": "Error response shape is not formally documented. Treat as opaque.",
+        "additionalProperties": true
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Wrong header, expired or revoked token",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "Forbidden": {
+        "description": "Token team permissions exclude this resource",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "NotFound": {
+        "description": "Unknown id",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "RateLimited": {
+        "description": "Rate-limited (limits not formally documented)",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      }
+    }
+  },
+  "security": [{ "BearerAuth": [] }]
+}

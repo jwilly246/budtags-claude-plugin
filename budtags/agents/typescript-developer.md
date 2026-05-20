@@ -4,7 +4,7 @@ model: opus
 description: 'Expert TypeScript/JavaScript developer specializing in React, Inertia.js, TanStack libraries, and modern frontend ecosystems. Use for TypeScript development, React components, and type safety improvements.'
 version: 2.0.0
 skills: verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:TypeScript/React development expert

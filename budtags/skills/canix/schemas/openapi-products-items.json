@@ -1,0 +1,813 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - products-items",
+    "version": "1.3.5"
+  },
+  "servers": [
+    {
+      "url": "https://api.canix.com/api/v1",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/items": {
+      "get": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "GetItems",
+        "description": "Return items",
+        "operationId": "GetItems",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "query",
+            "description": "Facility ID (optional)",
+            "example": 123,
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Item"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "CreateItem",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "CreateItem",
+        "requestBody": {
+          "required": true,
+          "description": "Create a new Item",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/items/{item_id}": {
+      "get": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "GetItem",
+        "description": "Get Item by ID",
+        "operationId": "GetItemById",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "description": "Item ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "UpdateItem",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "UpdateItem",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "description": "ID of Item to update",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Update an existing Item",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "Delete Item",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "DeleteItem",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/items/{item_id}/standard_cost": {
+      "post": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "AddItemStandardCost",
+        "description": "__CALLING THIS ENDPOINT WILL MODIFY YOUR DATA IRREVERSIBLY. ONLY CALL THIS ON SANDBOX DATA DURING DEVELOPMENT/CODING/TESTING.__",
+        "operationId": "AddItemStandardCost",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "description": "ID of Item to add standard cost",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Add standard cost to an Item",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemStandardCostRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemStandardCost"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/items/photos": {
+      "post": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "Create METRC Item Photos",
+        "description": "Create METRC Item Photos",
+        "operationId": "CreateMETRCItemPhotos",
+        "requestBody": {
+          "required": true,
+          "description": "Create METRC Item Photos",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMETRCItemPhotosRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "CREATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "photo_ids": {
+                      "type": "array",
+                      "description": "IDs of the photos that were created",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/items/files": {
+      "post": {
+        "tags": [
+          "Items"
+        ],
+        "summary": "Create METRC Item Files",
+        "description": "Create METRC Item Files",
+        "operationId": "CreateMETRCItemFiles",
+        "requestBody": {
+          "required": true,
+          "description": "Create METRC Item Files",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMETRCItemFilesRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "CREATED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "file_ids": {
+                      "type": "array",
+                      "description": "IDs of the files that were created",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/item_types": {
+      "get": {
+        "tags": [
+          "Item Types"
+        ],
+        "summary": "GetItemTypes",
+        "description": "Return item types",
+        "operationId": "GetItemTypes",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "query",
+            "description": "Facility ID (optional)",
+            "example": 123,
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemType"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/item_sub_types": {
+      "get": {
+        "tags": [
+          "Item Sub-Types"
+        ],
+        "summary": "GetItemTypes",
+        "description": "Return item sub-types",
+        "operationId": "GetItemSubTypes",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "query",
+            "description": "Facility ID (optional)",
+            "example": 123,
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemSubType"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/brands": {
+      "get": {
+        "tags": [
+          "Brands"
+        ],
+        "summary": "GetBrands",
+        "description": "Return brands for the user's company",
+        "operationId": "GetBrands",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Brand"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/non_cannabis_products": {
+      "get": {
+        "tags": [
+          "Non-Cannabis Products"
+        ],
+        "summary": "GetNonCannabisProducts",
+        "description": "Return all Non-Cannabis Products for the user's company",
+        "operationId": "GetNonCannabisProducts",
+        "parameters": [
+          {
+            "name": "facility_ids",
+            "in": "query",
+            "description": "Facility IDs (optional)",
+            "example": [
+              123
+            ],
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NonCannabisProduct"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/non_cannabis_products/{non_cannabis_product_id}": {
+      "get": {
+        "tags": [
+          "Non-Cannabis Products"
+        ],
+        "summary": "GetNonCannabisProduct",
+        "description": "Get Non-Cannabis Product by ID",
+        "operationId": "GetNonCannabisProductById",
+        "parameters": [
+          {
+            "name": "non_cannabis_product_id",
+            "in": "path",
+            "description": "Non-Cannabis Product ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NonCannabisProduct"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/non_cannabis_products/{non_cannabis_product_id}/boms": {
+      "get": {
+        "tags": [
+          "Non-Cannabis Products"
+        ],
+        "summary": "GetNonCannabisProductBOMs",
+        "description": "Get Bills of Materials associated with a Non-Cannabis Product",
+        "operationId": "GetNonCannabisProductBOMs",
+        "parameters": [
+          {
+            "name": "non_cannabis_product_id",
+            "in": "path",
+            "description": "Non-Cannabis Product ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BillOfMaterials"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 12,
+                    "name": "Bulk - Dark Chocolate Peaks - 10mg",
+                    "active_date": "2023-01-01",
+                    "expiration_date": "2023-12-31",
+                    "proportion_type": "single_instance",
+                    "last_updated_at": "2023-01-15T10:30:00.000Z",
+                    "source_non_cannabis_products": [
+                      {
+                        "name": "1/8th Jar",
+                        "non_cannabis_product_id": 24,
+                        "quantity": 1,
+                        "weight_unit": "Each",
+                        "application_setting": "proportional"
+                      }
+                    ],
+                    "source_cannabis_items": [
+                      {
+                        "quantity": 100,
+                        "weight_unit": "Grams",
+                        "item": {
+                          "id": 242,
+                          "name": "Hammer Bud"
+                        },
+                        "item_category": null,
+                        "item_sub_category": null
+                      }
+                    ],
+                    "output_items": [
+                      {
+                        "item_id": 370,
+                        "name": "Jarred Flower",
+                        "quantity": 50,
+                        "weight_unit": "Grams"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    }
+  }
+}

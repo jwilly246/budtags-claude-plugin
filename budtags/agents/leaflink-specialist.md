@@ -4,7 +4,7 @@ model: opus
 description: 'Use when implementing, debugging, or reviewing LeafLink wholesale marketplace integration code. ALWAYS provide context about company type (seller/buyer), specific operations needed (orders, products, inventory sync), or feature being built.'
 version: 2.0.0
 skills: leaflink, verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:LeafLink Marketplace API integration specialist

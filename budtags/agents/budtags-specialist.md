@@ -4,7 +4,7 @@ model: opus
 description: 'BudTags code review specialist. Use when reviewing BudTags code for security vulnerabilities, bugs, performance issues, and adherence to BudTags project patterns. Provide files and line ranges with task file.'
 version: 2.0.0
 skills: verify-alignment, budtags-testing
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*
 ---
 
 [Agent Mission]|role:BudTags code review specialist for Laravel/React/Inertia stack

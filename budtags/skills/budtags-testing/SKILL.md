@@ -96,6 +96,119 @@ public function test_title_at_256_chars_is_truncated_to_exactly_255(): void {
 
 **These tests would catch an off-by-one error. A coverage-only test would not.**
 
+### Test Behaviors, Not Implementation
+
+A unit test is a test of a **unit of behavior**, not a unit of code. Treat the function under test as a black box — you know the inputs going in and the outputs coming out, nothing else.
+
+**Never verify internal method calls unless the caller explicitly passes that function in.** Spying on internal collaborators makes tests brittle — refactoring the internals breaks tests even when the code still works correctly.
+
+```php
+// ❌ WRONG - Testing implementation details (which internal service was called)
+public function test_get_label_preview(): void {
+    $mockRenderer = \Mockery::mock(ZplRenderer::class);
+    $mockRenderer->shouldReceive('render')
+        ->once()
+        ->with(\Mockery::type(Label::class));
+    // If we refactor to use a different renderer, this test breaks
+    // even though the preview output is still correct
+}
+
+// ✅ CORRECT - Testing behavior (what the function returns)
+public function test_get_label_preview(): void {
+    $user = $this->mock_user();
+    $org = $this->mock_org($user);
+    $label = $this->mock_label($user, $org);
+    // call the function
+    $preview = LabelService::get_preview($label);
+    // assert the OUTPUT, not how it was produced
+    $this->assertNotEmpty($preview);
+    $this->assertStringContainsString('^XA', $preview); // valid ZPL
+}
+```
+
+**Why this matters:** If you later swap `ZplRenderer` for `ZplRendererV2`, the first test breaks even though nothing is wrong. The second test keeps working because the *behavior* (producing valid ZPL) hasn't changed.
+
+### One Reason to Fail
+
+Each test should fail for **exactly one reason**. If a test can fail for multiple reasons, it's a bundle — not a unit test. When it fails, you should learn *exactly* what broke.
+
+```php
+// ❌ WRONG - Five behaviors in one test (discount, shipping, tax, VIP, total)
+public function test_checkout_works(): void {
+    $this->login()->mock_api_requests();
+    $order = OrderService::calculate($cart, $customer);
+    $this->assertEquals(10.00, $order->discount);     // discount logic
+    $this->assertEquals(5.00, $order->shipping);       // shipping logic
+    $this->assertEquals(2.50, $order->tax);            // tax logic
+    $this->assertTrue($order->is_vip_eligible);        // VIP logic
+    $this->assertEquals(47.50, $order->total);         // total calculation
+    // When this fails, you just debug. You don't learn anything.
+}
+
+// ✅ CORRECT - One behavior per test
+public function test_discount_applied_for_bulk_order(): void {
+    $order = OrderService::calculate($bulk_cart, $customer);
+    $this->assertEquals(10.00, $order->discount);
+}
+
+public function test_shipping_calculated_by_weight(): void {
+    $order = OrderService::calculate($cart, $customer);
+    $this->assertEquals(5.00, $order->shipping);
+}
+```
+
+**The math:** 5 decisions in one method = 2^5 = 32 possible test paths. Extract each into its own service and you need just 5 tests + integration. Write 5 tests, not 32.
+
+### Testability Reflects Code Quality
+
+**If code is hard to test, the code is the problem — not the test.** Tests are the canary in the coal mine. They reveal whether your code is cohesive, decoupled, and well-encapsulated.
+
+- **Low cohesion** (one method doing 5 jobs) forces you to test 5 things at once
+- **High coupling** (method reaches into globals or hidden state) forces heavy mocking
+- **Poor encapsulation** (internal details leak out) forces implementation-detail testing
+
+**Don't reach for mocks to patch over hard-to-test code — refactor the code instead.**
+
+This validates BudTags' service layer pattern: services own business logic (LicenseService, InventoryService, etc.), controllers orchestrate. Each service is independently testable because it has one job.
+
+When you find yourself struggling to test something, ask: *"What are the behaviors hiding inside this method?"* Then extract each one into its own testable unit.
+
+### Tests Should Be Self-Contained
+
+Each test should **stand on its own**. Repeating setup code between tests is OK and preferred over fragile shared state.
+
+```php
+// ❌ FRAGILE - Shared setup that every test depends on
+private Label $label;
+
+protected function setUp(): void {
+    parent::setUp();
+    $user = $this->mock_user();
+    $org = $this->mock_org($user);
+    $this->label = $this->mock_label($user, $org);
+    // Changing this breaks ALL tests, even ones that need different data
+}
+
+// ✅ SELF-CONTAINED - Each test builds what it needs
+public function test_label_has_strain(): void {
+    $user = $this->mock_user();
+    $org = $this->mock_org($user);
+    $label = $this->mock_label($user, $org);
+    $this->assertInstanceOf(Strain::class, $label->strain);
+}
+
+public function test_label_without_strain_returns_null(): void {
+    $user = $this->mock_user();
+    $org = $this->mock_org($user);
+    $label = $this->mock_label($user, $org, ['strain_id' => null]);
+    $this->assertNull($label->strain);
+}
+```
+
+**When shared setUp IS appropriate:** Truly universal infrastructure — like BudTags' base TestCase that wraps every test in a transaction and fakes the queue. This isn't test-specific data, it's test *environment*.
+
+**When it's NOT:** Test-specific data (users, orgs, labels, strains). If you need different data shapes for different tests, shared setup forces you into lowest-common-denominator fixtures that make every test harder to understand.
+
 ---
 
 ## Quick Reference
@@ -604,6 +717,32 @@ $mock->shouldReceive('method')->andReturnUsing(function ($arg) {  // dynamic ret
 | Stubbing expensive/slow operations | Integration tests |
 | Controlling exact return values | Tests that need real DB state |
 
+### Mocking Philosophy
+
+**Mock to isolate from things outside your control, not to avoid writing cohesive code.**
+
+**Why mock:** External APIs (Metrc, QuickBooks, LeafLink) can be down, slow, or rate-limited. Mocking these prevents flaky tests caused by network issues unrelated to your code. You're testing *your* logic, not whether the internet is working.
+
+**Warning — over-mocking:** If a test has 5+ mocks, you're likely testing your mock setup rather than your actual code. The test gives false confidence — it passes, but the real code may not work. BudTags avoids this by using real database objects (via transaction-based isolation) for models, relationships, and business logic.
+
+**When NOT to mock:** If you need heavy mocking to test a method, the method probably does too much. Mocking is not a workaround for low cohesion — refactor the code so each piece is independently testable with minimal setup.
+
+```php
+// ❌ SMELL - Too many mocks suggests the method under test is doing too many jobs
+$mockApi = \Mockery::mock(MetrcApi::class);
+$mockCache = \Mockery::mock(CacheService::class);
+$mockLogger = \Mockery::mock(LogService::class);
+$mockNotifier = \Mockery::mock(NotificationService::class);
+$mockValidator = \Mockery::mock(ValidationService::class);
+// At this point, what are you even testing?
+
+// ✅ BETTER - Refactor the method, then each piece needs minimal mocking
+// MetrcApi mock for the one external call this service makes
+/** @var \App\Services\Api\MetrcApi&\Mockery\MockInterface */
+$mockApi = \Mockery::mock(\App\Services\Api\MetrcApi::class);
+$mockApi->shouldReceive('get_packages')->once()->andReturn($test_data);
+```
+
 ### PHPDoc for Type Hints
 
 Always add PHPDoc when using Mockery to help IDE and static analysis:
@@ -689,26 +828,176 @@ public function test_user_can_delete_their_account(): void {
 ## Running Tests
 
 ```bash
-# Run all tests
-php artisan test
-
-# Run with stop on failure
-php artisan test --stop-on-failure
+# Run all tests (ALWAYS use this command)
+composer test-fast
 
 # Run specific test file
-php artisan test tests/Unit/LabelTest.php
+composer test-fast -- --filter=LabelTest
 
 # Run specific test method
-php artisan test --filter=test_label_has_strain
+composer test-fast -- --filter=test_label_has_strain
 
 # Run test suite
-php artisan test --testsuite=Unit
-php artisan test --testsuite=Feature
-
-# Coverage (requires PCOV extension)
-php artisan test --coverage
-php artisan test --coverage-html=storage/coverage
+composer test-fast -- --testsuite=Unit
+composer test-fast -- --testsuite=Feature
 ```
+
+**Never use `php artisan test` directly** — it will fail on large test suites. Always use `composer test-fast`.
+
+---
+
+## Vitest (Frontend Testing)
+
+BudTags uses **Vitest** with **React Testing Library** for frontend tests.
+
+### Running Frontend Tests
+
+```bash
+# Run all Vitest tests
+npm test
+
+# Watch mode (re-runs on file changes)
+npm run test:watch
+
+# With coverage
+npm run test:coverage
+```
+
+### Test File Location
+
+Place test files next to the code they test using `__tests__/` directories:
+
+```
+resources/js/
+├── Components/
+│   ├── Badge.tsx
+│   └── __tests__/
+│       └── Badge.test.tsx
+├── Hooks/
+│   ├── useDebounce.ts
+│   └── __tests__/
+│       └── useDebounce.test.ts
+└── utils/
+    ├── formatters.ts
+    └── __tests__/
+        └── formatters.test.ts
+```
+
+### Test Infrastructure
+
+BudTags provides test utilities in `resources/js/testing/`:
+
+**Custom Render** — Wraps components with QueryClientProvider automatically:
+```tsx
+// ✅ CORRECT - Use the custom render, not RTL's directly
+import { render, screen } from '@/testing';
+
+render(<MyComponent />);
+expect(screen.getByText('Hello')).toBeInTheDocument();
+```
+
+**Inertia Mock** — Provides fake `usePage`, `useForm`, `router`, `Link`, `Head`:
+```tsx
+import { vi } from 'vitest';
+import { inertiaReactMock, defaultPageProps } from '@/testing';
+
+// mock Inertia BEFORE importing the component
+const mock = inertiaReactMock({ is_admin: true }); // override any page props
+vi.mock('@inertiajs/react', () => mock);
+
+import MyPage from '@/Pages/MyPage';
+```
+
+**QueryClient Wrapper** — For testing hooks that use TanStack Query:
+```tsx
+import { QueryWrapper } from '@/testing';
+import { renderHook } from '@testing-library/react';
+
+const { result } = renderHook(() => useMyQueryHook(), {
+    wrapper: QueryWrapper,
+});
+```
+
+### Writing Vitest Tests (Same Philosophy as PHP)
+
+The same core principles apply — test behaviors, one reason to fail, self-contained:
+
+```tsx
+import { render, screen, userEvent } from '@/testing';
+import { vi, describe, it, expect } from 'vitest';
+
+const mock = inertiaReactMock();
+vi.mock('@inertiajs/react', () => mock);
+
+import { StrainForm } from '@/Components/StrainForm';
+
+describe('StrainForm', () => {
+    // ✅ One behavior per test
+    it('renders name input with empty default', () => {
+        render(<StrainForm />);
+        const input = screen.getByLabelText('Strain Name');
+        expect(input).toHaveValue('');
+    });
+
+    // ✅ Self-contained — builds its own props, doesn't share with other tests
+    it('displays validation error when name is empty', async () => {
+        render(<StrainForm errors={{ name: 'Name is required' }} />);
+        expect(screen.getByText('Name is required')).toBeInTheDocument();
+    });
+
+    // ✅ Tests behavior (what the user sees), not implementation (which handler was called)
+    it('disables submit button while processing', () => {
+        render(<StrainForm processing={true} />);
+        expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
+    });
+});
+```
+
+### Vitest Anti-Patterns
+
+```tsx
+// ❌ WRONG - Testing implementation details (checking if handler was called with specific args)
+it('calls setData with correct key', async () => {
+    const mockSetData = vi.fn();
+    // ... testing that setData('name', 'Blue Dream') was called
+    // This breaks if you refactor the form's internal state management
+});
+
+// ✅ CORRECT - Testing the behavior the user experiences
+it('updates the displayed name when user types', async () => {
+    const user = userEvent.setup();
+    render(<StrainForm />);
+    await user.type(screen.getByLabelText('Strain Name'), 'Blue Dream');
+    expect(screen.getByLabelText('Strain Name')).toHaveValue('Blue Dream');
+});
+
+// ❌ WRONG - Bundling multiple behaviors in one test
+it('form works correctly', () => {
+    render(<StrainForm />);
+    expect(screen.getByLabelText('Strain Name')).toBeInTheDocument();  // rendering
+    expect(screen.getByLabelText('Type')).toBeInTheDocument();          // rendering
+    expect(screen.getByRole('button')).not.toBeDisabled();              // button state
+    // Three behaviors = three possible failure sources
+});
+
+// ❌ WRONG - Over-mocking (testing mock setup, not component)
+vi.mock('@/Hooks/useStrains', () => ({ useStrains: vi.fn() }));
+vi.mock('@/Hooks/usePermissions', () => ({ usePermissions: vi.fn() }));
+vi.mock('@/utils/formatters', () => ({ formatDate: vi.fn() }));
+vi.mock('@/utils/validators', () => ({ validateStrain: vi.fn() }));
+// 4 mocks for one component test = likely testing mock wiring, not behavior
+```
+
+### What to Test in Frontend
+
+| Test | Don't Test |
+|------|-----------|
+| Conditional rendering (show/hide based on props/state) | CSS styling details |
+| User interactions (click, type, select) | Internal state shape |
+| Error states and empty states | Which hook was called |
+| Calculated/derived values displayed to user | Component lifecycle details |
+| Form validation feedback | Third-party library internals |
+| Accessibility (roles, labels, aria attributes) | Implementation of mocked dependencies |
 
 ---
 

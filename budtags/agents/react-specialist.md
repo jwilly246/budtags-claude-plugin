@@ -4,7 +4,7 @@ model: opus
 description: 'Use when implementing, debugging, or reviewing React/Inertia/TypeScript frontend code. ALWAYS provide context about component type (modal, form, data table, dashboard), specific patterns needed, or feature being built.'
 version: 2.0.0
 skills: verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:React/Inertia/TypeScript frontend specialist
@@ -27,7 +27,7 @@ tools: Read, Grep, Glob, Bash
 |react-19:{patterns/*.md}
 
 [Quick Reference]
-|SelfContainedModal:const {data,setData,post}=useForm({});useEffect(()=>{if(isOpen)setData(...)},[isOpen])
+|SelfContainedModal:Outer:{isOpen&&<Form/>};Inner:useForm({field:computedValue})—NO useEffect for init/reset
 |TypedToast:toast.error('message')|toast.success('message')|NEVER:toast('message'),alert()
 |TypedProps:interface Props{items:Package[];onSelect:(id:number)=>void}
 |ErrorHandling:catch(error:unknown){if(error instanceof Error)toast.error(error.message)}

@@ -1,0 +1,338 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - inventory",
+    "version": "1.3.5"
+  },
+  "servers": [
+    {
+      "url": "https://api.canix.com/api/v1",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/packages": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "summary": "GetPackages",
+        "description": "Return all submitted Packages of all statuses",
+        "operationId": "GetPackages",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Package"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/packages/{package_id}": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "summary": "GetPackage",
+        "description": "Get Package by ID",
+        "operationId": "GetPackageById",
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "description": "Package ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Package"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/locations": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "GetLocations",
+        "description": "Return active Locations",
+        "operationId": "GetLocations",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "query",
+            "description": "Facility ID (optional)",
+            "example": 123,
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Location"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/locations/count": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "GetLocationsCount",
+        "description": "Return total number of active Locations",
+        "operationId": "GetLocationsCount",
+        "parameters": [
+          {
+            "name": "facility_id",
+            "in": "query",
+            "description": "Facility ID (optional)",
+            "example": 123,
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RecordCount"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/locations/{location_id}": {
+      "get": {
+        "tags": [
+          "Locations"
+        ],
+        "summary": "GetLocation",
+        "description": "Get Location by ID",
+        "operationId": "GetLocationById",
+        "parameters": [
+          {
+            "name": "location_id",
+            "in": "path",
+            "description": "Location ID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/weight_units": {
+      "get": {
+        "tags": [
+          "WeightUnits"
+        ],
+        "summary": "GetWeightUnits",
+        "description": "Return all Weight Units",
+        "operationId": "GetWeightUnits",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/limitParam"
+          },
+          {
+            "$ref": "#/components/parameters/offsetParam"
+          },
+          {
+            "$ref": "#/components/parameters/orderByParam"
+          },
+          {
+            "$ref": "#/components/parameters/whereParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeightUnit"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    }
+  }
+}

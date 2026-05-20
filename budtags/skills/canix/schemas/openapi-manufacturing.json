@@ -1,0 +1,423 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Canix API - manufacturing",
+    "version": "1.3.5"
+  },
+  "servers": [
+    {
+      "url": "https://api.canix.com/api/v1",
+      "variables": {}
+    }
+  ],
+  "paths": {
+    "/manu_batches": {
+      "get": {
+        "tags": [
+          "Manufacturing Batch"
+        ],
+        "summary": "GetManuBatches",
+        "description": "Get All Manufacturing Batches",
+        "operationId": "GetManuBatches",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ManuBatch"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/manu_batches/{manu_batch_id}": {
+      "get": {
+        "tags": [
+          "Manufacturing Batch"
+        ],
+        "summary": "GetManuBatch",
+        "description": "Get Manufacturing Batch by ID",
+        "operationId": "GetManuBatchById",
+        "parameters": [
+          {
+            "name": "manu_batch_id",
+            "in": "path",
+            "description": "ID of Manufacturing Batch to return",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManuBatch"
+                },
+                "example": {
+                  "id": 2,
+                  "status": "Run 3 of 3",
+                  "current_location": "processing room",
+                  "start_date": "2022-05-01",
+                  "end_date": "2022-05-30",
+                  "created_at": "2022-04-15T12:33:00.000Z",
+                  "updated_at": "2022-05-22T07:21:00.000Z",
+                  "notes": "notes about this batch",
+                  "manufacturing_run_ids": [
+                    8,
+                    9,
+                    10
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/manu_batch_runs": {
+      "get": {
+        "tags": [
+          "Manufacturing Run"
+        ],
+        "summary": "GetManuBatchRuns",
+        "description": "Get All Manufacturing Runs",
+        "operationId": "GetManuBatchRuns",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ManuBatchRun"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/manu_batch_runs/{manu_batch_run_id}": {
+      "get": {
+        "tags": [
+          "Manufacturing Run"
+        ],
+        "summary": "GetManuBatchRun",
+        "description": "Get Manufacturing Run by ID",
+        "operationId": "GetManuBatchRunById",
+        "parameters": [
+          {
+            "name": "manu_batch_run_id",
+            "in": "path",
+            "description": "ID of Manufacturing Run to return",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManuBatchRun"
+                },
+                "example": {
+                  "id": 10,
+                  "facility_id": 14,
+                  "name": "Stage 2",
+                  "status": "OPEN",
+                  "start_date": "2022-05-24",
+                  "end_date": "2022-05-30",
+                  "created_at": "2022-05-22T19:58:00.000Z",
+                  "updated_at": "2021-05-23T05:12:01.000Z",
+                  "location_id": 2,
+                  "bill_of_materials_id": 12,
+                  "manufacturing_batch_id": 9,
+                  "order": 2,
+                  "notes": "",
+                  "total_cannabis_costs": 14.3,
+                  "total_nci_costs": 2.5,
+                  "total_labor_costs": 9.05,
+                  "yield": 75.0,
+                  "machine_info": {
+                    "temperature": 20.1,
+                    "temperature_unit": "Celcius",
+                    "solvent_id": 150,
+                    "solvent_quantity": 10.5,
+                    "solvent_weight_unit": "Grams",
+                    "time_in_solvent_ms": 2400,
+                    "time_in_solvent_display_units": "Second"
+                  },
+                  "cannabis_inputs": [
+                    {
+                      "package_id": 3501,
+                      "package_tag": "1A4FF0000000022000000719",
+                      "quantity": 2.54,
+                      "weight_unit": "Grams",
+                      "psi": 600.0,
+                      "cost": 14.3
+                    }
+                  ],
+                  "non_cannabis_inputs": [
+                    {
+                      "non_cannabis_product_name": "Fertilizer",
+                      "non_cannabis_product_id": 145,
+                      "lot": "DL21309",
+                      "lot_id": 253,
+                      "quantity": 100.5,
+                      "weight_unit": "Grams",
+                      "cost": 2.5
+                    }
+                  ],
+                  "cannabis_outputs": [
+                    {
+                      "package_id": 5200,
+                      "package_tag": "1A4FF0000000022000001419",
+                      "quantity": 500,
+                      "weight_unit": "Grams"
+                    }
+                  ],
+                  "labors": [
+                    {
+                      "employee_name": "Jane Doe",
+                      "hours_worked": 0.5,
+                      "cost": 10
+                    },
+                    {
+                      "employee_name": "John Doe",
+                      "hours_worked": 1,
+                      "cost": 20
+                    }
+                  ],
+                  "wastes": [
+                    {
+                      "package_id": 4601,
+                      "package_tag": "1A4FF0000000022000004423",
+                      "quantity": 50,
+                      "weight_unit": "Grams",
+                      "reason": "Waste Destruction",
+                      "date": "2022-05-24",
+                      "notes": "waste from production"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/bills_of_materials": {
+      "get": {
+        "tags": [
+          "Bill of Materials"
+        ],
+        "summary": "GetBillsOfMaterials",
+        "description": "Get all Bills of Materials",
+        "operationId": "GetBillOfMaterialsById",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BillOfMaterials"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    },
+    "/bills_of_materials/{bill_of_materials_id}": {
+      "get": {
+        "tags": [
+          "Bill of Materials"
+        ],
+        "summary": "GetBillOfMaterials",
+        "description": "Get Bill of Materials by ID",
+        "operationId": "GetBillOfMaterialsById",
+        "parameters": [
+          {
+            "name": "bill_of_materials_id",
+            "in": "path",
+            "description": "ID of Bill of Materials to return",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillOfMaterials"
+                },
+                "example": {
+                  "id": 12,
+                  "name": "Bulk - Dark Chocolate Peaks - 5mg",
+                  "active_date": "2023-01-01",
+                  "expiration_date": "2023-12-31",
+                  "proportion_type": "single_instance",
+                  "source_non_cannabis_products": [
+                    {
+                      "name": "1/8th Jar",
+                      "non_cannabis_product_id": 24,
+                      "quantity": 1,
+                      "weight_unit": "Each",
+                      "application_setting": "proportional"
+                    },
+                    {
+                      "name": "Gloves - Large",
+                      "non_cannabis_product_id": 56,
+                      "quantity": 2,
+                      "weight_unit": "Each",
+                      "application_setting": "fixed"
+                    }
+                  ],
+                  "source_cannabis_items": [
+                    {
+                      "name": "Hammer Bud",
+                      "item_id": 242,
+                      "item_category_id": null,
+                      "item_sub_category_id": null,
+                      "quantity": 20,
+                      "weight_unit": "Grams"
+                    },
+                    {
+                      "name": "B Buds",
+                      "item_id": null,
+                      "item_category_id": 98,
+                      "item_sub_category_id": null,
+                      "quantity": 25,
+                      "weight_unit": "Grams"
+                    }
+                  ],
+                  "output_items": [
+                    {
+                      "name": "Jarred Flower",
+                      "item_id": 370,
+                      "quantity": 50,
+                      "weight_unit": "Grams"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/400BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/401NotAuthenticated"
+          },
+          "403": {
+            "$ref": "#/components/responses/403AccessDenied"
+          },
+          "404": {
+            "$ref": "#/components/responses/404NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/500ServerError"
+          }
+        }
+      }
+    }
+  }
+}

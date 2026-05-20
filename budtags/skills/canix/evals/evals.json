@@ -1,0 +1,75 @@
+{
+  "skill_name": "canix",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to pull all sales orders from Canix that were updated in the last week and import them into BudTags. Write a Laravel service method that handles pagination and date filtering. The method should be in a CanixImportService class and follow BudTags conventions (snake_case methods, request() helper where applicable, collection methods instead of loops). The Canix API base URL is https://api.canix.com/api/v1 and uses X-API-KEY authentication.",
+      "expected_output": "A Laravel service method that correctly paginates through Canix sales orders using offset-based pagination (limit/offset, max 2000), applies a SQL-like WHERE filter for date range, and maps results to BudTags models",
+      "files": [],
+      "expectations": [
+        "Uses offset-based pagination (limit and offset parameters), not cursor-based or page-number pagination",
+        "Sets the page size limit to 2000 or less (Canix max is 2000)",
+        "Uses a SQL-like WHERE string for date filtering (e.g. where=updated_at >= '...'), not query params like updated_since or date_from",
+        "Detects the last page by checking response array length < limit (raw array response, no pagination wrapper)",
+        "Notes that sales order contents (line items) and payments are embedded in the response, not requiring separate API calls",
+        "Includes order_by parameter for deterministic pagination ordering"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "How do I fetch all items from Canix for a specific facility, handling pagination? There are about 5,000 items so I need to page through them. Show me the Laravel code that does this. The API key is stored in the organization's canix_api_key field. Use snake_case method names and collection methods (no foreach loops).",
+      "expected_output": "Laravel code that paginates through Canix items using offset-based pagination with limit=2000, uses the facility_id query parameter for facility scoping, and handles the raw array response format (no wrapper object)",
+      "files": [],
+      "expectations": [
+        "Uses facility_id as a query parameter (not a URL path segment like /facilities/{id}/items)",
+        "Uses offset-based pagination with limit and offset parameters",
+        "Sets the page size limit to 2000 or less (Canix max is 2000)",
+        "Detects end of pagination by checking raw array length (no pagination wrapper object like {count, results})",
+        "References the correct endpoint path GET /items (not /products, /inventory, or /facilities/{id}/items)",
+        "Mentions that items also support SQL-like WHERE filtering for additional server-side filtering"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need to create a new vendor in Canix when someone adds one in BudTags. What's the endpoint, what's the request body format, and what should I watch out for? Write me the Laravel service method. Make sure to follow BudTags conventions - snake_case methods, no foreach loops, use collection methods.",
+      "expected_output": "Shows POST /vendors endpoint, correct request body with Canix-specific field formats, warns about write operation irreversibility, and provides a Laravel method that creates the vendor via Canix API",
+      "files": [],
+      "expectations": [
+        "Uses POST /vendors as the endpoint for creating a vendor",
+        "Warns about write operation irreversibility or that the operation cannot be undone",
+        "Notes that vendor addresses use flat top-level fields (address, city, state, postal_code) NOT a nested address object (which is what Customer uses)",
+        "Shows min_lead_time as an object with value and unit properties (e.g. {value: 2, unit: 'week'}), not as a plain integer or string",
+        "Notes that Customers are read-only via the API while Vendors have full CRUD (create, update, delete)",
+        "Uses date-only format YYYY-MM-DD for license_expiration_date (not full ISO 8601 timestamp)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need to upload a product photo to Canix so it syncs to Metrc. How does the async submission process work? Show me the Laravel code that uploads the photo and polls for the result.",
+      "expected_output": "Shows POST /items/photos endpoint, explains that this is a Metrc-bound async operation returning a submission UUID, implements polling via GET /submissions/{uuid}, lists terminal statuses, and includes backoff logic",
+      "files": [],
+      "expectations": [
+        "Uses POST /items/photos as the endpoint for uploading item photos",
+        "Explains that photo upload is a Metrc-bound async operation that returns a submission UUID (not a direct synchronous response)",
+        "Uses GET /submissions/{submission_id} to poll for the operation status",
+        "Lists or references the terminal statuses: SUCCESS, FAILED, DENIED, ABORTED, PARTIAL_FAILURE",
+        "Mentions that the submission_id is a base64-encoded UUID string",
+        "Implements some form of wait/backoff between poll attempts (not hammering the endpoint)"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need to fetch all active Canix packages with tags matching the prefix '1A400' that were updated in the last 30 days. Show me how to build the Canix API filter for this and the Laravel code to fetch them.",
+      "expected_output": "Uses SQL-like WHERE string with compound AND conditions, LIKE operator with % wildcard for tag prefix, and date comparison for updated_at filter",
+      "files": [],
+      "expectations": [
+        "Uses the SQL-like WHERE string parameter (where=...), not separate query params for each filter",
+        "Combines multiple conditions with AND in a single where string",
+        "Uses LIKE operator with % wildcard for the tag prefix match (e.g. tag LIKE '1A400%')",
+        "Uses >= or > operator for the date filter on updated_at",
+        "References GET /packages as the endpoint",
+        "Does NOT use facility_id parameter (packages do not support facility_id scoping per Canix API)"
+      ]
+    }
+  ]
+}

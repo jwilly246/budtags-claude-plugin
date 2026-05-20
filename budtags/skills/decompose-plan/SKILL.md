@@ -138,6 +138,8 @@ Each work unit should be **5-10 actionable tasks** completable in one context wi
 
 **Include tests WITH each work unit, not as separate units.**
 
+Tests must follow the `budtags-testing` skill principles: test behaviors (not implementation), one reason to fail per test, self-contained data setup, and exact assertions. For frontend work units, include Vitest tests alongside components.
+
 ### Step 3.5: Assign Agent Type to Each Work Unit
 
 Based on work unit content, assign the best specialist agent. The agent type determines which skills are auto-loaded when the work unit is executed.
@@ -267,7 +269,7 @@ Pattern files are in `.claude/skills/decompose-plan/patterns/`:
 - `database-patterns.md` - Model and migration patterns
 - `backend-patterns.md` - Controller and service patterns
 - `frontend-patterns.md` - React/Inertia patterns
-- `test-patterns.md` - PHPUnit test patterns
+- `test-patterns.md` - PHPUnit + Vitest test patterns (references `budtags-testing` skill for full philosophy)
 
 ---
 

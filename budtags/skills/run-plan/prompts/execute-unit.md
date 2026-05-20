@@ -13,17 +13,21 @@ You are executing work unit {WU_ID} for the {FEATURE_NAME} feature.
 
 Implement everything in: `{directory}/WU-{N}-{slug}.md`
 
-## Before Writing Code
+## Step 0 (MANDATORY, do this FIRST)
 
-1. **Read the work unit file** - contains your tasks, files to create, and context
-2. **Read `{directory}/SHARED_CONTEXT.md`** - contains all research from planning:
-   - Available components (use these, don't search for others)
-   - Existing types (use these, don't create duplicates)
-   - Existing services (use these)
-   - Naming conventions (follow these exactly)
-   - Routes, cache keys, patterns from previous work units
+Your first tool call MUST be `Read` on `{directory}/WU-{N}-{slug}.md`. Read the full file before invoking any Edit, Write, or MultiEdit tool.
 
-**Trust SHARED_CONTEXT completely.** Do not re-explore the codebase. The planning phase already did that research.
+## Embedded Shared Context
+
+The orchestrator has read `{directory}/SHARED_CONTEXT.md` and embedded its full contents inline below. Treat this as authoritative. Do NOT call Read on SHARED_CONTEXT.md (the contents are already in your context window). Do NOT re-explore the codebase to rediscover patterns documented here.
+
+You will reference these embedded patterns in your Completion Report's "Patterns Followed" section, so read this block carefully.
+
+---
+
+{SHARED_CONTEXT_INLINE}
+
+---
 
 ## Execution Rules
 
@@ -51,25 +55,49 @@ If something is unclear: implement your best judgment and document it in "Decisi
 
 ## When Done
 
-1. Update `{directory}/SHARED_CONTEXT.md` with what you created (cache keys, routes, types, services)
+1. **MANDATORY: Update `{directory}/SHARED_CONTEXT.md`.** For each of these categories, either add the entries you created OR write "None added this WU" with a one-line reason. Do NOT leave silent gaps — the orchestrator audits this file via `git diff` and will mark the WU BLOCKED if updates are missing without explanation:
+   - PHP Services & Classes (created)
+   - TypeScript Types (created)
+   - Routes Added
+   - Cache Keys (created)
+   - Enums Created
+   - Database Columns & Naming
+   - Implementation Decisions
 2. Update the work unit's "Decisions Made" section if you made implementation choices
-3. Report:
+3. Check every `- [ ]` task in the WU — they must all be `- [x]` before you report done
+4. Report using the template below
 
 ---
 ## Completion Report
 
+### Patterns Followed from Embedded Shared Context (MANDATORY, falsifiable)
+
+List at least 2 specific patterns, components, types, services, or conventions from the embedded shared context (the block above between the `---` separators) that you actually used in this WU. Reference the table row or quote the line directly. Examples:
+
+- **Component reused:** Used `Modal` from the "Available UI Components (Core)" table (row: `@/Components/Modal`) instead of creating a new modal wrapper.
+- **Convention followed:** Method naming snake_case verb-first per "Critical Patterns > Method Naming" (`create()` not `store()`).
+- **Service reused:** Called `LogService::store()` per the "Core PHP Services" table.
+
+If you genuinely reused nothing from the embedded context (rare, requires justification), write a paragraph explaining why this WU is orthogonal to every entry. The orchestrator treats thin or generic answers (e.g. "followed conventions", "used existing components") as evidence the embedded context was not read, and will mark the WU BLOCKED.
+
 ### Files Created
-- `path/to/file.php`
+- `path/to/file.php` — what it contains
 
 ### Files Modified
-- `path/to/file.php` - what changed
+- `path/to/file.php` — what changed and why
 
 ### Tasks Completed
 - [x] Task 1
 - [x] Task 2
+(If any are still `- [ ]`, explain why under "Issues")
 
-### SHARED_CONTEXT Updates
-- Added X to Y table
+### SHARED_CONTEXT Updates (EXPLICIT — required)
+List exact entries added to each table. Example:
+- **PHP Services & Classes:** added `LeafLinkWebhookContext` (app/Services/LeafLink/LeafLinkWebhookContext.php, "scoped E2 flag", WU-01)
+- **Routes Added:** none (no route changes this WU)
+- **Implementation Decisions:** added "Used Laravel Context facade over custom static — rationale: request-scoped cleanup"
+
+If a category genuinely has nothing, write `none (reason)` — do NOT omit the category heading.
 
 ### Decisions Made
 - Chose X because Y
@@ -79,6 +107,8 @@ If something is unclear: implement your best judgment and document it in "Decisi
 ---
 
 Do NOT run verification or commit. The orchestrator handles that.
+
+The orchestrator will personally run `composer check`, read your full diff, audit the "Patterns Followed" section for substance, audit your SHARED_CONTEXT additions against your Completion Report, and verify every task is checked before committing. A thin "Patterns Followed" section, fabricated row references, or silently-skipped SHARED_CONTEXT updates will block the commit.
 ```
 
 ---
@@ -114,8 +144,8 @@ Read `**Agent**:` field from work unit. **Always use `model: "opus"`** - executi
 
 ## Agent Capabilities
 
-**Has:** Read, Edit, Write, Bash, Glob, Grep, MCP tools
+**Has:** Read, Edit, Write, Bash, Glob, Grep, MCP tools, the WU file path, the SHARED_CONTEXT content embedded inline in the prompt
 
-**Does NOT have:** Conversation history, knowledge of other work units
+**Does NOT have:** Conversation history, knowledge of other work units, the SHARED_CONTEXT file path (it should not Read the file, the contents are already in context)
 
-Each work unit is self-contained via the work unit file and SHARED_CONTEXT.
+Each work unit is self-contained via the WU file (read by the agent) and the SHARED_CONTEXT content (embedded by the orchestrator into the spawned prompt).

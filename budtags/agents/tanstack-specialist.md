@@ -4,7 +4,7 @@ model: opus
 description: 'Use when implementing, debugging, or reviewing TanStack ecosystem code (Query, Table, Virtual, Form, Router, Start). ALWAYS provide context about task type, data source, and features needed.'
 version: 2.1.0
 skills: tanstack-query, tanstack-table, tanstack-virtual, verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:TanStack Query, Table, Virtual ecosystem specialist

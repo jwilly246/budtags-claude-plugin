@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Metrc Sandbox API v2",
-    "description": "Metrc API v2 endpoints for Sandbox",
+    "description": "Metrc API v2 endpoints for Sandbox. All endpoints are sandbox-only and return an error in production.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -22,6 +22,60 @@
             {
               "key": "userKey",
               "value": "{{userKey}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GetSandboxTagTypes",
+      "description": "Bulletin 233 (effective 2026-04-23). Returns the list of tag types available for a sandbox facility. Use this endpoint to discover valid TagType values before calling POST /sandbox/v2/facility/tags.",
+      "request": {
+        "method": "GET",
+        "header": null,
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sandbox/v2"
+          ],
+          "path": [
+            "tagtypes"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GenerateSandboxFacilityTags",
+      "description": "Bulletin 233 (effective 2026-04-23). Generates tags of a specified type for a sandbox facility. Tags are created, shipped, and received in a single synchronous operation, making them immediately available for use in packages and plant batches. Maximum 1,000 tags per request. Only one tag type may be generated per request.",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"TagType\": \"Marijuana Package\", \"Count\": 100 }"
+        },
+        "url": {
+          "host": [
+            "{{Metrc.api.server}}/sandbox/v2"
+          ],
+          "path": [
+            "facility",
+            "tags"
+          ],
+          "query": [
+            {
+              "key": "licenseNumber",
+              "value": "{{licenseNumber}}"
             }
           ]
         }

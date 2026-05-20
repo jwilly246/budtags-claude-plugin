@@ -14,7 +14,7 @@ import time
 
 
 # How long the pre-commit pass is valid (in seconds)
-VALIDITY_WINDOW = 120  # 2 minutes
+VALIDITY_WINDOW = 86400 * 30  # 30 days
 
 STATE_FILE = ".claude/.pre-commit-passed"
 

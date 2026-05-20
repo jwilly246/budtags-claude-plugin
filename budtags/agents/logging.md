@@ -3,7 +3,7 @@ name: logging
 model: sonnet
 description: 'Use only during context compaction or task completion. Consolidates and organizes work logs into the task Work Log section.'
 version: 2.0.0
-tools: Read, Edit, MultiEdit, LS, Glob
+tools: Read, Edit, MultiEdit, LS, Glob, mcp__laravel-boost__*
 ---
 
 [Agent Mission]|role:Task file maintenance and work log consolidation

@@ -638,6 +638,13 @@ Before asking performance questions, check existing patterns:
 
 **Goal:** Define how to verify the feature works correctly.
 
+**IMPORTANT:** All testing must follow the `budtags-testing` skill. Key principles:
+- **Test behaviors, not implementation** — assert outputs, not which internal methods were called
+- **One reason to fail** — each test verifies exactly one behavior
+- **Self-contained tests** — each test builds its own data, no fragile shared setUp
+- **Mock only external APIs** — use real database objects for everything else (transaction-based isolation)
+- **Testability reflects code quality** — if something is hard to test, refactor the code first
+
 ### Research Directive (run alongside questions)
 
 Before asking testing questions, find existing test patterns:
@@ -645,41 +652,52 @@ Before asking testing questions, find existing test patterns:
 2. Check for test helper traits in `tests/`
 3. Look at existing factories and their states
 4. Find how security/org-scoping tests are structured
+5. For frontend features, check `resources/js/**/*.test.{ts,tsx}` for Vitest patterns
+6. Review `resources/js/testing/` for available test utilities (custom render, Inertia mocks, QueryClient wrapper)
 
 **Present discoveries:** "I found these test patterns: {TestClass} tests {feature} with {pattern}. The {Factory} has useful states: {states}. Security tests follow {pattern}."
 
 ### Questions to Ask
 
-**Unit Tests:**
+**PHP Unit Tests:**
 - What services/helpers need unit tests?
 - What are the key methods to test?
 - What edge cases in business logic?
+- What boundary conditions need exact-value assertions?
 
-**Feature Tests:**
+**PHP Feature Tests:**
 - What are the happy path scenarios?
 - What are the error scenarios?
 - What are the security scenarios? (MUST have org scoping tests)
 - What state transitions to test?
 
-**Browser Tests:**
-- Are there complex UI interactions to test?
-- Multi-step workflows?
-- JavaScript-dependent features?
+**Vitest (Frontend) Tests:**
+- What React components have testable logic (conditional rendering, calculations, state)?
+- What custom hooks need testing (useDebounce-style behavior tests)?
+- What utility functions have edge cases worth covering?
+- Are there form interactions or user flows to test with user-event?
 
 **Integration Tests:**
 - External API integration tests?
-- How to mock external services?
+- How to mock external services? (Mockery for PHP, vi.mock for Vitest)
 
 ### Output: Test Scenarios List
 
 ```
 Feature: AdvertisingSellerController
+
+PHP Feature Tests:
 ├── test_seller_can_view_advertising_settings
 ├── test_seller_can_submit_ad_order
 ├── test_seller_cannot_view_other_org_orders  ← SECURITY
 ├── test_seller_can_cancel_pending_order
 ├── test_seller_cannot_cancel_active_order
 └── test_order_snapshots_price_at_creation
+
+Vitest Component Tests:
+├── renders ad preview with correct dimensions
+├── disables submit when form is invalid
+└── shows error toast on failed submission
 ```
 
 ---

@@ -1,0 +1,30 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Distru Public API - Purchasing", "version": "v1" },
+  "servers": [{ "url": "https://app.distru.com/public/v1" }],
+  "paths": {
+    "/purchases": {
+      "get": {
+        "operationId": "listPurchases",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtFrom" },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "company_id", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated purchases" } }
+      },
+      "post": { "operationId": "createPurchase", "responses": { "201": { "description": "Created (UPSERT)" } } }
+    },
+    "/purchases/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "get": { "operationId": "getPurchase", "responses": { "200": { "description": "Purchase with inline line items" } } },
+      "put": {
+        "operationId": "updatePurchase",
+        "summary": "Update purchase OR insert payment (use op: 'INSERT payment')",
+        "responses": { "200": { "description": "Updated" } }
+      }
+    }
+  }
+}

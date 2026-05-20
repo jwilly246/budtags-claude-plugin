@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Distru Public API - Manufacturing", "version": "v1" },
+  "servers": [{ "url": "https://app.distru.com/public/v1" }],
+  "paths": {
+    "/assemblies": {
+      "get": {
+        "operationId": "listAssemblies",
+        "description": "READ-ONLY. Fixed page size 500 (page[size] ignored). Eventually consistent ~1s lag.",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "name": "completion_datetime_from", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "completion_datetime_to", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          {
+            "name": "creation_source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["MANUALLY_CREATED", "SPLIT_PACKAGE", "SALES_ORDER", "LAB_TESTING"]
+            }
+          },
+          { "name": "license_number", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated assemblies (500/page fixed)" } }
+      }
+    }
+  }
+}

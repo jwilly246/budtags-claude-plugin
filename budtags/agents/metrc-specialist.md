@@ -4,7 +4,7 @@ model: opus
 description: 'Use when implementing, debugging, or reviewing Metrc API integration code. ALWAYS provide context about license type (cultivation/processing/retail), specific endpoints needed, or feature being built.'
 version: 2.0.0
 skills: metrc-api, verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:Metrc cannabis tracking API integration specialist

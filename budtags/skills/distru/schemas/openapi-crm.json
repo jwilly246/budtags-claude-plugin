@@ -1,0 +1,39 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Distru Public API - CRM", "version": "v1" },
+  "servers": [{ "url": "https://app.distru.com/public/v1" }],
+  "paths": {
+    "/companies": {
+      "get": {
+        "operationId": "listCompanies",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "name": "relationship_type", "in": "query", "schema": { "type": "string", "enum": ["CUSTOMER", "VENDOR"] } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated companies" } }
+      },
+      "post": { "operationId": "createCompany", "responses": { "201": { "description": "Created (UPSERT)" } } }
+    },
+    "/companies/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "put": { "operationId": "updateCompany", "responses": { "200": { "description": "Updated" } } }
+    },
+    "/contacts": {
+      "get": {
+        "operationId": "listContacts",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
+        ],
+        "responses": { "200": { "description": "Paginated contacts" } }
+      },
+      "post": { "operationId": "createContact", "responses": { "201": { "description": "Created (UPSERT)" } } }
+    },
+    "/contacts/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "put": { "operationId": "updateContact", "responses": { "200": { "description": "Updated" } } }
+    }
+  }
+}

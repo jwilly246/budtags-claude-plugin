@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Distru Public API - Inventory", "version": "v1" },
+  "servers": [{ "url": "https://app.distru.com/public/v1" }],
+  "paths": {
+    "/batches": {
+      "get": {
+        "operationId": "listBatches",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtFrom" },
+          { "name": "include_costs", "in": "query", "schema": { "type": "boolean" }, "description": "Include actual_cost and default_cost fields" },
+          { "name": "location_id", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated batches" } }
+      },
+      "post": { "operationId": "createBatch", "responses": { "201": { "description": "Created" } } }
+    },
+    "/packages": {
+      "get": {
+        "operationId": "listPackages",
+        "description": "READ-ONLY via public API",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
+        ],
+        "responses": { "200": { "description": "Paginated packages" } }
+      }
+    },
+    "/stock_adjustments": {
+      "get": {
+        "operationId": "listStockAdjustments",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "name": "batch_id", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated stock adjustments" } }
+      },
+      "post": {
+        "operationId": "createStockAdjustment",
+        "description": "APPEND-ONLY - corrections require a counter-adjustment",
+        "responses": { "201": { "description": "Created" } }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ model: opus
 description: 'Expert PHP developer specializing in Laravel 11+, PHPUnit, Composer, and modern PHP 8+ features. Use for Laravel applications, RESTful APIs, and enterprise PHP solutions.'
 version: 2.0.0
 skills: verify-alignment
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, mcp__laravel-boost__*, Edit, MultiEdit
 ---
 
 [Agent Mission]|role:PHP/Laravel development expert
