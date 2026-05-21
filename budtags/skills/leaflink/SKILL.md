@@ -2,6 +2,7 @@
 name: leaflink
 description: Use this skill when working with LeafLink wholesale marketplace integration, managing orders, syncing inventory/products, or handling customer/company data from LeafLink.
 agent: leaflink-specialist
+version: 1.0.0
 ---
 
 # LeafLink API Reference Skill
