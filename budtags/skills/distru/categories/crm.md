@@ -2,7 +2,7 @@
 
 The Distru CRM domain unifies customers AND vendors under a single `Company` model, plus `Contacts` (people) and `Locations` (addresses). The `relationship_type` field on Company is **tenant-customizable** — orgs define their own values (e.g. `Current Customer`, `Current Supplier`, `Brand`, `Potential Customer`).
 
-**Reconciled with live wire shapes 2026-05-25** against an active production tenant (1,134 companies, 178 contacts, 16 locations). Many previously-documented fields turned out to be **doc-only** (never emitted by the API) and have been removed. Several **undocumented wire fields** have been added. See `DISTRU-NATIVE-CONVERSION/AUDIT-FIELD-MATRIX.md` in the BudTags repo for the field-by-field reconciliation.
+**Reconciled with live wire shapes 2026-05-25** against an active production tenant (1,134 companies, 178 contacts, 16 locations). Many previously-documented fields turned out to be **doc-only** (never emitted by the API) and have been removed. Several **undocumented wire fields** have been added. See `../coverage/field-coverage-audit.md` for the field-by-field reconciliation (which fields BudTags maps + our gaps).
 
 ## Endpoints
 
@@ -223,4 +223,4 @@ The shapes are **non-symmetric**. Reading-and-writing the same response will fai
 - Customer import workflow: `scenarios/customer-import-workflow.md`
 - Custom field handling: mapping doc Decision #20
 - Filter conventions: `patterns/filtering.md`
-- Field-by-field reconciliation against live wire: `DISTRU-NATIVE-CONVERSION/AUDIT-FIELD-MATRIX.md` in the BudTags repo (Phase 1 + Phase 2 findings)
+- Field-by-field reconciliation against live wire (BudTags mapping + gaps, Phase 1 + Phase 2 findings): `../coverage/field-coverage-audit.md`

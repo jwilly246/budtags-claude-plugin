@@ -102,7 +102,7 @@ When the user asks about Distru integration, you can:
 
 ## Available Resources
 
-7 category files, 5 scenario templates, 7 pattern files, 8 OpenAPI schema files:
+7 category files, 5 scenario templates, 7 pattern files, 8 OpenAPI schema files, 2 coverage audits:
 
 ### Category Files (one per API domain)
 
@@ -131,6 +131,13 @@ When the user asks about Distru integration, you can:
 - `scenarios/customer-import-workflow.md`
 - `scenarios/order-writeback-workflow.md`
 - `scenarios/assembly-import-workflow.md`
+
+### Coverage Audits (BudTags integration-coverage, NOT wire-contract)
+
+These are **BudTags-app-specific** docs: which fields *our* importers persist to native primitives, and where *our* gaps are — distinct from the API-contract category/schema docs that describe what Distru sends on the wire.
+
+- `coverage/field-coverage-audit.md` — Per-endpoint field-coverage matrix (5-state mapped flag M/P/R/D/U, retention legend, gap/risk analysis, live-probe findings, file:line evidence) across all 18 read endpoints
+- `coverage/cross-importer-audit.md` — Code-verified Distru vs LeafLink vs Canix order-importer comparison (11-concern matrix + gap findings A–H)
 
 ### Full Documentation
 

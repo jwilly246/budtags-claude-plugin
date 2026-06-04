@@ -2,7 +2,7 @@
 
 The Distru Products domain covers the catalog model: Products with rich relationships to Brand, Category, Strain, and TestResult, plus POS-system cross-mappings.
 
-**Reconciled with live wire shapes 2026-05-25** against a production tenant (3,915 products across 26 distinct categories, 57 Terpenes, 478 Packaging). Many previously-documented fields turned out to be **doc-only** (never emitted by the API) — they've been removed. Several wire-only fields have been added. See `DISTRU-NATIVE-CONVERSION/AUDIT-FIELD-MATRIX.md` in the BudTags repo for the field-by-field reconciliation.
+**Reconciled with live wire shapes 2026-05-25** against a production tenant (3,915 products across 26 distinct categories, 57 Terpenes, 478 Packaging). Many previously-documented fields turned out to be **doc-only** (never emitted by the API) — they've been removed. Several wire-only fields have been added. See `../coverage/field-coverage-audit.md` for the field-by-field reconciliation (which fields BudTags maps + our gaps).
 
 ## Endpoints
 
@@ -233,4 +233,4 @@ NO `tags[]` filter (no `tags` field exists). NO `upc` filter. NO `compliance_typ
 - Inventory + actual cost: `/inventory` endpoint provides live on-hand qty + `cost_per_unit_actual` (separate from /products `unit_cost` static cost)
 - Companies as vendors: see `categories/crm.md` — vendor.id on products references a /companies row
 - Custom field handling: mapping doc Decision #20 (3-tier strategy)
-- Field-by-field reconciliation against live wire: `DISTRU-NATIVE-CONVERSION/AUDIT-FIELD-MATRIX.md` in the BudTags repo
+- Field-by-field reconciliation against live wire (BudTags mapping + gaps): `../coverage/field-coverage-audit.md`

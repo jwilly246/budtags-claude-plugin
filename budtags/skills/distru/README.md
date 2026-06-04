@@ -54,6 +54,9 @@ distru/
 │   ├── customer-import-workflow.md
 │   ├── order-writeback-workflow.md
 │   └── assembly-import-workflow.md
+├── coverage/             ← BudTags integration-coverage audits (Tier 2 — what OUR importers map + our gaps, NOT wire-contract)
+│   ├── field-coverage-audit.md     ← Per-endpoint field-coverage matrix (5-state flag, gaps, live-probe findings)
+│   └── cross-importer-audit.md     ← Distru vs LeafLink vs Canix importer comparison
 └── schemas/              ← OpenAPI JSON specs (Tier 3 — partial; expand as samples are captured)
     ├── openapi-sales-orders.json
     ├── openapi-purchase-orders.json
@@ -71,6 +74,7 @@ distru/
 |------|------|-------------|---------|
 | 1 | `SKILL.md` | Always | Endpoint index, routing rules, critical conventions (kebab-case, etc.) |
 | 2 | `categories/`, `patterns/`, `scenarios/` | On demand | Domain docs, patterns, workflows |
+| 2 | `coverage/` | On demand | BudTags integration-coverage audits (which fields our importers map + our gaps) — distinct from the wire-contract category/schema docs |
 | 3 | `schemas/` | On demand | OpenAPI specs (stubs; expanded from live samples) |
 
 ## API Domains and Endpoints (18 GET + 5 write)
