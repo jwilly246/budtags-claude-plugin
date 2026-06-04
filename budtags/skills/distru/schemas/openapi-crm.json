@@ -1,39 +1,77 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "Distru Public API - CRM", "version": "v1" },
+  "info": { "title": "Distru Public API - CRM", "version": "v1", "description": "Reconciled with live wire shapes 2026-05-25. See categories/crm.md for full field grids and the reconciliation note covering 17 phantom fields removed + several wire-only fields added." },
   "servers": [{ "url": "https://app.distru.com/public/v1" }],
   "paths": {
     "/companies": {
       "get": {
         "operationId": "listCompanies",
+        "description": "List companies. Page size 5,000. NO relationship_type filter (tenant-customizable enum — silently ignored). NO tags[] filter (not in wire). Companies unify customers AND vendors via the relationship_type {id,name}|null object.",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
           { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
-          { "name": "relationship_type", "in": "query", "schema": { "type": "string", "enum": ["CUSTOMER", "VENDOR"] } },
-          { "name": "category", "in": "query", "schema": { "type": "string" } }
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "name", "in": "query", "schema": { "type": "string" }, "description": "Substring match" },
+          { "name": "license_number", "in": "query", "schema": { "type": "string" } },
+          { "name": "deleted", "in": "query", "schema": { "type": "string", "enum": ["include", "only", "exclude"] }, "description": "Tri-state. `include` returns soft-deleted rows with deleted_at populated." }
         ],
-        "responses": { "200": { "description": "Paginated companies" } }
+        "responses": { "200": { "description": "Paginated companies (~25 fields per record — see categories/crm.md)" } }
       },
-      "post": { "operationId": "createCompany", "responses": { "201": { "description": "Created (UPSERT)" } } }
+      "post": {
+        "operationId": "upsertCompany",
+        "description": "UPSERT. id optional for create. outstanding_balance_threshold is in INTEGER CENTS (not decimal dollars).",
+        "responses": { "200": { "description": "Created or updated" } }
+      }
     },
     "/companies/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-      "put": { "operationId": "updateCompany", "responses": { "200": { "description": "Updated" } } }
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getCompany", "responses": { "200": { "description": "Same shape as list (~25 fields)" } } }
     },
     "/contacts": {
       "get": {
         "operationId": "listContacts",
+        "description": "List contacts. Page size 1,000. NO tags[] filter (not in wire). Note: contacts emit `phone_number`/`description`/`work_phone_number` etc., NOT the previously-documented `phone`/`notes` field names.",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
-          { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "company_id", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "email", "in": "query", "schema": { "type": "string" }, "description": "Substring match" },
+          { "name": "deleted", "in": "query", "schema": { "type": "string", "enum": ["include", "only", "exclude"] } }
         ],
-        "responses": { "200": { "description": "Paginated contacts" } }
+        "responses": { "200": { "description": "Paginated contacts (~17 paths per record — see categories/crm.md)" } }
       },
-      "post": { "operationId": "createContact", "responses": { "201": { "description": "Created (UPSERT)" } } }
+      "post": {
+        "operationId": "upsertContact",
+        "description": "UPSERT. DO NOT send full_name — server-derived from first_name+last_name; sending it returns HTTP 400.",
+        "responses": { "200": { "description": "Created or updated" } }
+      }
     },
     "/contacts/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-      "put": { "operationId": "updateContact", "responses": { "200": { "description": "Updated" } } }
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getContact", "responses": { "200": { "description": "Same shape as list" } } }
+    },
+    "/locations": {
+      "get": {
+        "operationId": "listLocations",
+        "description": "List locations. Page size 1,000. Address is a single concatenated string, not structured. Returns BOTH license_id (always scalar UUID) AND license (MIXED TYPE — sometimes {id,license_number} object, sometimes plain string). When nested inside /companies.locations[], only license_id is present (no license field at all). Use license_id as the stable join key.",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "company_id", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "deleted", "in": "query", "schema": { "type": "string", "enum": ["include", "only", "exclude"] } }
+        ],
+        "responses": { "200": { "description": "Paginated locations (7 fields per record). NOTE: is_shipping/is_billing/is_archived are NOT in wire despite earlier docs." } }
+      },
+      "post": { "operationId": "upsertLocation", "responses": { "200": { "description": "Created or updated (UPSERT)" } } }
+    },
+    "/locations/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getLocation", "responses": { "200": { "description": "Same 7-field shape as list" } } }
     }
   }
 }

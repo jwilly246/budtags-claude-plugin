@@ -1,73 +1,149 @@
 # Purchasing Domain — Purchases
 
-The Distru Purchasing domain covers vendor-facing purchase orders. Structurally similar to Orders (line items inline, payment-insertion shape on PUT), but the counterparty Company is a vendor rather than a customer.
+The Distru Purchasing domain covers supplier-facing purchase orders. Purchases follow a tight 5-value lifecycle and exhibit the same UPPERCASE-response casing convention as Invoices, but unlike Orders/Invoices the wire payload is markedly leaner — no creator/owner, no billing/shipping locations, no per-line cost columns.
+
+**Phase 0.5 audited 2026-05-21.** **Re-probed against live API 2026-05-26 (563 records / 16,837 line items)** — that probe overturned several documented fields the original audit had wrong; see "Probe corrections" below.
+
+Mapping doc: `/Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md`.
 
 ## Endpoints
 
 | Method | Path | Operation | Notes |
 |--------|------|-----------|-------|
-| GET | `/public/v1/purchases` | List purchases | Page-number pagination |
-| GET | `/public/v1/purchases/{id}` | Get one purchase | Line items, payments, custom fields inline |
-| POST | `/public/v1/purchases` | Create purchase | UPSERT — line items inline |
-| PUT | `/public/v1/purchases/{id}` | Update purchase / insert payment | Same `op: "INSERT payment"` shape as Invoices |
+| GET | `/public/v1/purchases` | List purchases | Page size 500. |
+| GET | `/public/v1/purchases/{id}` | Get one purchase | Same 12-field shape as list. |
+| POST | `/public/v1/purchases` | Create or update purchase | UPSERT. **Cannot edit status past `Pending`** (Distru server-side rule — returns HTTP 400 on attempt). |
+| POST | `/public/v1/purchases/{id}/payments` | Insert payment | **WRITE-ONLY** — payment ledger not exposed via GET. |
 
-## Purchase entity shape (high-level)
+## Purchase entity shape (12 top-level fields — all 563/563 records populate every field)
 
 ```jsonc
 {
-  "id": "pur_...",
-  "purchase_number": "PO-205",
-  "status": "RECEIVED",
-  "company_id": "co_...",      // vendor company
-  "line_items": [
-    {
-      "id": "pli_...",
-      "product_id": "prd_...",
-      "batch_id": "bat_...",   // received-into batch
-      "quantity": 50,
-      "unit_cost": 12.50,
-      "subtotal": 625.00
-    }
-  ],
-  "payments": [
-    { "amount": 625.00, "method": "ACH", "received_at": "..." }
-  ],
-  "subtotal": 625.00,
-  "total": 625.00,
-  "received_datetime": "2026-05-10T14:00:00Z",
-  "custom_fields": { /* ... */ },
-  "created_at": "...",
-  "updated_at": "..."
+  "id": "<uuid>",
+  "purchase_number": "PO-0000603",                 // human-readable, preserved on import
+  "status": "COMPLETED",                            // 5-value enum, UPPERCASE in response
+  "company": {                                      // SUPPLIER company — 3-field embed
+    "id": "<uuid>",
+    "name": "...",
+    "updated_datetime": "..."
+  },
+  "order_datetime": "2026-05-22T15:58:20.656000Z", // ISO timestamp — when PO was placed
+  "due_datetime":   "2026-05-30T15:58:20.000000Z", // ISO timestamp — expected receipt
+  "inserted_datetime": "2026-05-22T15:58:20.000Z", // ISO timestamp — Distru record create
+  "updated_datetime":  "2026-05-22T16:04:20.940Z", // ISO timestamp — incremental sync pivot
+  "total": "10358.94",                              // signed decimal string
+  "items":      [ /* PurchaseLineItem[] inline — 11 fields each */ ],
+  "charges":    [ /* Charge[] inline — typically empty (~96.5% of records) */ ],
+  "custom_data": []                                 // tenant custom fields
+  // FIELDS THAT DO NOT EXIST on /purchases (despite earlier doc claims — see "Probe corrections"):
+  //   creator, owner, payments, billing_location, shipping_location,
+  //   purchase_datetime, delivery_datetime, completion_datetime, notes,
+  //   metrc_transfer_id
 }
 ```
 
-## Status lifecycle (observed)
+### PurchaseLineItem (11 fields — all 16,837/16,837 line items populate every field)
 
+```jsonc
+{
+  "id": "<uuid>",
+  "product": {                                     // 4-field embed
+    "id": "<uuid>",
+    "name": "LJA Holdings | Bulk | Trim",
+    "sku":  "LJA-BUL-MTR",
+    "updated_datetime": "..."
+  },
+  "batch": {                                       // 3-field embed (or null)
+    "id": "<uuid>",
+    "name": "B1",
+    "batch_number": null
+  },
+  "package": {                                     // 5-field embed — includes metrc_label
+    "id": "<uuid>",
+    "metrc_label": "1A4050300029D89000020513",
+    "compliance_label": "1A4050300029D89000020513",
+    "batch_number": null,
+    "status": "active"
+  },
+  "location": {                                    // 5-field embed — includes address
+    "id": "<uuid>",
+    "name": "Freezer",
+    "address": "24247 Gibson Dr, Warren, MI 48089, US",
+    "company_id": "<uuid>",
+    "license_id": "<uuid>"
+  },
+  "quantity":            "100.000000000",          // 9-digit decimal precision
+  "compliance_quantity": "100.0000",               // 4-digit precision when present
+  "received_quantity":   "100.000000000",
+  "price":      "12.34",                            // post-discount unit price
+  "price_base": "15.00",                            // pre-discount unit price (Distru's MSRP alt)
+  "is_sample":  false
+  // NO cost fields — cost lives on the linked Batch/Package, NOT on PO line items.
+  // NO returned_quantity — PO line items only ship received_quantity (returns happen
+  //                         via separate adjustment, not as a PO line-item field).
+}
 ```
-DRAFT → CONFIRMED → RECEIVED → PAID → COMPLETED
-                          └────→ VOID
+
+## Status enum (5 values — Title Case INPUT → UPPERCASE RESPONSE)
+
+| Filter value (Title Case) | Response value (UPPERCASE) |
+|---|---|
+| `Pending` | `PENDING` |
+| `Partial` | `PARTIAL` |
+| `Received` | `RECEIVED` |
+| `Returned` | `RETURNED` |
+| `Canceled` | `CANCELED` (single L!) |
+
+Distru transforms the filter input to UPPERCASE in the response. The filter param `status[]` accepts the Title Case form only. In live data (563 records on the audit tenant): 559 COMPLETED, 4 PENDING — most POs land at COMPLETED quickly.
+
+## Filter parameters
+
+| Filter | Type | Notes |
+|---|---|---|
+| `due_datetime` | comma-range string | |
+| `order_datetime` | comma-range string | |
+| `inserted_datetime` | comma-range string | |
+| `updated_datetime` | comma-range string | **Canonical incremental-sync filter.** |
+| `status[]` | bracket array | Title Case values (`Pending`, `Received`, etc.) |
+| `purchase_number` | string | Substring match |
+| `page[number]` | integer | |
+
+> **Removed filters** (claimed by docs but not verified against live API): `purchase_datetime`, `delivery_datetime`. The /purchases wire response doesn't include either as a top-level field — and Distru's silent-ignore-unknown-filter policy means a typo'd filter returns unfiltered data. Stick to the verified set above.
+
+## Server-side immutability — IMPORTANT WRITE CONSTRAINT
+
+**A purchase whose status has advanced past `Pending` cannot be edited.** Distru returns HTTP 400 with an error along the lines of `"Cannot edit a purchase that is not Pending"`. This breaks the typical "sync down → edit locally → write back" loop for received/returned/canceled purchases.
+
+Migration implication: writeback to a Distru purchase only works while it's still `Pending`. Once received, the purchase is effectively frozen. Plan writeback to be staged at the `Pending` state only.
+
+## Write safety
+
+- POST is **UPSERT** — same payload creates if new, updates if `id` provided (and current status is `Pending`).
+- **Non-sparse updates** — omitting items[] or charges[] from a PATCH-equivalent POST deletes them. Always send the complete current state.
+- No idempotency keys — reconcile via response `id` capture on retry.
+- For Metrc transfer creation inline with the purchase, `metrc_transfer_template_*` fields are accepted (same as on /orders).
+- Like Orders/Invoices, payments are **write-only** via `POST /purchases/{id}/payments`.
+
+## Payment write (POST /purchases/{id}/payments)
+
+```php
+$response = $api->post("/purchases/{$purchaseId}/payments", [
+    'payment_method_id' => '<uuid>',                            // REQUIRED
+    'amount' => 100.01,                                         // REQUIRED — decimal
+    'payment_datetime' => '2020-01-01T00:00:00.000000Z',        // REQUIRED
+    'description' => 'Payment for purchase',                    // REQUIRED
+    'quickbooks_deposit_account_id' => 'QBD-123',               // EITHER this OR _name
+    // OR
+    'quickbooks_deposit_account_name' => 'QBD-NAME',
+]);
 ```
 
-## Payment insertion shape
-
-Same as Invoices — see `categories/sales-orders.md` for the canonical example. Substitute the URL for `/public/v1/purchases/{id}`.
-
-## Filters (query-string)
-
-| Param | Meaning |
-|-------|---------|
-| `updated_at_from`, `updated_at_to` | Incremental sync window |
-| `status` | Status filter |
-| `company_id` | Filter to a single vendor |
-
-## Write Safety
-
-- POST and PUT are both **UPSERT**.
-- **No idempotency keys** — capture `id` and reconcile.
-- Line items are inline — treat PUT as full replacement of the line-items array unless verified otherwise.
+**Differs from invoice payments**: QB account type for purchase payments must be **"Bank"** or **"Credit Card"** (NOT "Other Current Asset"). Distru enforces this server-side.
 
 ## Cross-references
 
-- Vendor lookup: `categories/crm.md`
+- Vendor/company lookup: `categories/crm.md`
 - Product/batch lookup: `categories/products.md`, `categories/inventory.md`
-- Write semantics: `patterns/write-safety.md`
+- Inventory consequence (received purchases create batches/packages): `scenarios/order-import-workflow.md`
+- Write semantics deep-dive: `patterns/write-safety.md`
+- Filter conventions: `patterns/filtering.md`

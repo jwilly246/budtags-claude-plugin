@@ -1,41 +1,83 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "Distru Public API - Products", "version": "v1" },
+  "info": { "title": "Distru Public API - Products", "version": "v1", "description": "Reconciled with live wire shapes 2026-05-25. See categories/products.md for full field grids, read/write field-name inversions, and the list of formerly-documented fields that are NOT in the wire (compliance_type, metrc_item_name, metrc_item_category, upc, tags, is_inactive, is_archived, primary_test_result, internal_notes, inserted_datetime, image_urls)." },
   "servers": [{ "url": "https://app.distru.com/public/v1" }],
   "paths": {
     "/products": {
       "get": {
         "operationId": "listProducts",
+        "description": "List products. Page size 5,000. Eventually consistent ~1s. NO /brands /categories /subcategories /product-lines endpoints exist — reference data discoverable only via embedded refs on Product responses.",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
           { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
-          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtFrom" },
-          { "name": "brand_id", "in": "query", "schema": { "type": "string" } },
-          { "name": "category", "in": "query", "schema": { "type": "string" } }
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "name", "in": "query", "schema": { "type": "string" }, "description": "Substring match" },
+          { "name": "sku", "in": "query", "schema": { "type": "string" } },
+          { "name": "brand_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "category_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } }, "description": "NOTE: category_id, not product_category_id" },
+          { "name": "vendor_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "deleted", "in": "query", "schema": { "type": "string", "enum": ["include", "only", "exclude"] }, "description": "Tri-state. `include` returns soft-deleted rows with deleted_at populated." },
+          { "name": "menu_id", "in": "query", "schema": { "type": "string" }, "description": "COMMA-STRING multi-value (NOT bracket array) — odd one out: ?menu_id=uuid1,uuid2" }
         ],
-        "responses": { "200": { "description": "Paginated products" } }
+        "responses": { "200": { "description": "Paginated products (~26 wire keys per record — see categories/products.md). NO upc, NO tags, NO compliance_type, NO metrc_item_name/category, NO primary_test_result (those are doc-only, never emitted)." } }
       },
-      "post": { "operationId": "createProduct", "responses": { "201": { "description": "Created (UPSERT)" } } }
+      "post": {
+        "operationId": "upsertProduct",
+        "description": "UPSERT. READ/WRITE FIELD INVERSIONS: read vendor/product_group/brand as full embeds; write vendor_id/group_id/brand_id. is_active inverts to is_inactive on write.",
+        "responses": { "200": { "description": "Created or updated" } }
+      }
     },
     "/products/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-      "get": { "operationId": "getProduct", "responses": { "200": { "description": "Product with brand/strain/POS mappings" } } },
-      "put": { "operationId": "updateProduct", "responses": { "200": { "description": "Updated" } } }
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getProduct", "responses": { "200": { "description": "Same shape as list — 26 wire keys" } } }
     },
-    "/test_results": {
+    "/test-results": {
       "get": {
         "operationId": "listTestResults",
+        "description": "List test results. HYPHEN slug (NOT /test_results — that returns 404). Page size 5,000. Eventually consistent ~1s. Decision #5 REVERSED in Phase 0.5 — test results ARE importable.",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "package_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "product_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } }
+        ],
+        "responses": { "200": { "description": "Paginated test results. additional_test_results is an OPEN MAP — store as JSON." } }
+      }
+    },
+    "/test-results/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getTestResult", "responses": { "200": { "description": "Test result — wire keys: id, name, lab_name, lab_license_number (NOT license_number), release_date (NOT result_datetime), package_id, batch_id, is_primary, mg_per_unit_type, granular thc_/cbd_ percentage+mg fields, additional_test_results open map, updated_datetime. NO metrc_lab_test_id, product_id, sample_id, expiration_datetime, passed_test, test_status, moisture_content, water_activity, inserted_datetime, potency_thc/cbd — all skill-doc fiction." } } }
+    },
+    "/product-pos-mappings": {
+      "get": {
+        "operationId": "listProductPosMappings",
+        "description": "List POS mappings. HYPHEN slug. id is INTEGER (not UUID). inserted_at/updated_at use _at suffix (not _datetime — opposite of every other entity).",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
           { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
         ],
-        "responses": { "200": { "description": "Paginated test results (200+ field types)" } }
+        "responses": { "200": { "description": "Paginated POS mappings" } }
       },
-      "post": { "operationId": "createTestResult", "responses": { "201": { "description": "Created (UPSERT)" } } }
+      "post": { "operationId": "upsertProductPosMapping", "responses": { "200": { "description": "Created or updated" } } }
     },
-    "/test_results/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-      "put": { "operationId": "updateTestResult", "responses": { "200": { "description": "Updated" } } }
+    "/product-pos-mappings/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+      "get": { "operationId": "getProductPosMapping", "responses": { "200": { "description": "POS mapping" } } },
+      "delete": {
+        "operationId": "deleteProductPosMapping",
+        "description": "The ONLY DELETE endpoint in the entire Distru public API.",
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/custom-fields": {
+      "post": {
+        "operationId": "createCustomFieldDefinition",
+        "description": "HYPHEN slug, POST-ONLY (no GET). Returns INTEGER id. Read custom field definitions only via custom_data[] on entity responses.",
+        "responses": { "200": { "description": "Custom field definition created" } }
+      }
     }
   }
 }

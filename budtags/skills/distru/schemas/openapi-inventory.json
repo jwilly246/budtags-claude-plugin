@@ -1,47 +1,89 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "Distru Public API - Inventory", "version": "v1" },
+  "info": { "title": "Distru Public API - Inventory", "version": "v1", "description": "Phase 0.5 audited 2026-05-21. See categories/inventory.md for full field grids and cross-endpoint filter inconsistencies." },
   "servers": [{ "url": "https://app.distru.com/public/v1" }],
   "paths": {
     "/batches": {
       "get": {
         "operationId": "listBatches",
+        "description": "List batches. Page size 5,000. READ-ONLY (no POST). Filter uses SINGULAR product_id (vs /packages which uses PLURAL product_ids[]).",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
           { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
-          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtFrom" },
-          { "name": "include_costs", "in": "query", "schema": { "type": "boolean" }, "description": "Include actual_cost and default_cost fields" },
-          { "name": "location_id", "in": "query", "schema": { "type": "string" } }
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "product_id", "in": "query", "schema": { "type": "string", "format": "uuid" }, "description": "SINGULAR — not product_ids[]" },
+          { "name": "location_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "strain_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "creation_source", "in": "query", "schema": { "type": "string" }, "description": "Scalar string (PURCHASE|ORDER|ASSEMBLY|ADJUSTMENT|MANUAL etc)" },
+          { "name": "license_number", "in": "query", "schema": { "type": "string" } },
+          { "name": "include_costs", "in": "query", "schema": { "type": "boolean" }, "description": "When true, response includes cost_per_unit_actual/_default and total_cost_actual/_default. Otherwise these fields are OMITTED from JSON (not null)." }
         ],
         "responses": { "200": { "description": "Paginated batches" } }
-      },
-      "post": { "operationId": "createBatch", "responses": { "201": { "description": "Created" } } }
+      }
+    },
+    "/batches/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getBatch", "responses": { "200": { "description": "Single batch" } } }
     },
     "/packages": {
       "get": {
         "operationId": "listPackages",
-        "description": "READ-ONLY via public API",
+        "description": "List packages. Page size 5,000. READ-ONLY. Filter uses PLURAL product_ids[] AND PLURAL statuses[] (vs /orders which uses SINGULAR status[]).",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
-          { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "product_ids[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } }, "description": "PLURAL — not product_id" },
+          { "name": "statuses[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "enum": ["active", "finished", "sold", "transferred", "discontinued", "selling", "assembling"] } }, "description": "PLURAL — not status[]. 7 enum values verified live. RESPONSE returns lowercase; FILTER input uppercase." },
+          { "name": "location_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "batch_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "include_costs", "in": "query", "schema": { "type": "boolean" } }
         ],
         "responses": { "200": { "description": "Paginated packages" } }
       }
     },
-    "/stock_adjustments": {
+    "/packages/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getPackage", "responses": { "200": { "description": "Single package" } } }
+    },
+    "/adjustments": {
       "get": {
-        "operationId": "listStockAdjustments",
+        "operationId": "listAdjustments",
+        "description": "List adjustments. KEBAB-CASE — /stock_adjustments and /stock-adjustments BOTH return 404. Page size 5,000. READ-ONLY. Minimal filter surface. reason and category are TENANT-CUSTOMIZABLE enums (no filter on either).",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
           { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
-          { "name": "batch_id", "in": "query", "schema": { "type": "string" } }
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "package_id", "in": "query", "schema": { "type": "string", "format": "uuid" } }
         ],
-        "responses": { "200": { "description": "Paginated stock adjustments" } }
-      },
-      "post": {
-        "operationId": "createStockAdjustment",
-        "description": "APPEND-ONLY - corrections require a counter-adjustment",
-        "responses": { "201": { "description": "Created" } }
+        "responses": { "200": { "description": "Paginated adjustments. next_page is FULL URL STRING or null/absent." } }
+      }
+    },
+    "/adjustments/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getAdjustment", "responses": { "200": { "description": "Single adjustment" } } }
+    },
+    "/inventory": {
+      "get": {
+        "operationId": "getInventorySnapshot",
+        "description": "Current on-hand snapshot grouped by dimensions. grouping[] is REQUIRED — without it returns HTTP 400. NOT a queryable history. Shape varies by grouping[] values.",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "name": "grouping[]", "in": "query", "required": true, "schema": { "type": "array", "items": { "type": "string", "enum": ["PRODUCT", "LOCATION", "BATCH_NUMBER", "PACKAGE", "STRAIN"] } } },
+          { "name": "location_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "product_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "batch_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "strain_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "as_of_datetime", "in": "query", "schema": { "type": "string", "format": "date-time" }, "description": "Recent only — no deep history stored" }
+        ],
+        "responses": {
+          "200": { "description": "Grouped inventory snapshot — row shape depends on grouping[] values" },
+          "400": { "description": "Returned when grouping[] is omitted" }
+        }
       }
     }
   }

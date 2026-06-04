@@ -1,59 +1,123 @@
 # Pattern — Eventual Consistency
 
-Distru documents that **Strains and Assemblies** are **eventually consistent** — there is up to ~1 second of read-after-write lag between a write and the resource appearing on a list query.
+A subset of Distru endpoints exhibit **eventually-consistent read-after-write** behavior. A successful POST returns the resource, but subsequent GETs may not yet include it for ~1 second.
 
-> This is unique to Distru among Budtags' integrations. Canix and LeafLink are documented as strongly consistent for the same operations.
+**Phase 0.5 audited 2026-05-21.** Mapping doc: `/Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md` (Section 10).
 
-## What this means in practice
+## Affected endpoints (Phase 0.5 audit)
 
-When you write a Strain or an Assembly:
+| Endpoint | Lag observed | Notes |
+|---|---|---|
+| `/strains` | ~1s | POST returns 200 with new strain; subsequent `GET /strains?name=...` may not include it for ~1s |
+| `/assemblies` | ~1s | Same pattern — created assembly takes ~1s to appear in list. Detail GET by ID returns immediately. |
+| `/products` | ~1s | POST returns 200; list scan may briefly omit. Detail GET by ID is consistent. |
+| `/test-results` | ~1s | Same pattern as /products |
 
-1. The **write response is authoritative** — the returned `id` and fields are correct.
-2. An immediate `GET /strains` or `GET /assemblies` may **not return the new record yet**.
-3. The record is guaranteed to be visible after approximately 1 second.
+## NOT eventually consistent (Phase 0.5 audit)
 
-## What this does NOT mean
+| Endpoint | Confirmed consistent |
+|---|---|
+| `/orders` | POST → GET by id consistent. List by `updated_datetime` filter includes new order immediately. |
+| `/invoices` | Same as orders |
+| `/purchases` | Same as orders |
+| `/companies` | Consistent |
+| `/contacts` | Consistent |
+| `/locations` | Consistent |
+| `/batches`, `/packages`, `/adjustments` | Consistent (these are side-effects of order/purchase/assembly completion, not direct writes) |
 
-- It does **not** mean writes are unreliable. They are committed.
-- It does **not** mean other resources have this lag. Orders, Products, Companies, Batches, etc. are not documented with this caveat.
-- It does **not** mean the lag is exactly 1s — treat 1s as a documented floor; in practice it may be longer under load.
+## What "eventually consistent" means here
 
-## Wrong reactions (do not do)
+After `POST /strains` returns HTTP 200 with the new strain's `id`:
 
-- **Polling immediately and concluding "the write failed"** when the resource is missing from the next list query. The write succeeded; the index hasn't caught up.
-- **Querying in a tight loop** to wait for the resource to appear. This wastes API budget and the rate limit.
-- **Bumping `updated_at_from` filters** based on the write response and missing the just-written record. The record's `updated_at` is set, but the indexer may not have updated yet.
+- `GET /strains/{id}` (detail) → consistent immediately (returns the new strain).
+- `GET /strains` (list) or `GET /strains?name=NewStrain` (filtered list) → MAY NOT include the new strain for ~1s.
 
-## Right reactions
+The detail endpoint is backed by a strong-consistency primary read; the list endpoint is backed by a search index that lags. This is normal for sharded search indices (likely Elasticsearch / OpenSearch behind the scenes).
 
-- **Trust the write response body.** Capture the `id` from the POST/PUT and persist it locally.
-- **If you must re-fetch** (e.g., to confirm a related field set on the canonical record), back off **1.5 seconds minimum** and prefer a direct GET by id (`/strains/{id}` if available) over a list query.
-- **For incremental sync**, save the high-water mark as `now() - 5s` rather than the latest record's `updated_at`. This widens the next window enough to catch any laggard.
+## Why this matters for the importer
 
-## Code reference
+The naive sync pattern:
+
+1. POST a new strain
+2. GET the strain by some property (e.g., `?name=...`)
+3. Use the returned id
+
+…fails intermittently on the affected endpoints. Step 2 returns an empty list because the index hasn't caught up. The importer then thinks the create failed and may retry, creating a duplicate.
+
+## Mitigation patterns
+
+### Pattern 1 — Use the POST response
+
+The POST response includes the new resource's `id`. Use it directly instead of querying:
 
 ```php
-// Creating an assembly: trust the response, don't immediately re-list
-$response = $api->post('/assemblies', $payload);
-$assemblyId = $response['data']['id'];
-$importJob->update(['last_assembly_id' => $assemblyId]);
-
-// If you MUST re-fetch (rare), sleep first
-sleep(2);
-$verification = $api->get("/assemblies/{$assemblyId}");
+$result = $api->post('/strains', ['name' => 'New Strain', 'type' => 'Hybrid']);
+$strainId = $result['id'];      // available immediately, consistent
 ```
 
-## Incremental sync resilience
+This is the recommended pattern — no querying needed at all.
+
+### Pattern 2 — Detail GET, not list query
+
+When you must verify, use `GET /strains/{id}` instead of `GET /strains?name=...`:
 
 ```php
-// Save the high-water mark with a small buffer to absorb consistency lag
-$importJob->update([
-    'last_synced_at' => now()->subSeconds(5)->toIso8601String(),
-]);
+$verify = $api->get("/strains/{$strainId}");      // strong consistency on detail GET
 ```
+
+### Pattern 3 — Polling with backoff (when forced to use list query)
+
+If you absolutely must query by a non-id property and can't use the POST response:
+
+```php
+function findStrainByName(string $name): ?array
+{
+    $retries = 0;
+    $maxRetries = 5;
+    $delay = 200_000;   // 200ms initial
+
+    while ($retries < $maxRetries) {
+        $result = $api->get('/strains', ['name' => $name]);
+        if (!empty($result['data'])) {
+            return $result['data'][0];
+        }
+        usleep($delay);
+        $delay *= 2;     // backoff
+        $retries++;
+    }
+    return null;
+}
+```
+
+Bound the retry budget — eventual consistency lag should be sub-second. If you're still empty after 5 retries (~6.4s total), the resource truly doesn't exist.
+
+## Detection in tests
+
+When writing Phase B integration tests, account for the ~1s lag:
+
+```php
+public function test_strain_create_appears_in_list(): void
+{
+    $strain = $api->post('/strains', ['name' => 'Test Strain', 'type' => 'Hybrid']);
+
+    // Detail GET is immediately consistent — assert against this
+    $detailGet = $api->get("/strains/{$strain['id']}");
+    $this->assertEquals($strain['id'], $detailGet['id']);
+
+    // Don't assert against list query immediately — it lags
+    // If you must, add sleep or polling:
+    sleep(2);
+    $listResult = $api->get('/strains', ['name' => 'Test Strain']);
+    $this->assertNotEmpty($listResult['data']);
+}
+```
+
+## Why this isn't documented by Distru
+
+Distru's public docs don't mention eventual consistency. The behavior was observed empirically in Phase 0.5 during live API audit. It is **not a bug** — it's a normal property of separating primary writes from search-index reads. But the docs don't warn about it, so importer code must.
 
 ## Cross-references
 
-- Manufacturing endpoint: `categories/manufacturing.md`
-- Filtering and incremental sync: `patterns/filtering.md`
-- Write semantics: `patterns/write-safety.md`
+- Pagination interaction (final-page detection): `patterns/pagination.md`
+- Write safety: `patterns/write-safety.md`
+- Mapping doc Section 10 (API Quirks): canonical reference

@@ -1,60 +1,75 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "Distru Public API - Sales", "version": "v1" },
+  "info": { "title": "Distru Public API - Sales (Orders + Invoices)", "version": "v1", "description": "Phase 0.5 audited 2026-05-21. See categories/sales-orders.md for full field grids." },
   "servers": [{ "url": "https://app.distru.com/public/v1" }],
   "paths": {
     "/orders": {
       "get": {
         "operationId": "listOrders",
-        "summary": "List orders",
+        "description": "List orders. Page size 500. UNFILTERED CALL TIMES OUT (HTTP 500) on high-volume orgs — always include updated_datetime window.",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
           { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
-          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtFrom" },
-          { "$ref": "openapi-shared.json#/components/parameters/UpdatedAtTo" },
-          { "name": "status", "in": "query", "schema": { "type": "string" } },
-          { "name": "company_id", "in": "query", "schema": { "type": "string" } }
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "order_datetime", "in": "query", "schema": { "type": "string" }, "description": "Comma-range" },
+          { "name": "delivery_datetime", "in": "query", "schema": { "type": "string" }, "description": "Comma-range" },
+          { "name": "due_datetime", "in": "query", "schema": { "type": "string" }, "description": "Comma-range" },
+          { "name": "status[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "enum": ["PENDING", "PROCESSING", "READY_TO_SHIP", "DELIVERING", "DELIVERED", "COMPLETED", "CANCELED"] } }, "description": "UPPERCASE enum on input; CANCELED single-L (CANCELLED returns 400). status[] is SINGULAR (vs /packages which uses plural statuses[])." },
+          { "name": "company_id", "in": "query", "schema": { "type": "string", "format": "uuid" }, "description": "Undocumented in formal Parameters table but works." }
         ],
         "responses": {
           "200": { "description": "Paginated orders", "content": { "application/json": { "schema": { "$ref": "openapi-shared.json#/components/schemas/PaginatedResponse" } } } },
-          "401": { "$ref": "openapi-shared.json#/components/responses/Unauthorized" }
+          "401": { "$ref": "openapi-shared.json#/components/responses/Unauthorized" },
+          "500": { "description": "Server timeout (unfiltered call on high-volume org)" }
         }
       },
       "post": {
-        "operationId": "createOrder",
-        "summary": "Create order (UPSERT semantics)",
-        "responses": { "201": { "description": "Created" }, "401": { "$ref": "openapi-shared.json#/components/responses/Unauthorized" } }
+        "operationId": "upsertOrder",
+        "description": "UPSERT. Non-sparse — omitting items[] or charges[] DELETES them. There is no PUT verb — POST handles both create and update.",
+        "responses": { "200": { "description": "Created or updated" } }
       }
     },
     "/orders/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
       "get": {
         "operationId": "getOrder",
-        "responses": { "200": { "description": "Order with inline line items" }, "404": { "$ref": "openapi-shared.json#/components/responses/NotFound" } }
-      },
-      "put": {
-        "operationId": "updateOrder",
-        "summary": "Update order (UPSERT semantics; echo full line_items array)",
-        "responses": { "200": { "description": "Updated" }, "404": { "$ref": "openapi-shared.json#/components/responses/NotFound" } }
+        "responses": { "200": { "description": "23-field order with inline items[] and charges[]" }, "404": { "$ref": "openapi-shared.json#/components/responses/NotFound" } }
       }
     },
     "/invoices": {
       "get": {
         "operationId": "listInvoices",
+        "description": "List invoices. Page size 500. Richest filter surface in the API (8 params). NO payments[] field in response — payments write-only.",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
-          { "$ref": "openapi-shared.json#/components/parameters/PageSize" }
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "invoice_datetime", "in": "query", "schema": { "type": "string" }, "description": "Comma-range" },
+          { "name": "due_datetime", "in": "query", "schema": { "type": "string" }, "description": "Comma-range" },
+          { "name": "invoice_number", "in": "query", "schema": { "type": "string" }, "description": "Substring match" },
+          { "name": "order_id[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "format": "uuid" } } },
+          { "name": "status[]", "in": "query", "schema": { "type": "array", "items": { "type": "string", "enum": ["Not Paid", "Over Paid", "Fully Paid", "Partially Paid"] } }, "description": "Title Case INPUT — response returns UPPERCASE_UNDERSCORE (NOT_PAID etc)." }
         ],
         "responses": { "200": { "description": "Paginated invoices" } }
+      },
+      "post": {
+        "operationId": "upsertInvoice",
+        "description": "UPSERT. order_id required (not in formal Parameters table but required in practice). Non-sparse updates.",
+        "responses": { "200": { "description": "Created or updated" } }
       }
     },
     "/invoices/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-      "get": { "operationId": "getInvoice", "responses": { "200": { "description": "Invoice with payments" } } },
-      "put": {
-        "operationId": "updateInvoice",
-        "summary": "Update invoice OR insert payment (use op: 'INSERT payment')",
-        "responses": { "200": { "description": "Updated" } }
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getInvoice", "responses": { "200": { "description": "17-field invoice; embedded order has Title Case status (different from /orders UPPERCASE)" } } }
+    },
+    "/invoices/{id}/payments": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "post": {
+        "operationId": "insertInvoicePayment",
+        "description": "WRITE-ONLY. There is no corresponding GET — payment ledger NOT exposed. QB account type must be 'Bank' or 'Other Current Asset' (differs from purchases which require 'Bank'/'Credit Card').",
+        "responses": { "200": { "description": "Payment inserted" } }
       }
     }
   }

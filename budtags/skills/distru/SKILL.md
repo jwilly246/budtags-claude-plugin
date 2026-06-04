@@ -2,12 +2,87 @@
 name: distru
 description: Use this skill when working with Distru cannabis ERP API integration, managing sales orders, syncing products and inventory, importing assemblies/manufacturing data, or handling companies/contacts from Distru.
 agent: distru-specialist
-version: 1.0.0
+version: 2.0.0
 ---
 
 # Distru API Reference Skill
 
 You are now equipped with comprehensive knowledge of the **Distru Public API v1** via **modular category files**, **scenario templates**, and **pattern guides**. This skill uses **progressive disclosure** to load only the information relevant to your task.
+
+**Skill content last reconciled with Phase 0.5 audit findings: 2026-05-21.** Authoritative project-level reference is `/Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md` — if this skill disagrees with that document, the mapping doc wins.
+
+---
+
+## Critical conventions (read first)
+
+These are **NON-OBVIOUS** facts derived from live API verification:
+
+### URL slugs use KEBAB-CASE for compound names
+
+Distru URLs use kebab-case for multi-word resource names. Field/model names within payloads use snake_case. **The two are different naming spaces.** Six endpoints were initially documented with snake_case URLs in this skill and turned out to all be wrong:
+
+| Wrong (snake_case) | Right (kebab-case) |
+|---|---|
+| `/stock_adjustments` | `/adjustments` |
+| `/test_results` | `/test-results` |
+| `/payment_methods` | `/payment-methods` |
+| `/product_pos_mappings` | `/product-pos-mappings` |
+| `/custom_fields` | `/custom-fields` |
+| `/file_attachments` | `/file-attachments` |
+
+Single-word URLs have no separator: `/companies`, `/contacts`, `/locations`, `/products`, `/strains`, `/batches`, `/packages`, `/orders`, `/invoices`, `/purchases`, `/assemblies`, `/menus`, `/users`, `/inventory`.
+
+### `next_page` is a FULL URL STRING, not an integer
+
+```jsonc
+{
+  "data": [...],
+  "next_page": "https://app.distru.com/public/v1/orders?page[number]=2&page[size]=100"
+  // OR null when no more pages
+  // OR the key may be ABSENT entirely (not null) on the last page
+}
+```
+
+Terminal check: `while (! empty($body['next_page'])) { ... }` — works for both null and missing-key cases.
+
+### `page[size]` is non-functional on most endpoints
+
+Small endpoints (`/companies`, `/contacts`, `/locations`, `/products`, `/test-results`, `/adjustments`, `/strains`) ignore `page[size]` and return the entire dataset (or up to their page cap) in one response. Large endpoints (`/packages`, `/invoices`, `/purchases`, `/assemblies`, `/orders`, `/batches`) cap at their implicit page size regardless of what you request.
+
+### Page sizes vary by endpoint (4 distinct caps)
+
+| Cap | Endpoints |
+|---|---|
+| 500 | `/orders`, `/purchases`, `/menus` |
+| 1,000 | `/contacts`, `/locations`, `/users` |
+| 5,000 | `/products`, `/packages`, `/companies`, `/batches`, `/adjustments`, `/test-results` |
+| 50,000 | `/strains` |
+
+### Distru silently ignores unknown filter params
+
+A typo in a filter name returns HTTP 200 with **unfiltered results** (not 400). Combined with the 5,000-record cap, this can mask bugs — your code thinks it's getting filtered data, but actually getting random records. Always sanity-check by comparing filtered vs unfiltered counts in test code.
+
+### Datetime filters use COMMA-RANGE strings (NOT `_from`/`_to` pairs)
+
+```
+?updated_datetime=2024-01-01T00:00:00Z,2024-02-01T00:00:00Z   ← from,to
+?updated_datetime=2024-01-01T00:00:00Z,                       ← from only
+?updated_datetime=,2024-02-01T00:00:00Z                       ← to only
+```
+
+Applies to ALL datetime filters (`updated_datetime`, `inserted_datetime`, `completion_datetime`, `delivery_datetime`, `due_datetime`, `order_datetime`, `invoice_datetime`).
+
+### Multi-value filters: inconsistent across endpoints
+
+Some endpoints use bracket arrays (`status[]=A&status[]=B`); others use comma-strings (`menu_id=uuid1,uuid2`). No universal rule — see per-endpoint category files.
+
+### Tenant-customizable "enums"
+
+Several fields look like fixed enums in docs but are actually tenant-defined: `Company.relationship_type`, `Adjustment.reason`, `Company.category`, `Product.category`. Different tenants have different values. Don't hard-code matchers against the documented enum list.
+
+### Detail GETs (`/{id}`) are almost universally unavailable
+
+Only `/orders/{id}` and `/invoices/{id}` work. Every other `GET /{resource}/{id}` returns 404. Importers walk lists.
 
 ---
 
@@ -15,65 +90,56 @@ You are now equipped with comprehensive knowledge of the **Distru Public API v1*
 
 When the user asks about Distru integration, you can:
 
-1. **Find Endpoints**: Search for specific endpoints by task, category, or name across ~35 operations in 7 domains
+1. **Find Endpoints**: Search ~22 documented endpoints across 7 domains
 2. **Provide Details**: Read from category files for exact request/response formats
-3. **Explain Patterns**: Reference pattern files for Bearer JWT auth, page-number pagination, query-string filtering, write semantics
+3. **Explain Patterns**: Reference pattern files for Bearer JWT auth, kebab-case URLs, comma-range filters, etc.
 4. **Generate Code**: Help implement Distru API calls in Laravel/PHP following Budtags integration patterns
-5. **Route by Domain**: Recommend endpoints based on domain context (Sales, Purchasing, CRM, Products, Inventory, Manufacturing, System)
-6. **Debug Issues**: Help troubleshoot common API integration problems (`next_page` pagination, UPSERT vs strict-create, eventual consistency on Assemblies/Strains, team-based result filtering)
-7. **Build Workflows**: Guide through complete multi-step Distru workflows (order import, product sync, write-back, assembly import)
+5. **Route by Domain**: Recommend endpoints based on domain context
+6. **Debug Issues**: Help troubleshoot common API integration problems (slug errors, silent-ignore filters, casing inconsistencies)
+7. **Build Workflows**: Guide through complete multi-step Distru workflows
 
 ---
 
 ## Available Resources
 
-This skill has access to **7 category files**, **5 scenario templates**, **7 pattern files**, and **8 OpenAPI schema files**:
+7 category files, 5 scenario templates, 7 pattern files, 8 OpenAPI schema files:
 
-### Category Files (one per API domain, loaded on demand)
+### Category Files (one per API domain)
 
-**Commerce**:
-- `categories/sales-orders.md` — Orders and Invoices (list/get/post/put, embedded line items, payment insertion)
-- `categories/purchase-orders.md` — Purchases (list/get/post/put, embedded line items, payment insertion)
-- `categories/crm.md` — Companies and Contacts (list/post/put, relationship types, custom fields)
+- `categories/sales-orders.md` — Orders and Invoices (write-only payments)
+- `categories/purchase-orders.md` — Purchases (cannot edit past Pending; non-sparse updates)
+- `categories/crm.md` — Companies, Contacts, Locations
+- `categories/products.md` — Products, TestResults (lab data), POS mappings
+- `categories/inventory.md` — Batches, Packages, Adjustments, Inventory snapshot endpoint
+- `categories/manufacturing.md` — Assemblies (3-level nesting; scalar creation_source filter)
+- `categories/system.md` — Locations, Users, Menus, PaymentMethods, Strains, CustomFields, FileAttachments
 
-**Products & Inventory**:
-- `categories/products.md` — Products and Test Results (list/get/post/put, brands, strains, POS mappings, 200+ test result field types)
-- `categories/inventory.md` — Batches, Packages, Stock Adjustments (cost tracking, append-only adjustments)
+### Pattern Files
 
-**Manufacturing & System**:
-- `categories/manufacturing.md` — Assemblies (read-only, 500/page cap, eventual consistency)
-- `categories/system.md` — Locations, custom fields, users, roles, payment methods, POS mapping reference
+- `patterns/authentication.md` — Bearer JWT
+- `patterns/pagination.md` — URL-string `next_page`, page-size variance, terminal detection
+- `patterns/filtering.md` — kebab-case URLs, comma-range datetimes, bracket vs comma-string arrays, silent-ignore-unknown
+- `patterns/error-handling.md` — HTTP status semantics (400 vs 422), opaque error bodies
+- `patterns/date-formats.md` — ISO 8601
+- `patterns/write-safety.md` — UPSERT, non-sparse updates, can't-edit-past-Pending
+- `patterns/eventual-consistency.md` — ~1s lag on Strains, Assemblies, Products, Test Results
 
-### Scenario Templates (multi-step workflow guides, loaded on demand)
+### Scenario Templates
 
-- `scenarios/product-import-workflow.md` — Import Distru products into Budtags
-- `scenarios/order-import-workflow.md` — Import Distru orders into Budtags MarketplaceOrder
-- `scenarios/customer-import-workflow.md` — Import companies + contacts as customers/vendors
-- `scenarios/order-writeback-workflow.md` — Push Budtags order changes back to Distru via PUT /orders/{id}
-- `scenarios/assembly-import-workflow.md` — Import manufacturing assemblies with eventual-consistency handling
+- `scenarios/product-import-workflow.md`
+- `scenarios/order-import-workflow.md`
+- `scenarios/customer-import-workflow.md`
+- `scenarios/order-writeback-workflow.md`
+- `scenarios/assembly-import-workflow.md`
 
-### Pattern Files (cross-cutting concerns, loaded on demand)
+### Full Documentation
 
-- `patterns/authentication.md` — Bearer JWT header, generation in Distru UI, Budtags storage
-- `patterns/pagination.md` — `page[number]` / `page[size]` style, `next_page: null` detection
-- `patterns/filtering.md` — Query-string filters per endpoint (no WHERE-string), date range, incremental sync
-- `patterns/error-handling.md` — HTTP status codes, undocumented error envelope, retry strategies
-- `patterns/date-formats.md` — ISO 8601 timestamps, assume-UTC convention
-- `patterns/write-safety.md` — UPSERT semantics (POST + PUT), no idempotency keys, append-only adjustments
-- `patterns/eventual-consistency.md` — **Distru-specific**: ~1s read-after-write lag on Strains/Assemblies
-
-### Full Documentation (reference when exact formats needed)
-
-- `schemas/` directory — 8 OpenAPI JSON files (seeded; populated as Phase B importers transcribe samples)
-- `ENTITY_TYPES.md` — TypeScript type reference for all Distru entities
+- `schemas/` — 8 OpenAPI JSON specs (mostly stubs; expanded as Phase B importers transcribe live samples)
+- `ENTITY_TYPES.md` — TypeScript type reference
 
 ---
 
-## Domain Routing (CRITICAL!)
-
-**ALWAYS determine the relevant domain before loading category files.**
-
-Distru is a seed-to-sale platform covering 7 domains. Route the user's question to the correct domain:
+## Domain Routing
 
 ### Sales Domain
 
@@ -82,25 +148,23 @@ Distru is a seed-to-sale platform covering 7 domains. Route the user's question 
 **Scenarios**: `scenarios/order-import-workflow.md`, `scenarios/order-writeback-workflow.md`
 
 **Key endpoints**:
-- `GET /public/v1/orders` — List orders (page-number pagination)
-- `GET /public/v1/orders/{id}` — Get single order (line items inline)
-- `POST /public/v1/orders` — Create order (UPSERT) WRITE
-- `PUT /public/v1/orders/{id}` — Update order (UPSERT) WRITE
-- `GET /public/v1/invoices` — List invoices
-- `GET /public/v1/invoices/{id}` — Get single invoice
-- `PUT /public/v1/invoices/{id}` — Update invoice / INSERT payment WRITE
+- `GET /public/v1/orders` — List orders. Page size 500. Status enum: 7 values (PENDING/PROCESSING/READY_TO_SHIP/DELIVERING/DELIVERED/COMPLETED/**CANCELED**). Note CANCELED with single L; CANCELLED returns 400.
+- `GET /public/v1/orders/{id}` — Detail (eventually consistent ~1s)
+- `POST /public/v1/orders` — UPSERT. Non-sparse updates. `blaze_payment_type` required for Blaze retailers.
+- `GET /public/v1/invoices` — Page size 500. Status: Title Case INPUT (`Not Paid`, `Fully Paid`, etc.); response returns UPPERCASE_UNDERSCORE (`NOT_PAID`, `FULLY_PAID`).
+- `GET /public/v1/invoices/{id}` — Detail
+- `POST /public/v1/invoices` — UPSERT. `order_id` required (not in formal docs table but required in practice).
+- `POST /public/v1/invoices/{id}/payments` — Insert payment. **WRITE-ONLY** — `payments[]` is NOT in GET responses. QB account type must be "Bank" or "Other Current Asset".
 
 ### Purchasing Domain
 
 **Keywords**: purchase, purchase order, PO, vendor order, procurement, receive
 **Load**: `categories/purchase-orders.md`
-**Related**: `categories/crm.md` (vendor lookup via Companies)
 
 **Key endpoints**:
-- `GET /public/v1/purchases` — List purchase orders
-- `GET /public/v1/purchases/{id}` — Get single PO (line items inline)
-- `POST /public/v1/purchases` — Create PO (UPSERT) WRITE
-- `PUT /public/v1/purchases/{id}` — Update PO / INSERT payment WRITE
+- `GET /public/v1/purchases` — Page size 500. Status filter uses Title Case INPUT (`Completed`, `Pending`, `Partially Received`, etc.); response returns UPPERCASE. CANNOT update PO past Pending status. Non-sparse updates.
+- `POST /public/v1/purchases` — Create/update PO
+- `POST /public/v1/purchases/{id}/payments` — Insert payment (WRITE-ONLY; QB account type "Bank" or "Credit Card")
 
 ### CRM Domain
 
@@ -109,12 +173,11 @@ Distru is a seed-to-sale platform covering 7 domains. Route the user's question 
 **Scenario**: `scenarios/customer-import-workflow.md`
 
 **Key endpoints**:
-- `GET /public/v1/companies` — List companies (filter by category, relationship type)
-- `POST /public/v1/companies` — Create company (UPSERT) WRITE
-- `PUT /public/v1/companies/{id}` — Update company WRITE
-- `GET /public/v1/contacts` — List contacts
-- `POST /public/v1/contacts` — Create contact (UPSERT) WRITE
-- `PUT /public/v1/contacts/{id}` — Update contact WRITE
+- `GET /public/v1/companies` — Page size 5,000. **`relationship_type` is TENANT-CUSTOMIZABLE**, NOT the documented CUSTOMER/VENDOR enum. Examples observed: `Current Customer`, `Current Supplier`, `Brand`, `Potential Customer`. NO `relationship_type` filter exists. Only filters: `inserted_datetime`, `updated_datetime`, `deleted` (tri-state), `page`.
+- `POST /public/v1/companies` — UPSERT
+- `GET /public/v1/contacts` — Page size 1,000. Minimal filters (datetimes + deleted). `full_name` is server-derived from first+last.
+- `POST /public/v1/contacts` — UPSERT
+- `GET /public/v1/locations` — Page size 1,000. Belongs to companies RBAC group. `address` is FLAT STRING (not nested object).
 
 ### Products Domain
 
@@ -123,13 +186,13 @@ Distru is a seed-to-sale platform covering 7 domains. Route the user's question 
 **Scenario**: `scenarios/product-import-workflow.md`
 
 **Key endpoints**:
-- `GET /public/v1/products` — List products
-- `GET /public/v1/products/{id}` — Get single product
-- `POST /public/v1/products` — Create product (UPSERT) WRITE
-- `PUT /public/v1/products/{id}` — Update product WRITE
-- `GET /public/v1/test_results` — List test results (200+ field types)
-- `POST /public/v1/test_results` — Upload test results (UPSERT) WRITE
-- `PUT /public/v1/test_results/{id}` — Update test result WRITE
+- `GET /public/v1/products` — Page size 5,000. Filters: `product_name` (substring), `menu_id` (COMMA-SEPARATED string, NOT bracket array), `menu_name`, `inserted_datetime`, `updated_datetime`, `deleted` (tri-state), `ids[]`. Field name `vendor` in response (Distru docs say `company`). `product_group` field exists (~35% populated). Brand response has `{id, name, updated_datetime}` (3 fields), NOT just `name`.
+- `POST /public/v1/products` — UPSERT. WRITE side has read/write inversions: `is_active`↔`is_inactive`, `product_group`↔`group_id`.
+- `GET /public/v1/test-results` — **HYPHEN slug!** Page size 5,000. 19 fields with `additional_test_results` open object map (~100 keys typical per record from 300+ field catalog).
+- `POST /public/v1/test-results` — Permission: `products_permissions_edit`
+- `GET /public/v1/product-pos-mappings` — **HYPHEN slug!** POLYMORPHIC response by `pos_type`. `id` is INTEGER (only endpoint!). Per-POS filter params (`blaze_retailer_id`, etc.).
+- `POST /public/v1/product-pos-mappings` — Returns 201 for create, 200 for update (unique status distinction).
+- `DELETE /public/v1/product-pos-mappings/{id}` — **The ONLY DELETE in the entire API.**
 
 ### Inventory Domain
 
@@ -137,11 +200,11 @@ Distru is a seed-to-sale platform covering 7 domains. Route the user's question 
 **Load**: `categories/inventory.md`
 
 **Key endpoints**:
-- `GET /public/v1/batches` — List batches (`include_costs` flag toggles dual-cost data)
-- `POST /public/v1/batches` — Create batch WRITE
-- `GET /public/v1/packages` — List packages (read-only via public API)
-- `GET /public/v1/stock_adjustments` — List adjustments
-- `POST /public/v1/stock_adjustments` — Create adjustment WRITE — APPEND-ONLY
+- `GET /public/v1/batches` — Page size 5,000. **`include_costs=true` required** for cost fields (gated, NOT in formal docs Parameters table). Filters: `batch_ids[]`, `product_id` (SINGULAR scalar, NOT product_ids[]), `batch_number`, datetimes, `deleted`.
+- `GET /public/v1/packages` — Page size 5,000. `include_costs=true` required. Filters: `ids[]`, `product_ids[]` (PLURAL), `location_ids[]`, **`statuses[]` (PLURAL!)** — different from /orders `status[]`. Embedded `primary_test_result` provides cannabinoid summary.
+- `GET /public/v1/inventory` — **`grouping[]` required** (PHP bracket array). Values: `PRODUCT` (required in every call), `LOCATION`, `BATCH_NUMBER`. Field `cost_default_per_unit` (word order reversed vs other endpoints).
+- `GET /public/v1/adjustments` — **NOT `/stock_adjustments`** (that 404s). Page size 5,000. **ONLY 2 filters**: `inserted_datetime`, `completion_datetime`. No entity-targeted filters — mirror is load-bearing for queries.
+- `POST /public/v1/adjustments` — Strict validation: exactly ONE of batch_id/package_id/product_id; `compliance_quantity` required for package adjustments; `waste` reason requires negative quantity.
 
 ### Manufacturing Domain
 
@@ -151,20 +214,39 @@ Distru is a seed-to-sale platform covering 7 domains. Route the user's question 
 **Scenario**: `scenarios/assembly-import-workflow.md`
 
 **Key endpoints**:
-- `GET /public/v1/assemblies` — List assemblies (read-only; filter by completion_datetime, creation_source, license_number; fixed 500/page; eventual consistency ~1s)
+- `GET /public/v1/assemblies` — Page size 500. 3-level nesting: `outputs[].ingredients[]` (inputs) + `outputs[].additional_costs[]`. Filters: `completion_datetime` (NOT updated_datetime!), `creation_source` (SCALAR, not array), `license_number`. 4 creation_source values: MANUALLY_CREATED, SPLIT_PACKAGE (often 75%+ of records), SALES_ORDER, LAB_TESTING. 3 compliance_type: METRC, BIOTRACK, NONE.
 
-**Creation sources**: `MANUALLY_CREATED`, `SPLIT_PACKAGE`, `SALES_ORDER`, `LAB_TESTING`
+### System Domain (reference data)
 
-### System Domain
-
-**Keywords**: location, warehouse, facility, custom field, user, role, payment method, POS mapping
+**Keywords**: location, warehouse, facility, custom field, user, role, payment method, POS mapping, strain, menu, file attachment
 **Load**: `categories/system.md`
 
 **Key endpoints**:
-- `GET /public/v1/locations` — List locations (warehouses/facilities)
-- `POST /public/v1/locations` — Create location WRITE
-- `PUT /public/v1/locations/{id}` — Update location WRITE
-- Custom fields, users, roles, payment methods, POS mappings — reference data (lookup endpoints)
+- `GET /public/v1/strains` — Page size **50,000** (largest in API). Permission: `settings_permissions_strains`. Fields: id, name, strain_type. NO `deleted` filter (strains not soft-deletable).
+- `GET /public/v1/users` — Page size 1,000. Permission: `settings_permissions_manage_team`. Role is `{id, name}` object.
+- `GET /public/v1/menus` — Page size 500. Permission: `products_permissions_view`. Filters: `active`, `visibility` (PUBLIC/PRIVATE/PASSCODE_PROTECTED). No datetime filters!
+- `GET /public/v1/payment-methods` — **HYPHEN slug!** Permission: `settings_permissions_payment_methods`. Only filter: `deleted` tri-state.
+- `POST /public/v1/custom-fields` — **HYPHEN slug!** POST-ONLY, no GET. Permission: `settings_permissions_custom_fields`. `id` is INTEGER. Field types: text, date, dropdown, checkbox.
+- `POST /public/v1/file-attachments` — **HYPHEN slug!** POST-ONLY. Multipart/form-data. 15 mutually-exclusive parent reference fields (exactly one required). HTTP 422 on quota exceeded.
+
+---
+
+## RBAC Permissions Reference
+
+Full Phase B import requires **8 distinct permission grants**:
+
+| Permission | Endpoints |
+|---|---|
+| `orders_permissions_view` | /orders, /orders/{id} |
+| `purchases_permissions_view` | /purchases |
+| `invoices_permissions_view` | /invoices, /invoices/{id} |
+| `products_permissions_view` | /products, /batches, /packages, /adjustments, /test-results, /menus, /product-pos-mappings |
+| `companies_permissions_view` | /companies, /contacts, /locations |
+| `assemblies_permissions_view` | /assemblies |
+| `settings_permissions_strains` | /strains |
+| `settings_permissions_manage_team` | /users |
+| `settings_permissions_payment_methods` | /payment-methods |
+| `settings_permissions_custom_fields` | POST /custom-fields |
 
 ---
 
@@ -174,152 +256,27 @@ Distru is a seed-to-sale platform covering 7 domains. Route the user's question 
 
 ### Step 1: Context Gathering
 
-**Determine from the user's question:**
+Determine from the user's question:
 - What Distru API domain is this about?
-- Is this a read-only query or a write operation (POST/PUT)?
-- Is the resource subject to eventual consistency (Assemblies, Strains)?
+- Is this a read-only query or a write operation (POST/PUT/DELETE)?
+- Is the resource subject to eventual consistency (Strains, Assemblies, Products, Test Results)?
 - Is this a new implementation, debugging, or workflow question?
 
 ### Step 2: Load Relevant Resources
 
-#### For Task-Based Questions
+For task-based questions: load `scenarios/` + relevant `categories/` + `patterns/pagination.md` + `patterns/filtering.md`.
 
-**User asks: "How do I import orders from Distru?"**
+For endpoint-specific questions: load the relevant `categories/` file.
 
-**Load**:
-1. `scenarios/order-import-workflow.md` (complete workflow)
-2. `categories/sales-orders.md` (endpoint details)
-3. `patterns/pagination.md` (page-number style)
-4. `patterns/filtering.md` (IF incremental sync via updated_at)
+For write operation questions: also load `patterns/write-safety.md` (UPSERT, non-sparse updates).
 
-#### For Endpoint-Specific Questions
+### Step 3: Provide Answer
 
-**User asks: "What does GET /assemblies return?"**
-
-**Load**:
-1. `categories/manufacturing.md` (endpoint + schema highlights)
-2. `patterns/eventual-consistency.md` (always — Assemblies are eventually consistent)
-
-#### For Write Operation Questions
-
-**User asks: "How do I create a product in Distru?"**
-
-**Load**:
-1. `categories/products.md` (endpoint + request body)
-2. `patterns/write-safety.md` (UPSERT semantics, no idempotency keys)
-
-#### For Pattern Questions
-
-**User asks: "How do I paginate through all companies?"**
-
-**Load**:
-1. `patterns/pagination.md` (`page[number]` / `page[size]`, `next_page: null` detection)
-
-### Step 3: Provide Answer with Context
-
-When answering:
-
-1. **Direct Answer First**: Provide the immediate answer
-2. **Code Example**: Show Laravel/PHP implementation if applicable
-3. **Pattern Reference**: Note which pattern file was consulted
-4. **Write Safety Note**: If write operation, note UPSERT semantics + lack of idempotency
-5. **Eventual-Consistency Note**: If Assembly or Strain, warn about ~1s read-after-write lag
-6. **Additional Resources**: Offer to load schemas if exact field definitions needed
-
----
-
-## Usage Examples
-
-### Example 1: Import Workflow Question
-
-**User**: "How do I fetch and import orders from Distru?"
-
-**Your Response**:
-```markdown
-[Load scenarios/order-import-workflow.md]
-[Load categories/sales-orders.md]
-
-Workflow:
-1. GET /public/v1/orders with page[number]/page[size]
-2. Walk until next_page is null
-3. Line items are inline in each order; no second call needed
-4. Map to Budtags MarketplaceOrder (source='distru')
-
-Laravel Example:
-$page = 1;
-do {
-    $resp = $api->get('/orders', [
-        'page[number]' => $page,
-        'page[size]'   => 100,
-    ]);
-    foreach ($resp['data'] as $order) { /* upsert */ }
-    $page++;
-} while ($resp['next_page'] !== null);
-
-Pattern References: scenarios/order-import-workflow.md, patterns/pagination.md
-```
-
-### Example 2: Write Operation Question
-
-**User**: "How do I update a product price in Distru?"
-
-**Your Response**:
-```markdown
-[Load categories/products.md]
-[Load patterns/write-safety.md]
-
-Endpoint: PUT /public/v1/products/{id}
-
-Laravel Example:
-$resp = $api->put("/products/{$productId}", [
-    'price' => 25.00,
-]);
-
-Write Safety Note:
-- Distru uses UPSERT semantics — same fields work for POST and PUT
-- No idempotency keys are supported; retries can create duplicates if the original request actually committed but the response was lost
-- Capture the response id and reconcile on retry
-
-Pattern References: categories/products.md, patterns/write-safety.md
-```
-
-### Example 3: Pagination Question
-
-**User**: "How do I know when to stop paginating?"
-
-**Your Response**:
-```markdown
-[Load patterns/pagination.md]
-
-Distru returns an enveloped response with a next_page field:
-
-{
-  "data": [...],
-  "next_page": 3   // or null when this is the last page
-}
-
-Stop when next_page is null. Do NOT rely on response length less than page size, since some endpoints (Assemblies) fix the page size at 500.
-
-Pattern Reference: patterns/pagination.md
-```
-
-### Example 4: Eventual Consistency
-
-**User**: "I just created an assembly and the next GET doesn't return it. Bug?"
-
-**Your Response**:
-```markdown
-[Load patterns/eventual-consistency.md]
-
-Not a bug — Distru documents ~1 second of read-after-write lag on Assemblies and Strains. The response from your POST is authoritative; the list endpoint catches up shortly.
-
-Mitigation:
-- Trust the POST response body
-- If you must re-fetch, sleep 1.5s or back off exponentially
-- Never use a missing record from a list query to decide "the write failed"
-
-Pattern Reference: patterns/eventual-consistency.md
-```
+Always note:
+- **Slug**: use kebab-case for compound names (test-results, payment-methods, etc.)
+- **Filter conventions** specific to that endpoint
+- **Write-safety**: UPSERT semantics, no idempotency keys
+- **Eventual consistency** when applicable
 
 ---
 
@@ -329,57 +286,64 @@ Pattern Reference: patterns/eventual-consistency.md
 
 ```
 Header: Authorization: Bearer {JWT}
-Generate key at: Distru UI → Settings → Integrations → Distru API → Create API Key
-Prerequisite: Distru account rep must enable API access on the account
 Base URL: https://app.distru.com/public/v1
+Generate key at: Distru UI → Settings → Integrations → Distru API
+Prerequisite: Distru account rep must enable API access on the account
 ```
 
 ### Pagination
 
 ```
-page[number] — Page number (default: 1)
-page[size]   — Records per page (varies; Assemblies fixed at 500)
+page[number] — 1-based page index
+page[size]   — Usually IGNORED (small endpoints return everything; large ones cap at their implicit limit)
 
-Response shape:
-  { "data": [...], "next_page": null|<int> }
+Response envelope:
+  { "data": [...], "next_page": "<full URL string>" | null }
+  (next_page key may also be absent on final page)
 
-Stop condition: next_page === null
+Stop condition: empty($body['next_page'])
 ```
 
-### Filtering (Query-string)
+### Datetime filters (comma-range)
 
 ```
-?completion_datetime_from=2024-01-01T00:00:00Z
-?creation_source=MANUALLY_CREATED
-?license_number=C11-0000123-LIC
-?category=Retail
-?include_costs=true
-
-This is NOT SQL-like (no WHERE strings) and NOT Django-style (no __gte/__lte).
-Filter names vary by endpoint — consult the category file.
+?updated_datetime=<from>,<to>
+?updated_datetime=<from>,         (open-ended end)
+?updated_datetime=,<to>           (open-ended start)
 ```
 
 ### Write Operations
 
 ```
-POST = create (returns id)
-PUT  = update by id
-Both follow UPSERT semantics for most resources
+POST = create OR update (UPSERT — same payload shape)
+PUT  = only used for invoice/purchase payment insertion: PUT /invoices/{id}/payments
+DELETE = ONLY on /product-pos-mappings/{id} (the sole DELETE endpoint)
 No idempotency keys — capture response ids; reconcile on retry
-Stock Adjustments are APPEND-ONLY (POST only, no PUT)
-Packages are READ-ONLY via the public API
+Non-sparse updates on /orders, /purchases, /invoices: omitted items/charges get DELETED
 ```
 
 ### Common Pitfalls
 
 ```
+Using snake_case URLs (e.g., /stock_adjustments) — must be kebab-case (/adjustments)
 Treating Distru auth like Canix (X-API-KEY) — it is Bearer JWT
+Expecting `next_page` to be an integer — it is a full URL string when present
 Looking for a count or total_pages field — only next_page exists
 Expecting WHERE-string filters — use per-endpoint query-string params
+Expecting `_from`/`_to` paired datetime filters — use comma-range strings
 Retrying writes without an id-reconciliation step — no idempotency
 Reading immediately after creating an Assembly or Strain — ~1s lag
-Hardcoding page[size] to 500 globally — only Assemblies enforces 500
-Trying to delete via the public API — DELETE is not exposed for most resources
+Trusting `page[size]` to limit response volume — silently ignored on most endpoints
+Calling /orders unfiltered on high-volume orgs — times out at 500 after ~20s; use updated_datetime
+Treating `quantity` / `total_cost` as floats — they arrive as signed string decimals
+Treating `unit_type` as a string — it is a `{id, name}` object
+Filter typo (e.g., `status[]=active` on /packages where it's `statuses[]`) — silently ignored, returns unfiltered
+CANCELLED (double L) — Distru uses CANCELED (single L); double L returns 400
+Trying to filter /companies by `relationship_type` — no such filter; tenant-customizable enum anyway
+Trying to filter /adjustments by package_id — no such filter; mirror table is load-bearing
+Trying to filter /test-results by package_id — no such filter; mirror is load-bearing
+Hard-coding the relationship_type/reason/category enum — they're TENANT-CUSTOMIZABLE
+Assuming /custom-fields, /file-attachments, /test_results/{id}, etc. have GETs — many don't
 ```
 
 ---
@@ -388,13 +352,14 @@ Trying to delete via the public API — DELETE is not exposed for most resources
 
 Help users successfully integrate with the Distru API by:
 
-1. **Loading ONLY relevant resources** (progressive disclosure — never load all categories)
-2. **Routing by domain** (7 domains — load the right category file)
-3. **Calling out UPSERT semantics** (POST and PUT both work; no idempotency)
-4. **Providing task-based guidance** (use scenario templates for complete workflows)
-5. **Explaining `next_page` pagination** (the biggest API pattern difference from Canix's raw arrays)
-6. **Warning about eventual consistency** (Assemblies and Strains have ~1s lag)
-7. **Generating correct Laravel/PHP code** (following Budtags project conventions — mirror DistruApi/CanixApi patterns)
-8. **Offering additional resources** (can always load schemas for exact field definitions when populated)
+1. **Loading ONLY relevant resources** (progressive disclosure)
+2. **Routing by domain** (7 domains)
+3. **Surfacing the per-endpoint quirks** documented in this skill
+4. **Calling out UPSERT and non-sparse-update semantics**
+5. **Explaining `next_page` URL pagination**
+6. **Warning about eventual consistency** (Strains/Assemblies + Products/TestResults per Phase 0.5)
+7. **Verifying slug naming** (always kebab-case for compound names)
+8. **Generating correct Laravel/PHP code** following Budtags' DistruApi/CanixApi mirror patterns
+9. **Pointing to `DISTRU-INTEGRATION-MAPPING.md`** as the authoritative source when this skill might be stale
 
-**You have complete knowledge of all documented Distru Public API v1 operations across 7 domains via modular, focused files. Use progressive disclosure to provide fast, relevant answers.**
+**You have comprehensive Phase 0.5-verified knowledge of all documented Distru Public API v1 operations. Use progressive disclosure to provide fast, relevant answers.**

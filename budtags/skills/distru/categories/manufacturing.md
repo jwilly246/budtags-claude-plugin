@@ -1,76 +1,115 @@
 # Manufacturing Domain — Assemblies
 
-The Distru Manufacturing domain is, as of v1 public API, a **single endpoint**: Assemblies. An Assembly represents any manufacturing/processing event — a recipe execution, a split, a sales conversion, or a lab-testing destination operation.
+The Distru Manufacturing domain covers production runs ("Assemblies") that consume ingredient packages and produce output packages, with optional labor/machine cost layering. Read-only via API (no POST).
 
-> **Distru does not expose write endpoints for Assemblies via the public API.** Assemblies are created inside Distru and read out via this endpoint.
+**Phase 0.5 audited 2026-05-21.** Mapping doc: `/Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md`.
 
 ## Endpoints
 
 | Method | Path | Operation | Notes |
 |--------|------|-----------|-------|
-| GET | `/public/v1/assemblies` | List assemblies | Fixed page size 500; eventually consistent ~1s |
+| GET | `/public/v1/assemblies` | List assemblies | Page size 5,000. **SLOW (~26s)**. Eventually consistent ~1s. |
+| GET | `/public/v1/assemblies/{id}` | Get one assembly | Same nested shape as list. |
 
-## Assembly entity shape (high-level)
+> No POST. Assemblies must be created via the Distru web UI; the API exposes them read-only.
+
+## Assembly entity shape
 
 ```jsonc
 {
-  "id": "asm_...",
-  "completion_datetime": "2026-05-13T18:42:00Z",
-  "creation_source": "MANUALLY_CREATED",  // or SPLIT_PACKAGE, SALES_ORDER, LAB_TESTING
-  "license_number": "C11-0000123-LIC",
-  "input_batches": [
-    { "batch_id": "bat_in_1", "quantity": 1000, "unit_of_measure": "g" }
+  "id": "<uuid>",
+  "assembly_number": "AS-123",
+  "status": "Active|Completed|Canceled|...",
+  "creator": { /* User ref */ },
+  "location": { /* Location ref | null */ },
+  "started_datetime": "<iso|null>",
+  "completed_datetime": "<iso|null>",
+  "inserted_datetime": "<iso>",
+  "creation_source": "MANUAL|ORDER|...",                              // SCALAR — not array (Phase 0.5 correction)
+  // NO updated_datetime field at all (Phase 0.5 finding — not in response)
+
+  "outputs": [                                                          // Output packages produced
+    {
+      "id": "<uuid>",
+      "product": { /* Product ref */ },
+      "batch": { /* Batch ref */ },
+      "package": { /* Package ref */ },
+      "quantity": "<decimal>",
+      "compliance_type": "METRC|BIOTRACK|NONE",                          // 3-value enum
+      "cost_per_unit_actual": "<decimal>",
+      "cost_per_unit_default": "<decimal>",
+      "total_cost_actual": "<decimal>",
+      "total_cost_default": "<decimal>"
+    }
   ],
-  "output_batches": [
-    { "batch_id": "bat_out_1", "quantity": 850, "unit_of_measure": "g" }
+  "ingredients": [                                                      // Input packages consumed
+    {
+      "id": "<uuid>",
+      "product": { /* Product ref */ },
+      "batch": { /* Batch ref */ },
+      "package": { /* Package ref */ },
+      "quantity_used": "<decimal>",
+      "cost_per_unit_actual": "<decimal>",
+      "total_cost_actual": "<decimal>"
+    }
   ],
-  "waste": [
-    { "amount": 50, "unit_of_measure": "g", "reason": "Trim loss" }
-  ],
-  "labor": [ /* ... */ ],
-  "machine_info": { /* ... */ },
-  "custom_fields": { /* ... */ },
-  "created_at": "...",
-  "updated_at": "..."
+  "additional_costs": [                                                 // Labor / overhead / machine
+    {
+      "id": "<uuid>",
+      "name": "<string>",
+      "type": "LABOR|MACHINE|OVERHEAD|OTHER",
+      "amount": "<decimal>",
+      "notes": "<string|null>"
+    }
+  ]
 }
 ```
 
-## Creation sources
+### Important Phase 0.5 corrections
 
-| Source | Meaning |
-|--------|---------|
-| `MANUALLY_CREATED` | Operator-initiated assembly (most common for processing runs) |
-| `SPLIT_PACKAGE` | Generated when a package is split into smaller units |
-| `SALES_ORDER` | Auto-created at order fulfillment to record conversion |
-| `LAB_TESTING` | Auto-created when a sample is consumed for lab testing |
+- **`creation_source` is a SCALAR** (string), NOT an array. Earlier docs implied an array shape; the live API returns a single value.
+- **No `updated_datetime` field** — assemblies don't expose an updated timestamp on the response. Use `inserted_datetime` for ingestion ordering; for change detection, refetch by id.
+- **No `labor[]` array, no `machine_info` object** — earlier doc drafts marked these `unknown`. They don't exist as separate fields. Labor and machine costs both live in `additional_costs[]` discriminated by `type`.
 
-When importing, filter on `creation_source` to scope work — e.g., a manufacturing-focused import may want only `MANUALLY_CREATED`, while a compliance audit may include all four.
+## Filter parameters
 
-## Pagination quirk — fixed 500 page size
+| Filter | Type | Notes |
+|---|---|---|
+| `inserted_datetime` | comma-range | Only datetime filter — there is no `updated_datetime` filter because the field doesn't exist on the entity |
+| `status` | string | Single value, not bracket array |
+| `creation_source` | string | Single value, scalar match |
+| `location_id[]` | bracket array | |
+| `license_number` | string | |
+| `page[number]` | integer | |
 
-Assemblies enforces a **hard 500/page cap** that cannot be overridden via `page[size]`. Do not assume your page-size parameter takes effect on this endpoint. Use `next_page` for terminal detection as usual.
+**No `updated_datetime` filter exists.** For incremental sync, use `inserted_datetime` as the watermark, or refetch periodically by id.
 
-## Eventual consistency
+## Performance — slowest endpoint
 
-Assemblies are **eventually consistent** — a record created inside Distru may take up to ~1s to appear on `GET /assemblies`. Practical guidance:
+`/assemblies` regularly takes 20-30s to respond, even with small `page[size]`. The nested aggregation across outputs / ingredients / additional_costs is server-expensive. Strategy:
 
-- The response from the operation that created the Assembly is authoritative; trust it.
-- If polling for an Assembly, back off — 1.5s minimum between retries.
-- Never use a missing list-query record to conclude a write failed.
+- Use background queues for assembly imports.
+- Set HTTP client timeout to **60s minimum** for this endpoint.
+- Don't block user-facing requests on `/assemblies` calls.
+- Eventually consistent ~1s after write — but writes happen only via the web UI, not the API.
 
-See `patterns/eventual-consistency.md`.
+## Compliance type values (3-value enum)
 
-## Filters (query-string)
+`compliance_type` on each output:
+- `METRC` — output package is Metrc-tagged
+- `BIOTRACK` — output package is Biotrack-tracked
+- `NONE` — non-compliance-tracked output
 
-| Param | Meaning |
-|-------|---------|
-| `completion_datetime_from`, `completion_datetime_to` | Time window on completion |
-| `creation_source` | One of the four values above |
-| `license_number` | Scope to one license |
-| `page[number]` | Pagination |
+## Cost layering
+
+Each output's `cost_per_unit_actual` is derived from `ingredients[]` actual costs + `additional_costs[]` distributed across outputs by a Distru-internal allocation algorithm. The breakdown is not exposed via API — only the final per-output `*_actual` and `*_default` values.
+
+Mapping doc Section 7 ("Cost Fidelity") describes how Budtags's mirror tables preserve enough to reconstruct allocation later. For Phase A, store the per-output values verbatim and re-derive allocation only if/when needed.
 
 ## Cross-references
 
+- Output products and ingredient products: `categories/products.md`
+- Output batches and packages: `categories/inventory.md`
+- Assembly import workflow: `scenarios/assembly-import-workflow.md`
+- Cost fidelity strategy: mapping doc Section 7
 - Eventual consistency: `patterns/eventual-consistency.md`
-- Workflow: `scenarios/assembly-import-workflow.md`
-- Batch references: `categories/inventory.md`

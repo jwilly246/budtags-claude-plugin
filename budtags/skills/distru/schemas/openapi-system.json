@@ -1,38 +1,99 @@
 {
   "openapi": "3.0.3",
-  "info": { "title": "Distru Public API - System", "version": "v1" },
+  "info": { "title": "Distru Public API - System", "version": "v1", "description": "Phase 0.5 audited 2026-05-21. See categories/system.md for full field grids and RBAC permissions matrix. FIVE slug corrections live in this domain — kebab-case is in force." },
   "servers": [{ "url": "https://app.distru.com/public/v1" }],
   "paths": {
-    "/locations": {
+    "/strains": {
       "get": {
-        "operationId": "listLocations",
+        "operationId": "listStrains",
+        "description": "List strains. Page size 50,000 (highest cap in API). Eventually consistent ~1s. RBAC: settings_permissions_strains.",
         "parameters": [
           { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
-          { "name": "location_type", "in": "query", "schema": { "type": "string" } },
-          { "name": "license_number", "in": "query", "schema": { "type": "string" } }
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "name", "in": "query", "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "schema": { "type": "string" } }
         ],
-        "responses": { "200": { "description": "Paginated locations" } }
+        "responses": { "200": { "description": "Paginated strains" } }
       },
-      "post": { "operationId": "createLocation", "responses": { "201": { "description": "Created (UPSERT)" } } }
+      "post": { "operationId": "upsertStrain", "responses": { "200": { "description": "Created or updated" } } }
     },
-    "/locations/{id}": {
-      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-      "put": { "operationId": "updateLocation", "responses": { "200": { "description": "Updated" } } }
-    },
-    "/custom_fields": {
-      "get": { "operationId": "listCustomFields", "responses": { "200": { "description": "Tenant custom field definitions" } } }
+    "/strains/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getStrain", "responses": { "200": { "description": "Single strain" } } }
     },
     "/users": {
-      "get": { "operationId": "listUsers", "responses": { "200": { "description": "Users" } } }
+      "get": {
+        "operationId": "listUsers",
+        "description": "List users. Page size 1,000. role is FREE-TEXT (tenant-customizable). deleted_at uses _at suffix (not _datetime). RBAC: settings_permissions_manage_team.",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "email", "in": "query", "schema": { "type": "string" }, "description": "Substring match" }
+        ],
+        "responses": { "200": { "description": "Paginated users" } }
+      }
     },
-    "/roles": {
-      "get": { "operationId": "listRoles", "responses": { "200": { "description": "Roles" } } }
+    "/users/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getUser", "responses": { "200": { "description": "Single user" } } }
     },
-    "/payment_methods": {
-      "get": { "operationId": "listPaymentMethods", "responses": { "200": { "description": "Payment methods" } } }
+    "/menus": {
+      "get": {
+        "operationId": "listMenus",
+        "description": "List menus. Page size 500. Menu line-items NOT exposed (only menu metadata).",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "is_published", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "is_active", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": { "200": { "description": "Paginated menus" } }
+      }
     },
-    "/pos_mappings": {
-      "get": { "operationId": "listPosMappings", "responses": { "200": { "description": "POS system mappings (Blaze, Dutchie, Treez)" } } }
+    "/menus/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getMenu", "responses": { "200": { "description": "Single menu" } } }
+    },
+    "/payment-methods": {
+      "get": {
+        "operationId": "listPaymentMethods",
+        "description": "List payment methods. HYPHEN slug (/payment_methods returns 404). Page size 5,000. RBAC: settings_permissions_payment_methods.",
+        "parameters": [
+          { "$ref": "openapi-shared.json#/components/parameters/PageNumber" },
+          { "$ref": "openapi-shared.json#/components/parameters/PageSize" },
+          { "$ref": "openapi-shared.json#/components/parameters/UpdatedDatetime" },
+          { "$ref": "openapi-shared.json#/components/parameters/InsertedDatetime" },
+          { "name": "is_active", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": { "200": { "description": "Paginated payment methods" } }
+      }
+    },
+    "/payment-methods/{id}": {
+      "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+      "get": { "operationId": "getPaymentMethod", "responses": { "200": { "description": "Single payment method" } } }
+    },
+    "/custom-fields": {
+      "post": {
+        "operationId": "createCustomFieldDefinition",
+        "description": "HYPHEN slug, POST-ONLY (no GET). Returns INTEGER id. Read existing custom field definitions only via custom_data[] on entity responses. RBAC: settings_permissions_custom_fields.",
+        "responses": { "200": { "description": "Custom field definition created" } }
+      }
+    },
+    "/file-attachments": {
+      "post": {
+        "operationId": "uploadFileAttachment",
+        "description": "HYPHEN slug, POST-ONLY (no GET). Multipart upload. One of 15 ref fields REQUIRED (order_id, invoice_id, purchase_id, company_id, contact_id, location_id, product_id, batch_id, package_id, assembly_id, test_result_id, request_id, task_id, stock_transfer_id, return_id, order_shipment_id, agent_chat_thread_id, ai_order_intake_id, ai_purchase_intake_id). HTTP 422 on storage quota exceeded.",
+        "responses": {
+          "200": { "description": "File attached" },
+          "422": { "$ref": "openapi-shared.json#/components/responses/UnprocessableEntity" }
+        }
+      }
     }
   }
 }

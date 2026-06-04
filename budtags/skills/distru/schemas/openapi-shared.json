@@ -3,7 +3,7 @@
   "info": {
     "title": "Distru Public API - Shared Components",
     "version": "v1",
-    "description": "Shared schemas, parameters, and responses for Distru Public API v1. Populate field-level definitions as importers capture live samples."
+    "description": "Shared schemas, parameters, and responses for Distru Public API v1. Phase 0.5 audited 2026-05-21 against live API. Canonical reference: /Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md."
   },
   "servers": [
     { "url": "https://app.distru.com/public/v1" }
@@ -27,18 +27,19 @@
         "name": "page[size]",
         "in": "query",
         "schema": { "type": "integer" },
-        "description": "Records per page. Ignored on /assemblies (fixed 500)."
+        "description": "Records per page. SILENTLY IGNORED on most endpoints (per-endpoint hardcoded caps: 500/1k/5k/50k). Treat as hint, not contract."
       },
-      "UpdatedAtFrom": {
-        "name": "updated_at_from",
+      "UpdatedDatetime": {
+        "name": "updated_datetime",
         "in": "query",
-        "schema": { "type": "string", "format": "date-time" },
-        "description": "ISO 8601 timestamp for incremental sync"
+        "schema": { "type": "string" },
+        "description": "Comma-range string. Format: 'from,to' where each side is an ISO 8601 datetime. Either side may be empty for open-ended ranges (e.g. '2026-01-01T00:00:00Z,'). NOTE: this single comma-range param REPLACES the _from/_to pair pattern seen on other APIs."
       },
-      "UpdatedAtTo": {
-        "name": "updated_at_to",
+      "InsertedDatetime": {
+        "name": "inserted_datetime",
         "in": "query",
-        "schema": { "type": "string", "format": "date-time" }
+        "schema": { "type": "string" },
+        "description": "Comma-range string. Same format as updated_datetime."
       }
     },
     "schemas": {
@@ -47,46 +48,95 @@
         "required": ["data"],
         "properties": {
           "data": { "type": "array", "items": {} },
-          "next_page": { "type": ["integer", "null"], "description": "Next page number, or null on last page" }
+          "next_page": {
+            "type": ["string", "null"],
+            "description": "FULL URL STRING (not page number) of next page. Null or absent on final page. Follow blindly via subsequent GET; do not parse/reconstruct. Distru bakes the original query params (filters, page[size]) into this URL."
+          }
         }
       },
-      "Address": {
+      "Location": {
         "type": "object",
+        "description": "Distru's Location is a single concatenated address string, NOT a structured object. There are no line_1/city/state/postal_code fields.",
         "properties": {
-          "line_1": { "type": "string" },
-          "line_2": { "type": "string" },
-          "city": { "type": "string" },
-          "state": { "type": "string" },
-          "postal_code": { "type": "string" },
-          "country": { "type": "string" }
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": ["string", "null"], "description": "Optional label (e.g. 'Main Warehouse')" },
+          "address": { "type": "string", "description": "Single concatenated string like '123 Main St, Springfield, IL 62701'" },
+          "company_id": { "type": ["string", "null"], "format": "uuid" },
+          "is_shipping": { "type": "boolean" },
+          "is_billing": { "type": "boolean" },
+          "is_archived": { "type": "boolean" }
         }
       },
-      "CustomFields": {
+      "CustomDataRead": {
+        "type": "array",
+        "description": "Custom-field VALUES on entity GET responses. Shape: [{id: <int>, name: <string>, type: <string>, value: <any>}]",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer", "description": "Field-definition id (INTEGER, not UUID)" },
+            "name": { "type": "string", "description": "Read-only — server-derived from field definition" },
+            "type": { "type": "string", "description": "Read-only — TEXT|NUMBER|DATE|DROPDOWN|CHECKBOX|TEXTAREA" },
+            "value": {}
+          }
+        }
+      },
+      "CustomDataWrite": {
+        "type": "array",
+        "description": "Custom-field VALUES sent on POST. Shape: [{id, value}] — omit name and type (server-derived, read-only). Non-symmetric with read shape.",
+        "items": {
+          "type": "object",
+          "required": ["id", "value"],
+          "properties": {
+            "id": { "type": "integer" },
+            "value": {}
+          }
+        }
+      },
+      "Charge": {
         "type": "object",
-        "additionalProperties": true,
-        "description": "Tenant-defined custom field key-value pairs"
+        "description": "Inline charge (or discount) on order/invoice/purchase. Decision #13 in mapping doc.",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["CHARGE", "DISCOUNT"] },
+          "unit_type": { "type": "string", "enum": ["PERCENT", "PRICE"] },
+          "percent": { "type": "string", "description": "Decimal-as-string (4dp typical)" },
+          "price": { "type": "string", "description": "Decimal-as-string" },
+          "tax": {
+            "type": ["object", "null"],
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "name": { "type": "string" },
+              "percent": { "type": "string" }
+            }
+          }
+        }
       },
       "Error": {
         "type": "object",
-        "description": "Error response shape is not formally documented. Treat as opaque.",
+        "description": "Error response. HTTP 400 typically returns {errors: {field: [messages]}}. HTTP 422 used uniquely on /file-attachments quota exceeded.",
         "additionalProperties": true
       }
     },
     "responses": {
       "Unauthorized": {
-        "description": "Wrong header, expired or revoked token",
+        "description": "HTTP 401 — missing/invalid Authorization: Bearer <JWT> header",
         "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
       },
       "Forbidden": {
-        "description": "Token team permissions exclude this resource",
+        "description": "HTTP 403 — API key lacks RBAC permission. See categories/system.md for permissions matrix.",
         "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
       },
       "NotFound": {
-        "description": "Unknown id",
+        "description": "HTTP 404 — resource id doesn't exist OR slug is wrong (e.g. /stock_adjustments returns 404; use /adjustments)",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "UnprocessableEntity": {
+        "description": "HTTP 422 — used on /file-attachments when tenant storage quota is exceeded",
         "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
       },
       "RateLimited": {
-        "description": "Rate-limited (limits not formally documented)",
+        "description": "HTTP 429 — rate limit (no Retry-After header documented)",
         "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
       }
     }
