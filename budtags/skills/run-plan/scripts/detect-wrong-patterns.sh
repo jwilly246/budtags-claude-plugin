@@ -26,11 +26,16 @@ check_file() {
     local ext="${file##*.}"
     local file_violations=""
 
-    [[ ! -f "$file" ]] && return
-    [[ "$ext" != "ts" && "$ext" != "tsx" ]] && return
+    # NOTE: every early-exit must be `return 0`. A bare `return` after a failed
+    # grep propagates exit 1, and with `set -e` that aborts the whole script with
+    # no report — the orchestrator then misreads exit 1 as "violations found".
+    [[ ! -f "$file" ]] && return 0
+    [[ "$ext" != "ts" && "$ext" != "tsx" ]] && return 0
 
     # Only check files with forms/modals
-    grep -q -E "(useForm|Modal|form|submit|onChange)" "$file" 2>/dev/null || return
+    if ! grep -q -E "(useForm|Modal|form|submit|onChange)" "$file" 2>/dev/null; then
+        return 0
+    fi
 
     # Check for react-hook-form
     matches=$(grep -n "from 'react-hook-form'" "$file" 2>/dev/null || true)

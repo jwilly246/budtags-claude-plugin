@@ -76,11 +76,9 @@ check_file() {
             file_stubs+="$matches"$'\n'
         fi
 
-        # Empty arrow functions
-        matches=$(grep -n -E "\(\)\s*=>\s*\{\s*\}" "$file" 2>/dev/null || true)
-        if [[ -n "$matches" ]]; then
-            file_stubs+="$matches"$'\n'
-        fi
+        # NOTE: deliberately NOT flagging empty arrow functions `() => {}` — the
+        # codebase has dozens of legitimate no-op defaults/handlers using that
+        # form, so it produced false-positive BLOCKED verdicts.
 
         # Empty function bodies
         matches=$(grep -n -E "function\s*\w*\s*\([^)]*\)\s*\{\s*\}" "$file" 2>/dev/null || true)
@@ -95,8 +93,10 @@ check_file() {
         fi
 
         # 'any' type - but exclude common valid uses like catch(e: any) or event handlers
-        # Only flag standalone `: any` that looks like a lazy type escape
-        matches=$(grep -n -E ":\s*any\s*[;,\)]" "$file" 2>/dev/null | grep -v -E "(catch|error|err|event|e|evt).*:\s*any" || true)
+        # Only flag standalone `: any` that looks like a lazy type escape.
+        # The exclusion alternatives MUST be word-bounded: a bare `e` matches any
+        # line containing the letter e before `: any`, neutering the check entirely.
+        matches=$(grep -n -E ":\s*any\s*[;,\)]" "$file" 2>/dev/null | grep -v -E "catch\s*\(|\b(e|err|error|evt|event)\s*:\s*any" || true)
         if [[ -n "$matches" ]]; then
             file_stubs+="[any type] $matches"$'\n'
         fi
