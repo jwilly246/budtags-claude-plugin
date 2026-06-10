@@ -4,7 +4,7 @@ Execute work units from a decomposed plan autonomously.
 
 ## Purpose
 
-**AUTONOMOUS EXECUTION.** This command reads a MANIFEST, executes READY work units via Task agents, runs verification gates, and commits after each successful unit—all without manual intervention.
+**AUTONOMOUS EXECUTION.** This command reads a MANIFEST, executes READY work units via Agent-tool subagents, runs verification gates, and commits after each successful unit—all without manual intervention.
 
 ## Usage
 
@@ -23,10 +23,10 @@ Execute work units from a decomposed plan autonomously.
 
 1. **Branch Safety**: Creates feature branch if on main/master
 2. **Parse Manifest**: Finds READY work units from MANIFEST.md
-3. **Execution Loop** (for each READY unit — may run independent units in parallel, but review + commit is always sequential per unit):
+3. **Execution Loop** (for each READY unit — serial by default: one dispatch at a time, review + commit before the next; parallel dispatch only on explicit user request):
    - Updates MANIFEST: PENDING → IN PROGRESS
    - **Reads SHARED_CONTEXT.md and embeds its full contents inline into the spawned prompt** (v1.9 gating change — replaces the old "tell the subagent to Read it" model)
-   - Spawns Task agent (per-unit `**Agent**:` field) in fresh context
+   - Spawns subagent via the Agent tool (per-unit `**Agent**:` field; OMIT the model param — inherit session model) in fresh context
    - Agent reads ONLY the WU file (SHARED_CONTEXT is already in its context window), implements all tasks, returns a Completion Report including a mandatory "Patterns Followed from Embedded Shared Context" section
    - **Orchestrator quality review (MANDATORY — runs in main context, NOT a subagent)**:
      - Run `composer check` — fix **all** issues found, not just ones from this WU's changes
@@ -63,7 +63,9 @@ Each subagent's Completion Report now includes a mandatory "Patterns Followed fr
 
 ## Instructions
 
-**Read the skill file first:** `.claude/skills/run-plan/skill.md`
+**Load the skill first:** invoke `budtags:run-plan` via the Skill tool (its SKILL.md lives in the
+installed plugin at `~/.claude/plugins/marketplaces/budtags-claude-plugin/budtags/skills/run-plan/SKILL.md` —
+there is NO repo-local `.claude/skills/run-plan/` copy).
 
 Then execute the orchestration workflow.
 
@@ -87,29 +89,30 @@ Then execute the orchestration workflow.
 
 Every unit must pass TWO layers before committing. The orchestrator runs BOTH personally — do not delegate:
 
-### Layer 1 — Orchestrator quality review (new, MANDATORY)
+### Layer 1 — Orchestrator judgment review (MANDATORY, main context)
 
-Run IN THE MAIN CONTEXT after the subagent returns, before running the WU's own verification:
+Run after the subagent returns, before the mechanical gate:
 
-1. `composer check` — fix every issue surfaced, regardless of whether the WU caused it (project rule: fix all). If `composer check` fails after the subagent's work, the orchestrator's job is to fix it directly, not punt back to a subagent.
-2. `git diff --stat` + `git diff` on the subagent's changes — skim for: files outside the WU's declared Files section, stubs, TODO/FIXME, half-finished methods, tests that don't actually assert behavior.
-3. Audit `{directory}/SHARED_CONTEXT.md` additions — did the subagent update the relevant tables (PHP Services, TypeScript Types, Routes, Decisions)? If blank where it shouldn't be, the orchestrator adds the obvious entries directly. If the subagent skipped it without reason, flag it in the progress log.
-4. Audit the subagent's "Patterns Followed from Embedded Shared Context" section in the Completion Report. It must list at least 2 specific patterns with row references or quotes from the embedded SHARED_CONTEXT, and the diff must actually use them. Thin, generic, or fabricated entries = BLOCK and re-spawn (this is the v1.9 gating check that proves the embedded context was read).
-5. Confirm the WU's task list is all checked off. If anything is unchecked, either finish it in the main context or mark the WU BLOCKED.
+1. `git diff --stat` + `git diff` on the subagent's changes — does the diff actually implement the WU's tasks? Style matches siblings? Tests assert real behavior? All "Modify" files actually modified?
+2. Audit `{directory}/SHARED_CONTEXT.md` additions — did the subagent update the relevant tables (PHP Services, TypeScript Types, Routes, Decisions)? If blank where it shouldn't be, the orchestrator adds the obvious entries directly.
+3. Audit the subagent's "Patterns Followed from Embedded Shared Context" section. At least 2 specific patterns with row references or quotes, and the diff must actually use them. Thin, generic, or fabricated entries = the embedded context was ignored.
+4. Confirm the WU's task list is all checked off. If anything is unchecked, either finish it in the main context or mark the WU BLOCKED.
 
-### Layer 2 — WU's own verification commands
+### Layer 2 — The mechanical gate (gate.sh) + WU-specific commands
 
-Runs after Layer 1 passes. The commands specified in the WU's `## Verification` section:
-- PHPStan static analysis
-- PHPUnit tests
-- Pint code style
-- Any WU-specific extras (vitest, stub detection scripts, etc.)
+```bash
+"$HOME/.claude/plugins/marketplaces/budtags-claude-plugin/budtags/skills/run-plan/scripts/gate.sh" {directory}/WU-{N}-{slug}.md
+```
 
-All must exit with code 0 to proceed. Any failure = BLOCKED at this WU, stop immediately.
+One command: Create-files exist → scope audit vs the WU's Files section → stub detection → frontend pattern check → full `composer check`. Exit 0 = pass; exit 1 = fix every reported issue in main context and re-run; exit 2 = harness malfunction (report to user, don't mark BLOCKED). Then run the WU's own `## Verification` commands that gate.sh doesn't subsume (test --filter, migrate/rollback, etc.).
 
-### Parallel execution
+After committing a migration WU: `composer migrate-test-dbs` (parallel test DBs go stale and the next WU's tests fail confusingly otherwise).
 
-Independent units (per MANIFEST dependencies) MAY have their subagents dispatched in parallel. But review + commit is always one WU at a time, in sequence — the orchestrator reviews each WU's diff, fixes issues, runs verification, and commits before moving to the next review slot.
+On failure: ONE bounded re-spawn with the failure output embedded is allowed for implementation misses; plan defects or a second failure = BLOCKED at this WU, stop immediately.
+
+### Execution order
+
+Serial by default (operator preference): dispatch one WU's subagent, review, verify, and commit it before dispatching the next. Independent units MAY be dispatched in parallel ONLY when the user explicitly asks; review + commit is always one WU at a time, in sequence, regardless.
 
 ## Commit Message Format
 
@@ -166,6 +169,9 @@ Commits are local. When ready: git push -u origin advertising-feature
 
 ## Resources
 
-- `.claude/skills/run-plan/skill.md` - Full orchestration logic
-- `.claude/skills/run-plan/prompts/execute-unit.md` - Task agent prompt
-- `.claude/skills/run-plan/prompts/shared-context-template.md` - SHARED_CONTEXT template
+(all under `~/.claude/plugins/marketplaces/budtags-claude-plugin/budtags/skills/run-plan/`)
+
+- `SKILL.md` - Full orchestration logic
+- `prompts/execute-unit.md` - Execution subagent prompt template
+- `prompts/shared-context-template.md` - SHARED_CONTEXT template
+- `scripts/detect-stubs.sh`, `scripts/detect-wrong-patterns.sh` - verification scripts

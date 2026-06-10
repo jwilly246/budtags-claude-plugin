@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked. Orchestrator personally reviews each subagent's work (composer check + diff audit + SHARED_CONTEXT audit) before committing.
-version: 1.9.1
+version: 2.0.0
 category: workflow
 auto_activate:
   keywords:
@@ -51,12 +51,16 @@ auto_activate:
 |                                                                   |
 |  After every subagent returns, BEFORE committing, the            |
 |  orchestrator MUST personally (in the main context):             |
-|    1. Run `composer check` and fix ALL issues found              |
-|    2. Read `git diff` of subagent work; verify on-track vs WU    |
-|    3. Verify SHARED_CONTEXT.md was updated; populate if skipped  |
-|    4. Confirm WU task list is fully checked off                  |
+|    1. Read `git diff` of subagent work; verify on-track vs WU    |
+|    2. Verify SHARED_CONTEXT.md was updated; populate if skipped  |
+|    3. Confirm WU task list is fully checked off                  |
+|    4. Run gate.sh (mechanical: file existence, scope, stubs,     |
+|       patterns, composer check) and fix ALL issues found         |
 |                                                                   |
 |  Do NOT delegate any of these back to a subagent.                |
+|  The git invariants (no push, no bulk add, no deploy-branch      |
+|  commits, no commit boilerplate) are ALSO enforced mechanically  |
+|  by the plugin's git-safety.py hook - do not fight it.           |
 +------------------------------------------------------------------+
 ```
 
@@ -77,16 +81,17 @@ Orchestrator (this skill - main-context agent, does real work)
      |      +-> Update MANIFEST: status -> IN PROGRESS
      |      +-> Parse work unit for Agent type
      |      +-> Read SHARED_CONTEXT.md, embed inline into prompt
-     |      +-> Spawn Task agent (specialist per Agent field)
+     |      +-> Spawn subagent via Agent tool (specialist per Agent field)
      |      |      +-> Fresh context with SHARED_CONTEXT embedded inline,
      |      |          reads only the WU file, implements tasks,
      |      |          returns Completion Report incl. "Patterns Followed"
-     |      +-> [NEW] Orchestrator Review (main context, MANDATORY):
-     |      |      +-> Run composer check; fix ALL issues
+     |      +-> Orchestrator Review (main context, MANDATORY, judgment layer):
      |      |      +-> Read git diff; audit vs WU tasks/files
      |      |      +-> Audit SHARED_CONTEXT.md updates; populate if needed
+     |      |      +-> Audit "Patterns Followed" substance
      |      |      +-> Confirm WU task list checked off
-     |      +-> Run WU verification (scripts + WU commands)
+     |      +-> Run gate.sh (mechanical layer: files/scope/stubs/patterns/
+     |      |   composer check) + WU-specific verification commands
      |      +-> Gate Check:
      |      |      +-> PASS: git commit -> MANIFEST: DONE
      |      |      +-> FAIL: MANIFEST: BLOCKED -> STOP
@@ -96,7 +101,7 @@ Orchestrator (this skill - main-context agent, does real work)
             +-> Report summary (success or blocked)
 ```
 
-**Parallel execution note:** If two or more units are mutually independent (no dependency edge), the orchestrator MAY dispatch their subagents concurrently. But the Orchestrator Review + Gate Check + commit are still performed **one WU at a time, sequentially**, in deterministic order. Never commit two units in one atomic step.
+**Execution is serial by default** (operator preference: one dispatch per message, every subagent "green" claim independently re-verified before committing). Dispatch ONE work unit's subagent, complete its full Review + Gate Check + commit, then dispatch the next. Concurrent dispatch of independent units is permitted ONLY if the user explicitly asks for it in this session — and even then, Orchestrator Review + Gate Check + commit remain **one WU at a time, sequentially**, in deterministic order. Never commit two units in one atomic step.
 
 ---
 
@@ -124,7 +129,7 @@ Orchestrator (this skill - main-context agent, does real work)
 
 ## Shared Context
 
-Each Task agent starts fresh. Use `{directory}/SHARED_CONTEXT.md` for cross-agent continuity.
+Each execution subagent starts fresh. Use `{directory}/SHARED_CONTEXT.md` for cross-agent continuity.
 
 **Setup:** If missing, create from `prompts/shared-context-template.md` in Phase 0.
 
@@ -138,7 +143,7 @@ Each Task agent starts fresh. Use `{directory}/SHARED_CONTEXT.md` for cross-agen
 
 **Orchestrator responsibilities:**
 1. Create from template if missing
-2. READ and embed contents into the prompt before each Task spawn (substitute `{SHARED_CONTEXT_INLINE}`)
+2. READ and embed contents into the prompt before each Agent spawn (substitute `{SHARED_CONTEXT_INLINE}`)
 3. AUDIT the "Patterns Followed" section for substance after each spawn (Step C of Orchestrator Review)
 4. AUDIT new additions via `git diff SHARED_CONTEXT.md`
 5. NEVER commit, this file stays local as working context only
@@ -156,6 +161,14 @@ git branch --show-current
 If on main/master:
 1. Create feature branch: `git checkout -b {feature-name}`
 2. Confirm before proceeding
+
+If on `deploy-to-staging` or `deploy-to-production`: **STOP and ask the user.** These are
+deploy branches (deploy.sh switches HEAD there) — NEVER create commits on them and never
+branch off them; the feature branch must come from main.
+
+**Re-check before EVERY commit:** run `git branch --show-current` immediately before each
+`git commit` in the Gate Check (1.7). A deploy or branch switch mid-run must never result
+in a commit landing on the wrong branch.
 
 ### 0.2 Initialize SHARED_CONTEXT
 
@@ -205,35 +218,39 @@ Parse work unit file for `**Agent**:` field:
 | `typescript-developer` | `budtags:typescript-developer` |
 | `fullstack-developer` | `budtags:fullstack-developer` (default) |
 
-### 1.4 Spawn Task Agent
+### 1.4 Spawn Execution Subagent (Agent tool)
 
 **Pre-spawn step (orchestrator, MANDATORY):**
 
-Before calling Task, the orchestrator personally reads `{directory}/SHARED_CONTEXT.md` and embeds its full contents into the spawned prompt at the `{SHARED_CONTEXT_INLINE}` placeholder. This is the central gating change in v1.9.
+Before calling the Agent tool (formerly named "Task" — same `subagent_type` parameter), the orchestrator personally reads `{directory}/SHARED_CONTEXT.md` and embeds its full contents into the spawned prompt at the `{SHARED_CONTEXT_INLINE}` placeholder. This is the central gating change in v1.9.
 
 Why inline rather than asking the subagent to Read it:
 1. Subagents routinely skip "Read file X" instructions, especially specialist subagents whose own auto-loaded skills (from frontmatter `skills:` field) compete for prompt priority.
 2. Verifying "did the agent read it" requires transcript inspection. Verifying "is it in the prompt" is trivial.
 3. The subagent's "Patterns Followed" Completion Report section becomes falsifiable: they can only reference rows they have seen, and the orchestrator can cross-check against the embedded content.
 
-Use Task tool with:
+**Schema injection (for WUs that write SQL/Eloquent against existing tables):**
+subagents fabricate column names that pass PHPStan but fail at SQL runtime. Before
+spawning such a WU, the orchestrator verifies the relevant tables' actual columns
+(laravel-boost `database-schema` MCP tool, or the table's migration) and appends a
+short "## Verified Schema (orchestrator-provided)" section to the spawn prompt listing
+table -> column names. Also instruct: do NOT narrow SELECTs to assumed columns.
+
+**SHARED_CONTEXT size discipline:** the file is re-embedded into EVERY spawn. When
+updating it after a WU, prune entries that no longer earn their tokens (superseded
+decisions, scaffolding notes) instead of appending forever. Target: keep it under
+~250 lines; the patterns that matter must not drown.
+
+Use the Agent tool with:
 - **prompt**: From `prompts/execute-unit.md`, with `{SHARED_CONTEXT_INLINE}` substituted for the actual SHARED_CONTEXT.md contents read in the pre-spawn step
-- **model**: `"opus"`, execution agents need deep reasoning capability
+- **model**: OMIT — the subagent inherits the session model, which is the strongest available. Only pass a model if the user explicitly asks for an override. (Historical `"opus"` hard-code removed: it silently downgraded execution agents once newer session models shipped.)
 - **subagent_type**: From the agent type table in 1.3
 
 ### 1.5 Orchestrator Review (MANDATORY, runs in main context — do NOT delegate)
 
-After the subagent returns a Completion Report and before running the WU's own verification, the orchestrator personally:
+After the subagent returns a Completion Report and before running the WU's own verification, the orchestrator personally does the JUDGMENT review (the mechanical checks — file existence, scope, stubs, patterns, composer check — are gate.sh's job in 1.6; don't duplicate them by hand, and don't skip gate.sh because you eyeballed them):
 
-**Step A: Run `composer check`**
-
-```bash
-composer check
-```
-
-Project rule: fix **every** issue `composer check` surfaces, not just those caused by the current WU. If an unrelated test or PHPStan error is flagged, the orchestrator either fixes it directly in the main context or — if it looks like intentional WIP — stops and surfaces to the user before continuing.
-
-**Step B: Read the diff and audit scope**
+**Step B: Read the diff and audit quality**
 
 ```bash
 git status --short
@@ -241,14 +258,10 @@ git diff --stat
 git diff
 ```
 
-Cross-check against the WU file's `## Files > Create` and `## Files > Modify` sections:
-
 | Audit question | If answer is "no" |
 |---|---|
-| Are all files in "Create" actually created? | Mark BLOCKED, report missing files |
-| Are all files in "Modify" actually modified? | Mark BLOCKED, report missing modifications |
-| Did the subagent touch files NOT listed in the WU? | Investigate; either un-stage or expand scope in progress log |
-| Are there any TODO/FIXME, empty methods, or placeholder exceptions? | Mark BLOCKED (stub detection will catch this too in Layer 2) |
+| Does the diff actually implement the WU's tasks (not adjacent busywork)? | Mark BLOCKED, report drift |
+| Are all files in "Modify" actually modified (gate.sh only checks Create existence)? | Mark BLOCKED, report missing modifications |
 | Does the code match the pattern/style in sibling files? | If not, fix directly in main context |
 | Do the tests actually assert behavior (not just "assertNotNull")? | Strengthen the tests in main context |
 
@@ -294,25 +307,31 @@ If any of Steps A–D fail irrecoverably, mark the WU BLOCKED in MANIFEST and st
 
 ### 1.6 Run Verification
 
-**Step 1: Stub Detection (MANDATORY)**
+**Step 1: THE GATE (MANDATORY — one command, runs the whole mechanical layer)**
 
-Run the stub detection script on all files created/modified:
-
-```bash
-./budtags/skills/run-plan/scripts/detect-stubs.sh {file1} {file2} ...
-```
-
-Exit code 1 = stubs found = FAIL IMMEDIATELY.
-
-**Step 2: Pattern Check (for .tsx files)**
+From the project repo root:
 
 ```bash
-./budtags/skills/run-plan/scripts/detect-wrong-patterns.sh {tsx_files}
+"$HOME/.claude/plugins/marketplaces/budtags-claude-plugin/budtags/skills/run-plan/scripts/gate.sh" {directory}/WU-{N}-{slug}.md
 ```
 
-Exit code 1 = violations found = FAIL IMMEDIATELY.
+gate.sh performs, in one shot: WU Files-section parsing → every Create file exists →
+scope audit (tracked changes outside the declared set = FAIL; pre-existing untracked
+clutter = warn only) → stub detection → frontend pattern check → `composer check`
+(full gauntlet: pint, eslint, type-check, phpstan, vitest, parallel phpunit).
 
-**Step 2.5: MetrcApi set_user() Check (for PHP files touching MetrcApi)**
+- Exit 0 = mechanical layer passed.
+- Exit 1 = FAIL; the report lists EVERY issue (not just the first). Fix all issues in
+  main context, re-run gate.sh until clean. Project rule: fix every `composer check`
+  issue surfaced, not just ones this WU caused (if one looks like intentional WIP,
+  stop and surface to the user).
+- Exit 2 = the SCRIPT could not do its job (bad WU path, unparseable Files section,
+  detector malfunction). That is a harness problem, not a code failure — report to
+  the user; do NOT mark the WU BLOCKED over it.
+- `--skip-composer` exists for iterating on the cheap checks; the final pre-commit
+  gate.sh run must NOT use it.
+
+**Step 2: MetrcApi set_user() Check (for PHP files touching MetrcApi)**
 
 If any modified PHP controller files use `MetrcApi`, verify that every public controller method calls `$api->set_user()` before any API interaction. This prevents a subtle bug class where `MetrcApi::headers()` has a fallback to `request()->user()` masking the missing `set_user()`, but deeper internal methods access `$this->user` directly and crash. Queue jobs must accept User via constructor and call `$api->set_user($this->user)` in `handle()`.
 
@@ -329,12 +348,32 @@ If the work unit includes test files, verify they follow `budtags-testing` skill
 
 **Step 4: Work Unit Verification Commands**
 
-Parse the work unit's `## Verification` section and run each command.
+Parse the work unit's `## Verification` section and run each command — EXCEPT commands
+fully subsumed by gate.sh's `composer check` (a bare full-suite phpstan/pint/test run).
+WU-specific commands like `php artisan test --filter=X`, `php artisan migrate &&
+migrate:rollback`, or targeted greps are NOT subsumed — always run those.
+
+**Step 5: Test-DB refresh after migration WUs (KNOWN FAILURE MODE)**
+
+If this WU added or changed a migration, the parallel test databases
+(`budtags_test_1..N`) are now migration-stale, and the NEXT WU's tests will fail with
+confusing schema errors that look like code bugs. After committing a migration WU:
+
+```bash
+composer migrate-test-dbs
+```
+
+If parallel tests still fail with schema errors while a single-process run passes,
+drop the `budtags_test_*` databases manually (the `--recreate-databases` flag is
+unreliable) and re-run. NEVER diagnose post-migration parallel-test failures as code
+regressions before ruling out DB staleness.
 
 ### 1.7 Gate Check
 
 **If both the Orchestrator Review (1.5) and Verification (1.6) passed:**
 
+0. Branch check: `git branch --show-current` — must be the feature branch (never main or a
+   `deploy-to-*` branch); if not, STOP and report
 1. Stage files: `git add {files from WU "Files" section}` — enumerate explicitly, no `git add .` or `git add -A`
 2. Safety: unstage any plan files that may have been caught:
    `git reset HEAD {directory}/` (unstages everything in the plan directory)
@@ -357,9 +396,22 @@ Parse the work unit's `## Verification` section and run each command.
 
 4. Update MANIFEST: status -> DONE
 5. Update MANIFEST Progress Log section
-6. Continue to next READY unit
+6. **Propagate as-built facts downstream**: read the finished WU's "Notes for Next Unit"
+   and "Decisions Made"; apply anything that changes a DOWNSTREAM WU's assumptions
+   (final signatures, renamed files, changed approach) directly into those WU files'
+   Required Context / Tasks. Stale WU files are how later subagents re-implement
+   against assumptions that no longer hold.
+7. Continue to next READY unit
 
 **If either review (1.5) or verification (1.6) failed:**
+
+**Bounded retry (exactly one):** if the failure looks like a fixable implementation
+miss (failed test, missed task, stub) rather than a plan defect, the orchestrator may
+re-spawn the SAME work unit ONCE, embedding the verbatim failure output and what must
+change into the new prompt. Small fixes (a few lines) are faster to apply directly in
+main context — prefer that. If the retry also fails, or the failure indicates the WU
+itself is wrong (missing dependency, wrong assumption about the codebase):
+
 1. Update MANIFEST: status -> BLOCKED
 2. Update MANIFEST Progress Log with failure details (which step failed, the command output, the fix required)
 3. STOP immediately — do not attempt the next unit
@@ -459,7 +511,7 @@ If execution fails partway through:
 | Scenario | Action |
 |----------|--------|
 | Verification fails | Mark BLOCKED, stop, report failure details |
-| Task agent errors | Mark BLOCKED, stop, report agent error |
+| Subagent errors | Mark BLOCKED, stop, report agent error |
 | Git commit fails | Stop, report git error, don't update MANIFEST |
 | File not found | Report missing file, suggest resolution |
 | No READY units | Report blocked dependencies or completion |
@@ -490,11 +542,13 @@ Use this to:
 
 ## Anti-Patterns
 
-- Pushing to remote (NEVER)
+- Pushing to remote (NEVER — also mechanically asked/denied by git-safety.py)
 - Running all verifications after all units (gate each unit)
-- Continuing after a failure
+- Continuing after a failure (one bounded retry is allowed; a second failure = BLOCKED + stop)
 - Skipping verification commands
-- Skipping stub detection
+- Skipping gate.sh, or hand-waving its checks because you "already eyeballed the diff"
+- Marking a WU BLOCKED on gate.sh exit 2 (that's a harness malfunction — report it instead)
+- Diagnosing post-migration parallel-test failures as code bugs before refreshing test DBs
 - **Skipping Orchestrator Review (1.5)** — agents do not self-review; the orchestrator must
 - **Delegating composer check to a subagent** — it runs in main context, issues fixed in main context
 - **Committing with "WU-XX:" prefix** on the subject line — use MANIFEST description as-is
@@ -505,7 +559,7 @@ Use this to:
 - Using `git add .` or `git add -A` (always stage specific files only)
 - Accepting incomplete implementations from agents
 - Trusting that SHARED_CONTEXT.md was updated without verifying the diff
-- **Spawning a Task agent without embedding SHARED_CONTEXT inline** (since v1.9, the orchestrator MUST read the file in the pre-spawn step and substitute `{SHARED_CONTEXT_INLINE}` in the prompt; never rely on the subagent to Read it themselves)
+- **Spawning an execution subagent without embedding SHARED_CONTEXT inline** (since v1.9, the orchestrator MUST read the file in the pre-spawn step and substitute `{SHARED_CONTEXT_INLINE}` in the prompt; never rely on the subagent to Read it themselves)
 - **Telling the subagent to Read SHARED_CONTEXT.md** (since v1.9, the file is embedded in the prompt; asking the agent to Read it is wasted tool calls and signals the orchestrator skipped the pre-spawn step)
 - **Accepting a thin or generic "Patterns Followed" section** in the Completion Report (it is the leading indicator that the embedded context was ignored; treat fabricated row references the same way)
 
@@ -514,12 +568,14 @@ Use this to:
 ## Correct Behavior
 
 - Create feature branch if on main
-- Execute one unit at a time in fresh context (OK to dispatch independent subagents in parallel, but review/commit sequentially)
-- **Run Orchestrator Review (1.5) BEFORE the WU's own verification** — composer check, diff audit, SHARED_CONTEXT audit, task-list check
-- **Fix ALL `composer check` issues in main context** — not via subagent
+- Execute one unit at a time in fresh context, serially — dispatch the next subagent only after the previous WU is reviewed and committed (parallel dispatch only on explicit user request)
+- **Run Orchestrator Review (1.5) BEFORE the WU's own verification** — diff audit, SHARED_CONTEXT audit, patterns-substance audit, task-list check
+- **Run gate.sh for every WU** and fix ALL issues it reports in main context — not via subagent
 - **Populate SHARED_CONTEXT.md in main context** if the subagent left relevant tables empty
-- Run stub detection BEFORE other verification (Layer 2, Step 1)
-- Run all verification commands for each unit
+- **Inject verified schema** into spawn prompts for DB-touching WUs (subagents fabricate columns)
+- **Refresh parallel test DBs after migration WUs** (`composer migrate-test-dbs`; drop `budtags_test_*` manually if still stale)
+- **Propagate "Notes for Next Unit" into downstream WU files** after each commit
+- Run all WU-specific verification commands for each unit (skip only ones gate.sh's composer check fully subsumes)
 - **Commit with the MANIFEST description verbatim** — no WU-XX prefix
 - **Commit with 2-3 line body describing what was implemented** — no Co-Authored-By, no auto-attribution
 - Commit immediately after each success
@@ -528,5 +584,5 @@ Use this to:
 - Report clear summary at end
 - Verify no plan directory files are staged before committing
 - Remind user commits are local
-- **Read SHARED_CONTEXT.md in the orchestrator before each Task spawn** and embed its full contents into the prompt at the `{SHARED_CONTEXT_INLINE}` placeholder (v1.9)
+- **Read SHARED_CONTEXT.md in the orchestrator before each Agent spawn** and embed its full contents into the prompt at the `{SHARED_CONTEXT_INLINE}` placeholder (v1.9)
 - **Audit the subagent's "Patterns Followed" section for substance** as part of Orchestrator Review Step C.2 (v1.9)

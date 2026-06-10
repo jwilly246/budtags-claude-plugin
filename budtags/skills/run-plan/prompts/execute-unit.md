@@ -1,6 +1,6 @@
 # Execute Work Unit Prompt
 
-The prompt template for spawning Task agents. Execution-focused—all research was done in plan/decompose phases.
+The prompt template for spawning execution subagents (Agent tool). Execution-focused—all research was done in plan/decompose phases.
 
 ---
 
@@ -20,6 +20,8 @@ Your first tool call MUST be `Read` on `{directory}/WU-{N}-{slug}.md`. Read the 
 ## Embedded Shared Context
 
 The orchestrator has read `{directory}/SHARED_CONTEXT.md` and embedded its full contents inline below. Treat this as authoritative. Do NOT call Read on SHARED_CONTEXT.md (the contents are already in your context window). Do NOT re-explore the codebase to rediscover patterns documented here.
+
+NOTE: your WU file's "Required Context" section may begin with an instruction like "READ SHARED_CONTEXT.md" — that instruction predates this embedding mechanism. SKIP that read; everything it refers to is the block below. Follow the REST of the Required Context reading list normally.
 
 You will reference these embedded patterns in your Completion Report's "Patterns Followed" section, so read this block carefully.
 
@@ -127,7 +129,7 @@ The orchestrator will personally run `composer check`, read your full diff, audi
 
 ## Agent Type Selection
 
-Read `**Agent**:` field from work unit. **Always use `model: "opus"`** - execution requires deep reasoning.
+Read `**Agent**:` field from work unit. **OMIT the `model` parameter** — the subagent inherits the session model (the strongest available). Only override if the user explicitly asks. (The old `model: "opus"` hard-code silently downgraded execution agents once newer session models shipped.)
 
 | Agent Value | subagent_type |
 |-------------|---------------|
