@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """
-PreToolUse Hook: Block Git Commit Without Validation
+RETIRED (unregistered from hooks.json) — kept for reference only.
 
-Blocks `git commit` commands unless /pre-commit has been run recently.
-Checks for .claude/.pre-commit-passed state file with a 2-minute validity window.
+This gate was neutralized in practice: the validity window was loosened from
+the documented 2 minutes to 30 days, and a `.claude/.pre-commit-passed` state
+file dated 2099 ("Bypass: composer check is the gate") disabled it entirely.
+It has been replaced by:
+  - hooks/scripts/git-safety.py        (mechanical git invariants, always on)
+  - skills/run-plan/scripts/gate.sh    (per-work-unit verification gate)
 """
 
 import json
