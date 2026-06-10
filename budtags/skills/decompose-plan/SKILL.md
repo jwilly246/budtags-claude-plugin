@@ -1,7 +1,7 @@
 ---
 name: decompose-plan
 description: Decomposes a plan file into context-window-sized work units with dependency tracking. FILE CREATION ONLY - does NOT implement or execute any code.
-version: 3.3.1
+version: 3.4.0
 category: workflow
 auto_activate:
   keywords:
@@ -84,26 +84,32 @@ Read the entire plan file to understand:
 
 If the plan contains **Phase 0 Research** (component inventory, type inventory, service inventory, naming patterns), create `{FEATURE}/SHARED_CONTEXT.md` and pre-populate it.
 
-Use the template from `prompts/shared-context-template.md` and fill in:
+Use the template from `../run-plan/prompts/shared-context-template.md` (the single
+canonical copy lives in the run-plan skill — run-plan also uses it to create the file
+in Phase 0 if decompose didn't). Fill in these EXACT section headings from the template:
 
-| Plan Section | SHARED_CONTEXT Section |
-|--------------|------------------------|
-| Component inventory | Available UI Components (from create-plan) |
-| Type inventory | Existing TypeScript Types (from create-plan) |
-| Service inventory | Existing PHP Services (from create-plan) |
-| Naming patterns | Naming Conventions |
-| Existing routes | Routes (existing) |
+| Plan Section | SHARED_CONTEXT Section (exact heading) |
+|--------------|----------------------------------------|
+| Component inventory | `## Domain-Specific Components (from create-plan)` |
+| Type inventory | `## Existing TypeScript Types (from create-plan)` |
+| Service inventory | `## Existing PHP Services (from create-plan)` |
+| Naming patterns | `## Naming Conventions (Feature-Specific)` |
+| Existing routes | `## Existing Routes (from create-plan)` |
+
+Do NOT invent new section headings — run-plan's execute prompt and Orchestrator Review
+audit specific tables by name (PHP Services & Classes, TypeScript Types, Routes Added,
+Cache Keys, Enums Created, Database Columns & Naming, Implementation Decisions); those
+"(created)" tables stay empty at decompose time and are filled by execution agents.
 
 **Example pre-population:**
 
 ```markdown
-## Available UI Components (from create-plan)
+## Domain-Specific Components (from create-plan)
 
-| Component | Location | Key Props |
-|-----------|----------|-----------|
-| Button | resources/js/Components/Button.tsx | primary, secondary, disabled, loading |
-| TextInput | resources/js/Components/Inputs.tsx | value, onChange, errors |
-| DataTable | resources/js/Components/DataTable.tsx | columns, data, pagination |
+| Component | Location | Key Props | Notes |
+|-----------|----------|-----------|-------|
+| AdCard | resources/js/Pages/Ads/components/AdCard.tsx | ad, onEdit | existing |
+| AdStatusBadge | resources/js/Pages/Ads/components/AdStatusBadge.tsx | status | existing |
 ```
 
 **Why this matters:** Work unit executors will READ this file instead of re-discovering these components. This eliminates 30-50 redundant exploration tool calls per agent.
@@ -151,6 +157,7 @@ Based on work unit content, assign the best specialist agent. The agent type det
 | LeafLink marketplace | `leaflink-specialist` | leaflink, verify-alignment |
 | TanStack Query/Table/Virtual | `tanstack-specialist` | 6 tanstack-* skills, verify-alignment |
 | React components, modals, forms | `react-specialist` | verify-alignment |
+| TypeScript types, utilities, non-React TS | `typescript-developer` | (none - reads patterns) |
 | Backend controllers, services | `php-developer` | (none - reads patterns) |
 | Database migrations, models | `php-developer` | (none - reads patterns) |
 | Mixed frontend + backend | `fullstack-developer` | (none - fallback) |
@@ -195,7 +202,7 @@ For each work unit, include ONLY:
 
 Create all files in `{FEATURE}/` subdirectory:
 
-1. **SHARED_CONTEXT.md** - Using `prompts/shared-context-template.md`, pre-populated with research from Step 1.5
+1. **SHARED_CONTEXT.md** - Using `../run-plan/prompts/shared-context-template.md`, pre-populated with research from Step 1.5
 2. **MANIFEST.md** - Using `MANIFEST_TEMPLATE.md`
 3. **WU-{N}-{description}.md** - Using `WORK_UNIT_TEMPLATE.md` for each unit
 
@@ -277,21 +284,30 @@ Pattern files are in `.claude/skills/decompose-plan/patterns/`:
 
 - `MANIFEST_TEMPLATE.md` - Template for manifest file
 - `WORK_UNIT_TEMPLATE.md` - Template for work units
-- `prompts/shared-context-template.md` - Template for SHARED_CONTEXT.md (from run-plan skill)
+- `../run-plan/prompts/shared-context-template.md` - Template for SHARED_CONTEXT.md (canonical copy lives in the run-plan skill)
 - `patterns/*.md` - Lightweight pattern references
 
 ---
 
-## What Happens After
+## What Happens After (the run-plan harness contract)
 
-The user will:
-1. Review the created MANIFEST and work units
-2. Pick an available (READY) work unit to start
-3. Complete one work unit per session
-4. Mark units complete in MANIFEST as they progress
-5. Check MANIFEST for next available work
+The output of this skill is consumed by `/run-plan {FEATURE}`, which acts as the
+execution harness. Everything this skill writes must satisfy run-plan's parsing and
+audit contract:
 
-**This skill's job ends when the files are created.**
+| Decompose output | How run-plan consumes it |
+|------------------|--------------------------|
+| MANIFEST work unit table (`ID / Unit / Description / Status / Depends On`) | Parsed to compute READY units (PENDING + all deps DONE). Description is used **verbatim** as the commit subject — write it like a commit subject (imperative, no trailing period, no "WU-XX" reference) |
+| MANIFEST statuses | Only `PENDING / IN PROGRESS / DONE / BLOCKED` are stored; READY is computed, never written |
+| WU `**Agent**:` field | Mapped to `subagent_type` for the execution subagent (must be one of the values in Step 3.5) |
+| WU `## Files` section (`### Create` / `### Modify`, backticked paths) | Parsed mechanically by `gate.sh`: Create files must exist, and any tracked change outside the declared set fails the scope audit — declare exhaustively |
+| WU `## Tasks` checkboxes | Subagent must check all `- [ ]` → `- [x]`; orchestrator blocks the unit otherwise |
+| WU `## Verification` section | Run by the orchestrator AFTER gate.sh — unit-specific commands only (gate.sh already covers stubs, scope, patterns, composer check) |
+| SHARED_CONTEXT.md | Read by the orchestrator and embedded **inline** into each subagent prompt (subagents never Read it); subagents append discoveries to the file; never committed |
+| WU `## Decisions Made` / `## Notes for Next Unit` | Filled during execution; orchestrator audits alongside the Completion Report |
+
+**This skill's job ends when the files are created.** Execution, verification, and
+commits belong to run-plan.
 
 ---
 

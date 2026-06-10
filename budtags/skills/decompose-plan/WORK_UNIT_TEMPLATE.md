@@ -6,7 +6,6 @@ Use this template when creating individual work unit files.
 
 # {FEATURE} - Work Unit {N}: {Description}
 
-**Status**: PENDING
 **Agent**: {agent_type}
 **Skills**: {List skills agent will have auto-loaded}
 **Estimated Tasks**: {5-10}
@@ -26,14 +25,16 @@ Use this template when creating individual work unit files.
 {Any constraints to follow - org scoping, naming conventions, etc.}
 
 ### Required Context
-Before writing code, the executor MUST:
-1. **READ `{FEATURE}/SHARED_CONTEXT.md`** for pre-discovered:
+The run-plan orchestrator embeds the full contents of `{FEATURE}/SHARED_CONTEXT.md` inline
+into the executor's prompt. Do NOT call Read on SHARED_CONTEXT.md — it is already in your
+context window. Before writing code, the executor MUST:
+1. **USE the embedded shared context** for pre-discovered:
    - Available UI components (don't search, they're documented)
    - Existing TypeScript types (don't search, they're documented)
    - Existing PHP services (don't search, they're documented)
    - Naming conventions already established by previous work units
-2. **Only explore further** if building something NOT documented in SHARED_CONTEXT
-3. **UPDATE SHARED_CONTEXT.md** with any new discoveries (components, types, services, patterns)
+2. **Only explore further** if building something NOT documented in the embedded context
+3. **UPDATE the `{FEATURE}/SHARED_CONTEXT.md` file** with any new discoveries (components, types, services, patterns) — updating the file is still your job even though reading it is not
 4. READ sibling files in the same directory as files being created
 5. NEVER recreate buttons, inputs, toggles, tables, badges, or any existing component
 
@@ -63,6 +64,13 @@ Complete these in order:
 ---
 
 ## Files
+
+> **Format contract:** run-plan's `gate.sh` parses this section mechanically. Each entry
+> must be a `- ` bullet with the file path backticked (extension required), under a
+> `### Create` or `### Modify` heading. Every backticked extension-bearing span on a
+> bullet is treated as a declared path — so do NOT backtick file names inside the
+> description text. Declare EVERY file this unit will touch: any tracked file modified
+> but not declared here FAILS the gate's scope audit.
 
 ### Create
 - `path/to/NewFile.php` - {Brief description}
@@ -97,26 +105,20 @@ public function fetch_all(): Response
 
 ## Verification
 
+> The mechanical layer — Create-file existence, scope audit, stub detection, frontend
+> pattern check, and the full `composer check` gauntlet (pint, eslint, type-check,
+> phpstan, vitest, phpunit) — is run by run-plan's `gate.sh`. Do NOT duplicate those
+> commands here; embedded copies drift from the canonical detectors. List ONLY
+> verification specific to this unit.
+
 Run these commands when tasks are complete:
 
 ```bash
-# 1. STUB DETECTION (must pass first)
-# PHP stubs
-grep -rn --include="*.php" -E "(// ?TODO|// ?FIXME|throw new \\\\Exception\('Not implemented|function \w+\([^)]*\)\s*\{\s*\})" path/to/new/files
-
-# TypeScript stubs
-grep -rn --include="*.tsx" --include="*.ts" -E "(// ?TODO|// ?FIXME|throw new Error\('Not implemented|\(\) => \{ ?\})" path/to/new/files
-
-# If ANY matches found above, STOP - stubs must be removed
-
-# 2. Static analysis
-./vendor/bin/phpstan analyse path/to/new/files --memory-limit=512M
-
-# 3. Run tests for this unit
+# Tests for this unit (fast feedback before the full gate)
 php artisan test --filter=TestClassName
 
-# 4. Code style
-./vendor/bin/pint path/to/new/files
+# {Any unit-specific checks: an artisan command to exercise, a tinker probe,
+#  a route to hit, a migration to run — things gate.sh cannot know about}
 ```
 
 ---
@@ -127,7 +129,7 @@ All conditions must be true:
 
 - [ ] All tasks above are checked
 - [ ] **NO STUBS** - zero TODO/FIXME comments, no empty methods, no placeholder exceptions
-- [ ] Verification commands pass (PHPStan, tests, Pint)
+- [ ] run-plan `gate.sh` passes (scope, stubs, patterns, composer check) plus the unit-specific commands above
 - [ ] Files listed above exist and work
 - [ ] No `any` types in TypeScript (if frontend)
 - [ ] Organization scoping verified (if applicable)

@@ -18,6 +18,10 @@ Use this template when creating a manifest for decomposed work units.
 
 ## Work Units
 
+> The **Description** column is used VERBATIM as the git commit subject by run-plan.
+> Write each one like a commit subject: imperative mood, capitalized, no trailing
+> period, no "WU-XX" references (e.g. "Create ads tables and models").
+
 | ID | Unit | Description | Status | Depends On |
 |----|------|-------------|--------|------------|
 | WU-01 | {slug} | {Brief description} | PENDING | - |
@@ -26,11 +30,14 @@ Use this template when creating a manifest for decomposed work units.
 | WU-04 | {slug} | {Brief description} | PENDING | WU-02 |
 | WU-05 | {slug} | {Brief description} | PENDING | WU-03 |
 
-**Status Legend:**
-- `PENDING` - Not started, dependencies incomplete
-- `READY` - Dependencies complete, can start now
-- `IN PROGRESS` - Currently being worked on
-- `DONE` - Completed and verified
+**Status Legend** (run-plan's stored status model — write ONLY these four):
+- `PENDING` - Not yet started
+- `IN PROGRESS` - Currently being executed
+- `DONE` - Completed, verified, committed
+- `BLOCKED` - Failed verification, needs a fix before resuming
+
+`READY` is **computed, never stored**: a unit is READY when its status is PENDING
+and all of its dependencies are DONE. Do not write READY into the table.
 
 ---
 
@@ -104,15 +111,20 @@ Document important decisions from the original plan:
 
 ## Progress Log
 
-Track completion as you work:
+Updated by run-plan after each unit's Gate Check (commit hash on DONE, failure
+details on BLOCKED):
 
 ### WU-01: {description}
-- **Completed**: {DATE or "Not started"}
+- **Status**: PENDING
+- **Completed**: {DATE, filled by run-plan}
+- **Commit**: {short hash, filled by run-plan}
 - **Decisions Made**: {Any decisions during implementation}
-- **Notes**: {Anything notable for future reference}
+- **Notes**: {Anything notable; on BLOCKED — which step failed, command output, fix required}
 
 ### WU-02: {description}
-- **Completed**: {DATE or "Not started"}
+- **Status**: PENDING
+- **Completed**:
+- **Commit**:
 - **Decisions Made**:
 - **Notes**:
 
@@ -125,12 +137,10 @@ Track completion as you work:
 Before marking the feature complete:
 
 - [ ] All work units show DONE status
-- [ ] All tests passing: `php artisan test --filter={Feature}`
-- [ ] PHPStan passing: `./vendor/bin/phpstan analyse`
-- [ ] TypeScript check passing: `npm run type-check`
-- [ ] Pre-commit checks passing
+- [ ] Feature tests passing: `php artisan test --filter={Feature}`
+- [ ] Full quality gauntlet green (run-plan's gate.sh runs this per-unit, but re-verify at the end)
 
 **Final verification:**
 ```bash
-php artisan test --filter={Feature} && ./vendor/bin/phpstan analyse --level=5 && npm run type-check
+composer check
 ```

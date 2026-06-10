@@ -24,6 +24,7 @@ A subdirectory named after the feature containing:
 ```
 ADVERTISING/
 ├── MANIFEST.md              (Index, dependencies, progress tracking)
+├── SHARED_CONTEXT.md        (Pre-populated research for execution agents)
 ├── WU-01-database-models.md (Context-window-sized work)
 ├── WU-02-admin-controller.md
 ├── WU-03-admin-ui.md
@@ -36,7 +37,8 @@ ADVERTISING/
 - Each work unit is sized for **one context window** (5-10 tasks)
 - Tests are included **with** each unit (not separate)
 - Only necessary domains are created (smart detection)
-- Dependencies are tracked so you know what's READY to work on
+- Dependencies are tracked; `/run-plan` computes which units are READY
+- Output is the input contract for `/run-plan`, which executes, verifies, and commits each unit
 
 ## Instructions
 
@@ -48,7 +50,7 @@ Then:
 2. Identify which domains are needed (database, backend, frontend, integration)
 3. Size work units appropriately (5-10 tasks each)
 4. Determine dependencies between units
-5. Create subdirectory with MANIFEST.md and WU-*.md files
+5. Create subdirectory with MANIFEST.md, SHARED_CONTEXT.md (pre-populated from the plan's Phase 0 research), and WU-*.md files
 6. Output the list of created files
 7. **STOP. Do not implement anything.**
 
@@ -97,6 +99,7 @@ For `ADVERTISING-FEATURE-PLAN.md`:
 
 📁 ADVERTISING/
   ├── ✅ MANIFEST.md
+  ├── ✅ SHARED_CONTEXT.md (pre-populated with research)
   ├── ✅ WU-01-database-models.md
   ├── ✅ WU-02-admin-controller.md
   ├── ✅ WU-03-admin-ui.md
@@ -104,5 +107,5 @@ For `ADVERTISING-FEATURE-PLAN.md`:
   ├── ✅ WU-05-seller-ui.md
   └── ✅ WU-06-analytics-integration.md
 
-Decomposition complete. 6 work units created.
+Decomposition complete. 6 work units + SHARED_CONTEXT created.
 ```
