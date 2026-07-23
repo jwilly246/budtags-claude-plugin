@@ -274,6 +274,30 @@ $this->access_key->update([
 
 ---
 
+## Refresh-token chain gotchas (learned in production)
+
+The refresh token ROTATES: every refresh can return a NEW refresh token, and using
+a stale copy kills the whole chain with `invalid_grant`. Two real incidents:
+
+1. **Staging clobber (fixed 2026-07-16):** staging ran `qbo:sync-invoices` with a
+   copied prod token; each staging refresh rotated the chain and invalidated prod's
+   copy. The scheduled command is now `environments('production')` — never let two
+   environments share one token chain.
+2. **`invalid_grant` on refresh deletes the token** (`QuickBooksApi::set_service_from_token`)
+   — by design, so a dead chain doesn't get hammered. Recovery is always a human
+   re-auth at `/quickbooks/auth`. The daily sync logs `QBO Invoice Sync Auth Failed`
+   as a KEYED row (one live row, repeat-bumped) until reconnected.
+
+The "stays fresh as long as it's used every ~90-100 days" rule DOES hold — the daily
+06:00 sync keeps the service-user chain alive indefinitely. If the chain dies anyway,
+look for a second consumer of the same token (another environment, a dashboard
+session with a stale copy), not for expiry.
+
+**Note:** "Exception appears in converting Response to XML" is NOT a token problem —
+see `patterns/error-handling.md` (SDK schema drift).
+
+---
+
 ## Related Patterns
 
 - `patterns/authentication.md` - Initial OAuth flow

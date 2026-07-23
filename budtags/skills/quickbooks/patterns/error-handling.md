@@ -332,6 +332,46 @@ $customer = $qbo->get_customer('999999');  // Should return null
 
 ---
 
+## "Exception appears in converting Response to XML" — SDK schema drift
+
+**Seen live 2026-07-23:** the daily `qbo:sync-invoices` failed for ALL orgs with
+`Exception appears in converting Response to XML` while `SELECT COUNT(*)` queries
+still worked and the token refreshed fine. Root cause: Intuit mass-backfilled new
+invoice fields (`EInvoiceStatus`, `AllowOnlineAffirmPayment`) via their system user
+("LastModifiedByRef: 0") on 2026-07-22 — one week AFTER releasing SDK v6.3.1
+(2026-07-17) which declares those fields. Our pinned v6.2.3 choked deserializing
+every entity-returning response. Fix: `composer update quickbooks/v3-php-sdk`.
+
+**This error means the SDK cannot parse a response — it is almost never auth.**
+Diagnostic ladder (each rung eliminates a layer):
+
+1. Token refresh succeeds? → not credentials.
+2. `Query('SELECT COUNT(*) FROM Invoice')` works? → API reachable, auth good
+   (COUNT returns no entity bodies, so it dodges the deserializer).
+3. Entity queries (`SELECT * FROM ...`) all throw, `getLastError()` is null?
+   → the SDK is failing to PARSE a 200 response, not receiving an error.
+4. Fetch the raw response outside the SDK to confirm the payload is valid:
+
+```php
+$response = Http::withToken($token->access_key)
+    ->withHeaders(['Accept' => 'application/json'])
+    ->get("https://quickbooks.api.intuit.com/v3/company/{$token->realm_id}/query", [
+        'query' => 'SELECT * FROM Invoice STARTPOSITION 1 MAXRESULTS 1',
+        'minorversion' => 75,
+    ]);
+```
+
+5. Raw payload valid but SDK throws → check `composer outdated quickbooks/v3-php-sdk`
+   and diff the SDK's `src/Data/IPPInvoice.php` (etc.) for fields present in the raw
+   payload but missing from the pinned SDK version.
+
+**Intuit ships the SDK release first, then backfills the data days later** — a sync
+that worked yesterday and fails today on every org, with no code deploy in between,
+is the signature of this pattern. Check the entity's `MetaData.LastUpdatedTime` and
+`LastModifiedByRef` (value `0` = Intuit system user) to confirm a backfill.
+
+---
+
 ## Best Practices
 
 ✅ **ALWAYS wrap QuickBooks operations in try-catch**
