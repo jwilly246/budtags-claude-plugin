@@ -8,16 +8,19 @@ Guide to recording payments against QuickBooks invoices in BudTags.
 
 ### Basic Payment
 
-**Method:** `create_payment(array $data)`
+**Method:** `create_payment(array $payment_data): IPPPayment`
+
+**Required keys:** `invoice_id`, `customer_id`, `amount`, `txn_date`.
 
 ```php
 $qbo = new QuickBooksApi();
-$qbo->set_user($user);
+$qbo->set_service($user);
 
 $payment = $qbo->create_payment([
     'customer_id' => '123',
     'invoice_id' => '789',
-    'amount' => 250.00
+    'amount' => 250.00,
+    'txn_date' => '2025-01-15'
 ]);
 
 echo "Payment recorded: \${$payment->TotalAmt}";
@@ -31,14 +34,18 @@ $payment = $qbo->create_payment([
     'customer_id' => '123',
     'invoice_id' => '789',
     'amount' => 250.00,
+    'txn_date' => '2025-01-15',         // Payment date (required)
 
     // Optional
-    'txn_date' => '2025-01-15',        // Payment date (default: today)
-    'payment_method_id' => '1',        // Payment method (Cash, Check, Card, etc.)
-    'deposit_to_account_id' => '35',   // Bank account to deposit to
-    'private_note' => 'Cash payment received at dispensary',
+    'payment_method_id' => '1',         // Payment method (Cash, Check, Card, etc.)
+    'payment_ref_num' => 'CHK-1042',    // Check / transaction reference number
+    'deposit_to_account_id' => '35',    // Bank account to deposit to
 ]);
 ```
+
+**Note:** `create_payment` does not accept a `private_note` key. The supported
+optional keys are `payment_method_id`, `payment_ref_num`, and
+`deposit_to_account_id`.
 
 ---
 
@@ -100,6 +107,7 @@ $payment = $qbo->create_payment([
     'customer_id' => $invoice->CustomerRef->value,
     'invoice_id' => '789',
     'amount' => $totalDue,  // Pay full balance
+    'txn_date' => date('Y-m-d'),
     'payment_method_id' => '1',  // Cash
     'deposit_to_account_id' => '35'  // Checking
 ]);
@@ -117,6 +125,7 @@ $payment = $qbo->create_payment([
     'customer_id' => $invoice->CustomerRef->value,
     'invoice_id' => '789',
     'amount' => 250.00,  // Partial payment
+    'txn_date' => date('Y-m-d'),
     'payment_method_id' => '1'
 ]);
 
@@ -163,8 +172,8 @@ $payment = $qbo->create_payment([
     'amount' => $order->payment_amount,
     'txn_date' => $order->payment_date,
     'payment_method_id' => $order->qbo_payment_method_id,
-    'deposit_to_account_id' => $order->qbo_deposit_account_id,
-    'private_note' => "Order #{$order->id} payment"
+    'payment_ref_num' => "ORDER-{$order->id}",
+    'deposit_to_account_id' => $order->qbo_deposit_account_id
 ]);
 
 $order->update(['qbo_payment_id' => $payment->Id]);
@@ -189,8 +198,9 @@ $payment = $qbo->create_payment([
     'customer_id' => '123',
     'invoice_id' => $invoice->Id,
     'amount' => $invoice->TotalAmt,  // Pay in full
+    'txn_date' => date('Y-m-d'),
     'payment_method_id' => '1',  // Cash
-    'private_note' => 'Cash on delivery'
+    'payment_ref_num' => 'COD'
 ]);
 
 LogService::store('COD Payment', "Invoice #{$invoice->DocNumber} paid in full");
@@ -217,27 +227,36 @@ if ($paymentAmount > $invoice->Balance) {
 ### Controller Validation Example
 
 ```php
-public function recordPayment(Request $request)
+// The real endpoint is QuickBooksController::record_payment($api, $invoice_id):
+// the invoice id is a route parameter and input is validated in camelCase.
+public function record_payment(QuickBooksApi $api, string $invoice_id): RedirectResponse
 {
-    $validated = $request->validate([
-        'customer_id' => 'required|string',
-        'invoice_id' => 'required|string',
+    $api->set_service($this->user());
+
+    $input = request()->validate([
+        'customerId' => 'required|string',
         'amount' => 'required|numeric|min:0.01',
-        'txn_date' => 'nullable|date',
-        'payment_method_id' => 'nullable|string',
-        'deposit_to_account_id' => 'nullable|string',
+        'txnDate' => 'required|date',
+        'paymentMethodId' => 'nullable|string',
+        'paymentRefNum' => 'nullable|string|max:21',
+        'depositToAccountId' => 'nullable|string',
     ]);
 
-    $qbo = new QuickBooksApi();
-    $qbo->set_user(auth()->user());
-
     // Verify invoice balance
-    $invoice = $qbo->get_invoice($validated['invoice_id']);
-    if ($validated['amount'] > $invoice->Balance) {
-        return redirect()->back()->withErrors(['amount' => 'Payment exceeds invoice balance']);
+    $invoice = $api->get_invoice($invoice_id);
+    if ($input['amount'] > (float) $invoice->Balance) {
+        return redirect()->back()->with('error', 'Payment exceeds invoice balance');
     }
 
-    $payment = $qbo->create_payment($validated);
+    $api->create_payment([
+        'invoice_id' => $invoice_id,
+        'customer_id' => $input['customerId'],
+        'amount' => (float) $input['amount'],
+        'txn_date' => $input['txnDate'],
+        'payment_method_id' => $input['paymentMethodId'] ?? null,
+        'payment_ref_num' => $input['paymentRefNum'] ?? null,
+        'deposit_to_account_id' => $input['depositToAccountId'] ?? null,
+    ]);
 
     return redirect()->back()->with('message', 'Payment recorded');
 }

@@ -103,15 +103,11 @@ Token expired
 **Solution:**
 ```php
 try {
-    $qbo->set_user($user);
+    $qbo->set_service($user);
     $customers = $qbo->get_all_customers();
 } catch (Exception $e) {
-    if (str_contains($e->getMessage(), 'AuthenticationFailed')) {
-        // Delete expired connection
-        QboAccessKey::where('user_id', $user->id)
-            ->where('org_id', $user->active_org->id)
-            ->delete();
-
+    if (QuickBooksApi::is_oauth_error($e)) {
+        // set_service_from_token() already deleted the dead token row
         return redirect('/quickbooks/login')
             ->with('error', 'QuickBooks connection expired. Please reconnect.');
     }
@@ -134,9 +130,17 @@ ThrottleException
 
 **Cause:** Too many API requests in short period
 
-**QuickBooks Limits:**
-- 500 requests per minute per app
-- 1000 requests per minute per company
+**QuickBooks Limits (published, unchanged as of 2026-07):**
+- 500 requests per minute per realm (company) per app
+- 10 concurrent requests per realm
+- Throttled requests return HTTP 429, error code 3001 (ThrottleExceeded)
+- Sandbox has the same limits as production
+
+**Separate from throttling - read metering (Intuit App Partner Program, billed since
+2025-11-01):** data-out ("CorePlus") API calls are metered. The free Builder tier
+gets 500k CorePlus credits/month and calls beyond that are BLOCKED, not billed.
+Writes are unmetered. A sudden hard failure of all reads late in a month can be
+quota exhaustion, not throttling. See `PLATFORM_CHANGES.md`.
 
 **Solution:**
 ```php

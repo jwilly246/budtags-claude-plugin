@@ -1,396 +1,70 @@
-# QuickBooks Integration Skill - Package
+# QuickBooks Integration Skill
 
-A comprehensive, self-contained Claude skill providing complete QuickBooks Online API integration documentation with all operations, workflows, and best practices for the BudTags application.
-
-## What's Included
-
-This skill package contains:
-
-- **skill.md** - Main skill file (invoke with Skill tool)
-- **OPERATIONS_CATALOG.md** - Complete catalog of all 40+ QuickBooks operations
-- **OAUTH_FLOW.md** - OAuth 2.0 authentication deep dive
-- **WORKFLOWS/** - Step-by-step workflow guides:
-  - `INVOICE_WORKFLOW.md` - Invoice creation, updating, sending
-  - `PAYMENT_WORKFLOW.md` - Payment recording
-  - `CREDIT_MEMO_WORKFLOW.md` - Credit memos and application
-  - `METRC_SYNC_WORKFLOW.md` - Metrc-to-QuickBooks inventory sync
-- **ENTITY_TYPES.md** - TypeScript type definitions reference
-- **ERROR_HANDLING.md** - Common errors and solutions
-- **CODE_EXAMPLES.md** - Real code examples from BudTags codebase
-- **README.md** - This file
-
-**Total Size**: ~120KB
-**Total Operations**: 40+ operations across 8 categories
-
----
-
-## Installation
-
-### For You (Already Installed)
-This skill is already installed in your project at:
-```
-.claude/skills/quickbooks/
-```
-
-### For Your Partner
-
-1. **Copy the entire directory**:
-   ```bash
-   # Copy this entire folder:
-   .claude/skills/quickbooks/
-
-   # To their project's skills directory:
-   their-project/.claude/skills/quickbooks/
-   ```
-
-2. **Verify installation**:
-   - The directory structure should match:
-     ```
-     .claude/skills/quickbooks/
-     ├── skill.md
-     ├── OPERATIONS_CATALOG.md
-     ├── OAUTH_FLOW.md
-     ├── ENTITY_TYPES.md
-     ├── ERROR_HANDLING.md
-     ├── CODE_EXAMPLES.md
-     ├── README.md
-     └── WORKFLOWS/
-         ├── INVOICE_WORKFLOW.md
-         ├── PAYMENT_WORKFLOW.md
-         ├── CREDIT_MEMO_WORKFLOW.md
-         └── METRC_SYNC_WORKFLOW.md
-     ```
-
-3. **Done!** Claude will automatically detect and load the skill.
-
----
-
-## How to Use
-
-### Method 1: Skill Tool (Recommended)
-```
-You: Use the quickbooks skill to show me how to create an invoice
-
-Claude: [Invokes skill, provides comprehensive invoice creation guide with code examples]
-```
-
-### Method 2: Direct Questions
-Just ask Claude about QuickBooks integration - it will automatically use this skill:
-```
-You: How do I record a payment against an invoice in QuickBooks?
-
-Claude: Use the create_payment() method...
-[Provides details from skill with complete code examples]
-```
-
-### Method 3: Workflow-Specific Questions
-```
-You: Show me the Metrc-to-QuickBooks sync workflow
-
-Claude: [Provides complete sync workflow with item mapping and quantity updates]
-```
-
----
-
-## What Claude Can Do With This Skill
-
-When this skill is active, Claude can:
-
-✅ **Guide OAuth Setup** - Walk through complete OAuth 2.0 authentication flow
-✅ **Create Invoices** - Generate invoices with line items, customers, payment terms
-✅ **Record Payments** - Show how to record payments against invoices
-✅ **Manage Credits** - Create and apply credit memos
-✅ **Sync Inventory** - Explain Metrc-to-QuickBooks item mapping and quantity sync
-✅ **Handle Errors** - Troubleshoot common QuickBooks API errors (SyncToken, validation, etc.)
-✅ **Provide Code Examples** - Show real code from QuickBooksApi.php
-✅ **Explain Data Types** - Reference TypeScript types and entity structures
-
----
-
-## Example Interactions
-
-### Getting Started
-```
-You: What QuickBooks operations are available?
-
-Claude: I have complete documentation for 40+ QuickBooks operations across 8 categories:
-
-📋 Core Operations:
-- Authentication & Token Management (4 methods)
-- Customer Operations (8 methods)
-- Invoice Operations (9 methods)
-- Item/Product Operations (7 methods)
-- Credit Memo Operations (5 methods)
-- Payment Operations (3 methods)
-- Account Operations (5 methods)
-- Utilities (3 methods)
-
-What category would you like to explore?
-```
-
-### Creating an Invoice
-```
-You: How do I create an invoice with multiple line items?
-
-Claude: Use the create_invoice() method:
-
-```php
-$invoice = $qbo->create_invoice([
-    'customer_id' => '123',
-    'line_items' => [
-        [
-            'item_id' => '456',
-            'quantity' => 10,
-            'unit_price' => 25.00,
-            'description' => 'Premium Cannabis Flower'
-        ]
-    ]
-]);
-```
-
-[Provides complete example with all options]
-
-See WORKFLOWS/INVOICE_WORKFLOW.md for complete invoice management guide.
-```
-
-### OAuth Troubleshooting
-```
-You: I'm getting "Invalid OAuth state" error
-
-Claude: This error indicates a CSRF state mismatch. Common causes:
-1. Browser session expired during OAuth flow
-2. User navigated away and came back
-3. Session storage issue
-
-Solution: Restart the OAuth flow by redirecting to /quickbooks/login
-
-[Provides complete troubleshooting steps from OAUTH_FLOW.md]
-```
-
-### Metrc Sync
-```
-You: How do I sync inventory from Metrc to QuickBooks?
-
-Claude: The Metrc-to-QuickBooks sync involves:
-
-1. **Item Mapping** - Map Metrc items to QuickBooks items (one-time setup)
-2. **Quantity Sync** - Update QBO quantities from Metrc packages
-
-```php
-$result = $qbo->sync_quantities_from_metrc();
-// Returns: ['synced' => 15, 'failed' => 0, 'skipped' => 3]
-```
-
-[Provides complete workflow from METRC_SYNC_WORKFLOW.md]
-```
-
----
-
-## Skill Features
-
-### 1. Complete Operations Catalog
-All 40+ operations organized by category with:
-- Method signatures
-- Parameters (required and optional)
-- Return types
-- Usage examples
-- Common use cases
-
-### 2. Workflow Guides
-Step-by-step guides for:
-- **Invoice Workflow** - Creating, updating, sending invoices
-- **Payment Workflow** - Recording payments with all options
-- **Credit Memo Workflow** - Issuing refunds and applying credits
-- **Metrc Sync Workflow** - Item mapping and quantity sync
-
-### 3. OAuth Authentication Guide
-Comprehensive OAuth 2.0 documentation:
-- Complete authentication flow
-- Token storage and refresh
-- Multi-tenant support
-- Troubleshooting common issues
-
-### 4. Error Handling
-Common QuickBooks API errors:
-- SyncToken mismatch/stale object errors
-- Authentication/token errors
-- Validation errors
-- Business logic errors
-- Connection/network errors
-- Rate limiting
-
-### 5. TypeScript Types
-Complete type definitions for:
-- Customer, Invoice, Company
-- Payment methods, Accounts
-- Line items, Addresses
-- All QuickBooks entities
-
-### 6. Real Code Examples
-27 code examples from actual BudTags codebase:
-- Controller implementations
-- Error handling patterns
-- Frontend integration
-- Batch operations
-
----
-
-## Sharing This Package
-
-### Option 1: Zip File (Already Available)
-```bash
-# Zip already created at:
-C:\Users\Jason\Downloads\quickbooks-skill.zip
-
-# Share with your partner
-# They extract to their .claude/skills/ directory
-```
-
-### Option 2: Git Repository
-If your project is in git:
-```bash
-# Commit the skill package
-git add .claude/skills/quickbooks/
-git commit -m "Add QuickBooks integration skill"
-git push
-
-# Partner pulls the repo
-git pull
-
-# Skill is automatically available
-```
-
-### Option 3: Cloud Storage
-Upload the `quickbooks/` folder to:
-- Dropbox
-- Google Drive
-- OneDrive
-- Any file sharing service
-
-Partner downloads and places in their `.claude/skills/` directory.
-
----
+Claude skill documenting the BudTags QuickBooks Online integration: operations,
+workflows, patterns, and QBO platform knowledge. Lives in the BudTags plugin repo
+(`budtags/skills/quickbooks/`) and loads via progressive disclosure - see SKILL.md
+for the loading rules.
 
 ## Package Structure
 
 ```
-.claude/skills/quickbooks/
-├── skill.md (~12KB)
-│   └── Main skill file with overview and quick start
-│
-├── OPERATIONS_CATALOG.md (~31KB)
-│   └── Complete catalog of all 40+ operations
-│
-├── OAUTH_FLOW.md (~16KB)
-│   └── OAuth 2.0 authentication guide
-│
-├── ENTITY_TYPES.md (~9KB)
-│   └── TypeScript type definitions
-│
-├── ERROR_HANDLING.md (~10KB)
-│   └── Common errors and solutions
-│
-├── CODE_EXAMPLES.md (~17KB)
-│   └── Real code from BudTags codebase
-│
-├── README.md (this file, ~10KB)
-│   └── Installation and usage instructions
-│
-└── WORKFLOWS/ (~40KB total)
-    ├── INVOICE_WORKFLOW.md (~16KB)
-    │   └── Complete invoice management guide
-    ├── PAYMENT_WORKFLOW.md (~6KB)
-    │   └── Payment recording workflow
-    ├── CREDIT_MEMO_WORKFLOW.md (~6KB)
-    │   └── Credit memo operations
-    └── METRC_SYNC_WORKFLOW.md (~12KB)
-        └── Metrc-to-QuickBooks sync guide
+quickbooks/
+├── SKILL.md                    Main skill file (entry point, loading rules)
+├── README.md                   This file
+├── PLATFORM_CHANGES.md         Dated Intuit platform changes 2025-2026 + BudTags impact
+├── ENTITY_TYPES.md             TypeScript types (mirror of resources/js/Types/types-qbo.tsx)
+├── categories/                 8 files, 56 operations (verified against QuickBooksApi.php)
+│   ├── authentication.md       OAuth & service setup (7)
+│   ├── customers.md            Customer ops (8)
+│   ├── invoices.md             Invoice ops incl. cached + overdue (11)
+│   ├── items.md                Item ops + Metrc sync (8)
+│   ├── credit-memos.md         Credit memo ops (6)
+│   ├── payments.md             Payment/deposit-account ops (6)
+│   ├── accounts.md             Account queries (4)
+│   └── utilities.md            Company info, terms, cache clearing (6)
+├── patterns/                   8 pattern guides
+│   ├── authentication.md       OAuth 2.0 flow (routes /quickbooks/login, /quickbooks/auth)
+│   ├── token-refresh.md        Refresh-on-expiry, rotation gotchas, 5-year hard cap
+│   ├── multi-tenancy.md        organization_id scoping
+│   ├── caching.md              Cache::flexible() stale-while-revalidate layer
+│   ├── logging.md              LogService usage
+│   ├── syncing.md              SyncToken / fetch-before-update
+│   ├── error-handling.md       Error catalog + SDK schema-drift diagnosis
+│   └── billing-invoice-sync.md qbo:sync-invoices billing/overdue subsystem
+├── scenarios/                  4 end-to-end workflow guides
+│   ├── invoice-workflow.md
+│   ├── payment-workflow.md
+│   ├── credit-memo-workflow.md
+│   └── metrc-sync-workflow.md
+└── backups/                    Historical v1.0 monolith files (superseded; do not load)
 ```
 
----
+## Integration Facts
 
-## QuickBooks SDK Information
+- **Code:** `app/Services/Api/QuickBooksApi.php` (`App\Services\Api\QuickBooksApi`)
+- **SDK:** `quickbooks/v3-php-sdk`, composer constraint `^6.2`, currently locked at
+  **v6.3.1** (2026-07-17; PHP >= 7.2.5, Guzzle ^7.9 required). Uses the SDK's
+  DataService exclusively - no raw HTTP.
+- **API:** QBO Accounting API v3, minorversion 75 (final - older values are ignored,
+  new fields now land in 75 without a version bump; see PLATFORM_CHANGES.md)
+- **Auth:** OAuth 2.0, scope `com.intuit.quickbooks.accounting`; config keys
+  `budtags.qbo_client_id` / `budtags.qbo_client_secret` / `budtags.qbo_env` (env
+  `QBO_ENV`, SDK environment string like `Production`)
+- **Feature gate:** `quickbooks-features` flag via EnsureOrgHasQuickbooksFeatures
+  middleware
 
-**Package:** `quickbooks/v3-php-sdk`
-**Version:** `^6.2`
-**Type:** Official Intuit QuickBooks Online PHP SDK
-**Authentication:** OAuth 2.0
-**API Version:** QuickBooks Online API v3
+## Database Models
 
-**Key Features:**
-- DataService for queries and CRUD operations
-- Facade pattern for entity creation
-- Automatic token refresh
-- Multi-tenant support (organization-scoped)
-- Caching layer for performance
+- **QboAccessKey** - OAuth tokens per (user_id, organization_id); table
+  `qbo_access_keys`; deleted on failed refresh (re-auth required)
+- **QboItemMapping** - Maps Metrc items to QuickBooks items; unique
+  (organization_id, metrc_item_id)
+- **QboSyncLog** - Tracks sync operations; Prunable after 14 days
+- Org billing columns (from the billing sync): `payment_blocked_at`,
+  `payment_warning_at`, `oldest_overdue_date`, `total_overdue_amount`,
+  `block_override`, `qbo_customer_id`
 
----
-
-## Updates & Maintenance
-
-### Keeping the Skill Updated
-
-If QuickBooks SDK or BudTags integration changes:
-
-1. **Update operations** in `OPERATIONS_CATALOG.md`
-2. **Add new workflows** to `WORKFLOWS/` directory
-3. **Update code examples** in `CODE_EXAMPLES.md`
-4. **Document new errors** in `ERROR_HANDLING.md`
-5. **Update types** in `ENTITY_TYPES.md`
-
-### Version Control
-
-Consider adding to your git repo:
-```bash
-git add .claude/skills/quickbooks/
-git commit -m "Update QuickBooks skill with new operations"
-```
-
-This allows you and your partner to stay in sync.
-
----
-
-## Troubleshooting
-
-### Skill Not Working?
-
-1. **Check directory location**:
-   ```
-   .claude/skills/quickbooks/skill.md  <- Must exist
-   ```
-
-2. **Verify file structure**:
-   - `skill.md` exists
-   - `WORKFLOWS/` folder has 4 .md files
-   - All markdown files are present
-
-3. **Restart Claude Code**:
-   - Close and reopen your IDE
-   - Claude will reload all skills
-
-4. **Check Claude Code logs**:
-   - Look for skill loading errors
-   - Verify no file reading errors
-
-### Workflow Files Not Loading?
-
-- Ensure markdown files are valid (not corrupted during copy)
-- Check file permissions (must be readable)
-- Verify paths don't have special characters
-
----
-
-## Database Models Used
-
-This skill documents integration with these BudTags models:
-
-- **QboAccessKey** - Stores OAuth tokens per user/organization
-- **QboItemMapping** - Maps Metrc items to QuickBooks items
-- **QboSyncLog** - Tracks quantity sync operations
-
-See `WORKFLOWS/METRC_SYNC_WORKFLOW.md` for complete model documentation.
-
----
+See `patterns/billing-invoice-sync.md` and `patterns/multi-tenancy.md`.
 
 ## Pricing Reference for Marketplace Invoices
 
@@ -400,48 +74,43 @@ When generating invoices from marketplace orders, be aware of currency conversio
 - **Order Line Items:** Prices stored in **DOLLARS** (e.g., 420.00)
 - **QuickBooks Invoices:** Prices in **DOLLARS**
 
-**IMPORTANT:** When creating QuickBooks invoices from marketplace orders, use the dollar values from `marketplace_order_line_items` directly. Do NOT convert again!
+**IMPORTANT:** When creating QuickBooks invoices from marketplace orders, use the
+dollar values from `marketplace_order_line_items` directly. Do NOT convert again!
 
-See `.claude/docs/marketplace/pricing.md` for full currency conversion rules.
+## Keeping the Skill Updated
 
----
+The categories/ and patterns/ files are verified against the codebase; when the
+integration changes, update the matching file in the same PR mindset as code review.
+PLATFORM_CHANGES.md is a dated digest - refresh it when Intuit announces dated
+changes (their dev blog now lives at medium.com/intuitdev). Watch for the SDK
+schema-drift pattern documented in patterns/error-handling.md: Intuit ships an SDK
+release first, then backfills new fields into live data days later, breaking older
+pinned SDKs.
 
-## License & Attribution
+## External References
 
-- **QuickBooks Online API**: © Intuit Inc.
-- **QuickBooks PHP SDK**: Official Intuit SDK
-- **Skill Package**: Created for BudTags project
-- **Free to share** with development partners
-
----
-
-## Support
-
-### For QuickBooks API Questions:
-- **Documentation**: https://developer.intuit.com/app/developer/qbo/docs/api/accounting/most-commonly-used/invoice
-- **Intuit Developer**: https://developer.intuit.com/
-
-### For Skill Package Issues:
-- Check this README
-- Reference workflow files in `WORKFLOWS/`
-- Review `ERROR_HANDLING.md` for troubleshooting
-
----
+- QBO API docs: https://developer.intuit.com/app/developer/qbo/docs/get-started
+- Intuit dev blog: https://medium.com/intuitdev
+- PHP SDK releases: https://github.com/intuit/QuickBooks-V3-PHP-SDK/releases
 
 ## Changelog
 
-**v1.0** - October 2025
-- Initial release
-- Complete QuickBooks Online API integration coverage
-- 40+ operations across 8 categories
-- 4 comprehensive workflow guides
-- OAuth 2.0 authentication documentation
-- Metrc-to-QuickBooks sync guide
-- Real code examples from BudTags
-- Self-contained, shareable package
+**v3.0.0 - 2026-07-24**
+- Full verification pass against the current codebase: corrected every method
+  name/signature in categories/ (set_service, oauth_complete, refresh_token,
+  download_invoice_pdf, apply_credit_to_invoice, etc.); documented the cached
+  read family, billing/overdue subsystem, and organization_id token scoping
+- Added PLATFORM_CHANGES.md covering Intuit changes Oct 2025 - Jul 2026:
+  refresh-token 5-year hard cap, minorversion 75 final, App Partner Program read
+  metering, CloudEvents webhooks, Reports v2, SDK releases through v6.3.1
+- Corrected rate-limit numbers (500/min per realm per app, 10 concurrent)
+- Rewrote token-refresh.md around the real refresh-on-expiry behavior
+- New pattern: billing-invoice-sync.md; README rewritten to match actual structure
 
----
+**v2.0.1 - 2025-11-14**
+- Progressive disclosure restructure (categories/patterns/scenarios); v1.0
+  monolith files moved to backups/
 
-**Made with ❤️ for the BudTags project**
-
-*Empowering developers to integrate QuickBooks Online with cannabis compliance software efficiently and correctly.*
+**v1.0 - October 2025**
+- Initial release: operations catalog, workflow guides, OAuth documentation,
+  Metrc sync guide

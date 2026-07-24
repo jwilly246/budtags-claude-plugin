@@ -1,19 +1,16 @@
 # QuickBooks Credit Memo Operations
 
 **Category:** Credit Memo Operations
-**Operations:** 5 methods
-**Purpose:** Create and apply credit memos (customer credits/refunds)
+**Operations:** 6 methods
+**Purpose:** Read, create, and apply credit memos (customer credits/refunds)
 
 ---
 
 ## Overview
 
-Credit memo operations handle customer credits and refunds. Credit memos can be applied to specific invoices to reduce amounts owed.
-
-**Key Concepts:**
-- Line items similar to invoices
-- Can apply to specific invoices
-- Reduces customer balance
+Credit memo operations read credit memos, create them, and apply them to
+invoices. Applying a credit is done by creating a zero-total Payment that links
+the credit memo and the invoice. There is no single-credit-memo getter.
 
 **See Also:**
 - `scenarios/credit-memo-workflow.md` - Complete credit memo guide
@@ -23,107 +20,81 @@ Credit memo operations handle customer credits and refunds. Credit memos can be 
 
 ## Operations
 
-### 29. `get_all_credit_memos()`
-Get ALL credit memos with automatic pagination
+### 1. `get_credit_memos(int $start_at = 1, int $max_count = 100): Collection`
 
-**Returns:** Array of CreditMemo objects
+Paginated credit memos (`SELECT * FROM CreditMemo`). Logs and returns empty on
+error.
 
-### 30. `get_credit_memo(string $id)`
-Get single credit memo by QuickBooks ID
+### 2. `get_credit_memos_cached(string $org_id): Collection`
 
-**Returns:** CreditMemo object or `null`
+Cached `get_credit_memos` for an org (`qbo:credit_memos:{org_id}`). Backs
+`GET /quickbooks/credit-memos`.
 
-### 31. `create_credit_memo(array $data)`
-Create new credit memo
+### 3. `get_customer_credit_memos(string $customer_id, int $start_at = 1, int $max_count = 100): Collection`
 
-**Required:**
-- `customer_id` - QuickBooks customer ID
-- `line_items` - Array of line item objects
+Credit memos for one customer (`WHERE CustomerRef = '...'`).
 
-**Line Item Structure:**
-```php
-[
-    'item_id' => '456',
-    'quantity' => 2,
-    'unit_price' => 25.00,
-    'description' => 'Refund for damaged product'
-]
-```
+### 4. `create_credit_memo(array $credit_memo_data): object`
 
-**Usage:**
+Create a credit memo. Same shape as `create_invoice`. Returns the created QB
+CreditMemo (no typed SDK class - plain `object`).
+
+**Required:** `customer_id`, `line_items` (each `item_id`, `quantity`,
+`unit_price`, `amount`; `description` optional). Lines with a falsy `item_id`
+are skipped.
+**Optional:** `txn_date`, `doc_number`, `customer_email` (-> `BillEmail`),
+`private_note`.
+
 ```php
 $creditMemo = $qbo->create_credit_memo([
     'customer_id' => '123',
-    'txn_date' => '2025-01-15',
+    'txn_date' => '2026-01-15',
     'line_items' => [
-        [
-            'item_id' => '456',
-            'quantity' => 2,
-            'unit_price' => 25.00
-        ]
+        ['item_id' => '456', 'quantity' => 2, 'unit_price' => 25.00, 'amount' => 50.00],
     ],
-    'customer_memo' => 'Credit for damaged goods'
+    'private_note' => 'Credit for damaged goods',
 ]);
 ```
 
-**Returns:** Created CreditMemo object
+### 5. `apply_credit_to_invoice(string $credit_memo_id, string $invoice_id, float $amount, string $customer_id): object`
 
-### 32. `apply_credit_to_invoice(string $credit_memo_id, string $invoice_id, float $amount)`
-Apply credit memo to specific invoice
+Apply a credit memo to an invoice by creating a linking Payment (TotalAmt 0). All
+four arguments are required. Returns the created Payment `object`.
 
-**Parameters:**
-- `credit_memo_id` - QuickBooks credit memo ID
-- `invoice_id` - QuickBooks invoice ID to apply credit to
-- `amount` - Amount to apply
-
-**Usage:**
 ```php
-$qbo->apply_credit_to_invoice('CM-123', 'INV-789', 50.00);
-// Applies $50 credit to invoice, reducing balance
+$qbo->apply_credit_to_invoice('CM-123', 'INV-789', 50.00, '123');
 ```
 
-**Notes:**
-- Credit reduces invoice balance
-- Can apply partial credit amounts
-- Logs application via LogService
+### 6. `get_customer_available_credits(string $customer_id): float`
 
-### 33. `get_customer_available_credits(string $customer_id)`
-Calculate total available credit balance for customer
+Total available credit for a customer: sums `RemainingCredit` (falling back to
+`Balance`) across their credit memos. Returns `0` on error.
 
-**Returns:** Float (total available credit amount)
-
-**Usage:**
 ```php
-$availableCredit = $qbo->get_customer_available_credits('123');
-echo "Customer has \${$availableCredit} in credits";
+$available = $qbo->get_customer_available_credits('123');
 ```
 
 ---
 
 ## Common Workflows
 
-### Issue Credit for Returned Goods
+### Issue Credit and Apply to an Invoice
 ```php
-// Create credit memo
 $creditMemo = $qbo->create_credit_memo([
     'customer_id' => '123',
     'line_items' => [
-        ['item_id' => '456', 'quantity' => 5, 'unit_price' => 20.00]
+        ['item_id' => '456', 'quantity' => 5, 'unit_price' => 20.00, 'amount' => 100.00],
     ],
-    'customer_memo' => 'Return credit'
+    'private_note' => 'Return credit',
 ]);
 
-// Apply to open invoice
-$qbo->apply_credit_to_invoice($creditMemo->Id, $invoiceId, 100.00);
+$qbo->apply_credit_to_invoice($creditMemo->Id, '789', 100.00, '123');
 ```
 
-### Check Customer Credit Balance
+### Check a Customer's Credit Balance
 ```php
-$credits = $qbo->get_customer_credit_memos('123');
-$availableCredit = $qbo->get_customer_available_credits('123');
-
-echo "Total credit memos: " . count($credits) . "\n";
-echo "Available credit: \${$availableCredit}";
+$memos = $qbo->get_customer_credit_memos('123');
+$available = $qbo->get_customer_available_credits('123');
 ```
 
 **See:** `scenarios/credit-memo-workflow.md`

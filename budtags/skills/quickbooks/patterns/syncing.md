@@ -51,39 +51,38 @@ SyncToken is like a version number for each entity:
 
 ## Fetch-Before-Update Pattern
 
-### ALWAYS Fetch Current Entity First
+The wrapper handles fetch-before-update two ways. For **invoices and items** the `*_id` + array signature fetches internally, so the SyncToken never leaves the method. For **customers** the caller fetches the `IPPCustomer` first (getting its SyncToken), mutates it, and passes the whole object in.
+
+### Customer: caller fetches, wrapper submits
+
+Real signature - `update_customer(IPPCustomer $customer): IPPCustomer`. The controller fetches, mutates, then hands the object over:
 
 ```php
-// ✅ CORRECT - Fetch first to get current SyncToken
-public function update_customer(array $data): object {
-    // 1. Fetch current customer
-    $customer = $this->get_customer($data['id']);
+// ✅ CORRECT - caller fetches so the SyncToken rides along on the object
+$customer = $api->get_customer($input['id']);          // IPPCustomer with current SyncToken
+$customer->DisplayName = (string) $input['displayName'];
+$customer->Active = (bool) $input['active'];
+$updated = $api->update_customer($customer);           // wrapper calls $this->service->Update($customer)
+```
 
-    if (!$customer) {
-        throw new Exception('Customer not found');
+```php
+// Inside QuickBooksApi::update_customer()
+public function update_customer(IPPCustomer $customer): IPPCustomer {
+    $customer = $this->service->Update($customer);     // SyncToken came from get_customer()
+    $error = $this->service->getLastError();
+    if ($error) {
+        throw new ConflictException($error->getResponseBody());
     }
-
-    // 2. Update fields
-    $customer->DisplayName = $data['display_name'] ?? $customer->DisplayName;
-    $customer->PrimaryEmailAddr = $data['primary_email_address'] ?? $customer->PrimaryEmailAddr;
-
-    // 3. SyncToken is preserved from fetched entity
-    // 4. Send update with current SyncToken
-    $updated = $this->dataService->Update($customer);
-
-    return $updated;
+    return $customer;
 }
 ```
 
 ```php
-// ❌ WRONG - No fetch, no SyncToken
-public function update_customer_wrong(array $data): object {
-    $customer = new Customer();
-    $customer->Id = $data['id'];
-    $customer->DisplayName = $data['display_name'];
-    // Missing SyncToken! Update will FAIL
-    $updated = $this->dataService->Update($customer);
-}
+// ❌ WRONG - hand-built object, no fetch, no SyncToken
+$customer = new IPPCustomer();
+$customer->Id = $input['id'];
+$customer->DisplayName = $input['displayName'];
+$api->update_customer($customer);                      // FAILS - stale/missing SyncToken
 ```
 
 ---
@@ -92,50 +91,62 @@ public function update_customer_wrong(array $data): object {
 
 ### Update Invoice
 
+Real signature - `update_invoice(string $invoice_id, array $invoice_data): IPPInvoice`. It fetches the existing invoice for its SyncToken before applying changes:
+
 ```php
-public function update_invoice(array $data): object {
-    // Fetch current invoice (includes SyncToken)
-    $invoice = $this->get_invoice($data['id']);
-
-    // Update fields
-    if (isset($data['customer_memo'])) {
-        $invoice->CustomerMemo = $data['customer_memo'];
+public function update_invoice(string $invoice_id, array $invoice_data): IPPInvoice {
+    // Fetch existing invoice (need SyncToken for QB API updates)
+    $existing_invoice = $this->get_invoice($invoice_id);
+    if (!$existing_invoice) {
+        throw new \Exception("Invoice {$invoice_id} not found");
     }
 
-    if (isset($data['line_items'])) {
-        $invoice->Line = $this->build_line_items($data['line_items']);
+    if (isset($invoice_data['doc_number'])) {
+        $existing_invoice->DocNumber = (string) $invoice_data['doc_number'];
     }
+    if (isset($invoice_data['private_note'])) {
+        $existing_invoice->PrivateNote = (string) $invoice_data['private_note'];
+    }
+    // ... txn_date, due_date, line_items ...
 
-    // Update (SyncToken preserved)
-    $updated = $this->dataService->Update($invoice);
+    $updated_invoice = $this->service->Update($existing_invoice);   // SyncToken preserved
 
-    LogService::store(
-        'QBO Invoice Updated',
-        "Invoice #{$invoice->DocNumber} updated"
-    );
-
-    return $updated;
+    $error = $this->service->getLastError();
+    if ($error) {
+        throw new ConflictException($error->getResponseBody());
+    }
+    return $updated_invoice;
 }
+```
+
+Caller side:
+```php
+$api->update_invoice($invoice_id, ['private_note' => 'Reviewed by ops']);
 ```
 
 ### Update Item
 
+Real signature - `update_item(string $item_id, array $data): IPPItem`. It fetches the item (via `FindById('Item', $item_id)`) for its SyncToken, then applies any of `UnitPrice`, `PurchaseCost`, `QtyOnHand`:
+
 ```php
-public function update_item(array $data): object {
-    // Fetch current item
-    $item = $this->get_item($data['id']);
+public function update_item(string $item_id, array $data): IPPItem {
+    $item = $this->service->FindById('Item', $item_id);   // fetch for SyncToken
 
-    // Update quantity
-    if (isset($data['quantity_on_hand'])) {
-        $item->QtyOnHand = $data['quantity_on_hand'];
+    if (isset($data['UnitPrice']))    { $item->UnitPrice = (float) $data['UnitPrice']; }
+    if (isset($data['PurchaseCost'])) { $item->PurchaseCost = (float) $data['PurchaseCost']; }
+    if (isset($data['QtyOnHand']))    { $item->QtyOnHand = (float) $data['QtyOnHand']; }
+
+    $updated_item = $this->service->Update($item);        // full update, SyncToken preserved
+
+    $error = $this->service->getLastError();
+    if ($error) {
+        throw new \Exception($error->getResponseBody());
     }
-
-    // Update (SyncToken preserved)
-    $updated = $this->dataService->Update($item);
-
-    return $updated;
+    return $updated_item;
 }
 ```
+
+> There is no public `get_item()` method. Items are fetched internally with `$this->service->FindById('Item', $id)`. `update_item_quantity(string $item_id, float $new_quantity)` is a narrower variant that only sets `QtyOnHand`, used by `sync_quantities_from_metrc()`.
 
 ---
 

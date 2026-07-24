@@ -1,157 +1,131 @@
 # QuickBooks Utility Operations
 
 **Category:** Utility Methods
-**Operations:** 5 methods (includes Terms Operations)
-**Purpose:** Helper methods for caching, pagination, logging, and payment terms
+**Operations:** 6 methods
+**Purpose:** Company info, payment terms, cache management, and pagination
 
 ---
 
 ## Overview
 
-Utility operations provide helper functionality for caching, pagination, logging, and payment term management.
+Utility operations cover company info, payment terms (used on invoices), cache
+invalidation after writes, and the internal pagination helper.
+
+**Logging note:** there is no `log()` method on the service. Logging is done by
+calling `LogService::store(...)` directly. NEVER use the Laravel `Log::` facade.
 
 **See Also:**
-- `patterns/caching.md` - Cache strategy details
+- `patterns/caching.md` - Cache strategy
 - `patterns/logging.md` - LogService usage
 
 ---
 
-## Caching & Performance
+## Company Info
 
-### `get_items_cached(int $ttl = 300)`
-Get items with caching (5-minute default TTL)
+### 1. `get_company_info(): ?IPPCompanyInfo`
 
-**See:** `categories/items.md` for details
+Fetch the connected company's info; returns `null` on error. Used as a quick
+connection-status/health check after `set_service`.
 
-### `clearCache()`
-Clear all QuickBooks data caches
-
-**Usage:**
 ```php
-$qbo->clearCache();
-// Clears Laravel cache for this service
-```
-
-**When to Use:**
-- After bulk operations
-- After importing/updating many records
-- When stale data detected
-
-**See:** `patterns/caching.md`
-
----
-
-## Pagination Helpers
-
-### `fetch_all(string $entity_type)`
-Internal helper for fetching all entities with auto-pagination
-
-**Parameters:**
-- `entity_type` - QuickBooks entity type ('Customer', 'Invoice', etc.)
-
-**Usage (internal):**
-```php
-// Used internally by get_all_customers(), get_all_invoices(), etc.
-return $this->fetch_all('Customer');
-```
-
-**Notes:**
-- Handles 1000-item-per-page limit automatically
-- Iterates until no more results
-- Used by all `get_all_*()` methods
-
----
-
-## Logging
-
-### `log(string $title, string $message)`
-Log QuickBooks operations via LogService
-
-**Usage:**
-```php
-$this->log(
-    'QBO Invoice Created',
-    "Invoice #{$invoice->DocNumber} for \${$invoice->TotalAmt}"
-);
-```
-
-**IMPORTANT:**
-- ALWAYS use LogService::store() directly
-- NEVER use Laravel Log:: facade
-- Logs are organization-scoped
-
-**See:** `patterns/logging.md` for complete logging patterns
-
----
-
-## Payment Terms Operations
-
-### `get_terms()`
-Get all payment terms
-
-**Returns:** Array of Term objects
-
-**Usage:**
-```php
-$terms = $qbo->get_terms();
-foreach ($terms as $term) {
-    echo "{$term->Id}: {$term->Name}\n";
+$qbo->set_service($user);
+$company = $qbo->get_company_info();
+if ($company === null) {
+    // not connected / token problem
 }
-// Output: 1: Net 15, 2: Net 30, 3: Net 60, etc.
 ```
 
-**Use Case:** Setting payment terms on invoices
+---
 
-**Example:**
+## Payment Terms
+
+### 2. `get_terms(int $start_at = 1, int $max_count = 100): Collection`
+
+Payment terms (`SELECT * FROM Term`), e.g. Net 15 / Net 30. Logs and returns
+empty on error.
+
 ```php
-$terms = $qbo->get_terms();
-$net30 = array_filter($terms, fn($t) => $t->Name === 'Net 30')[0];
+$net30 = $qbo->get_terms()->firstWhere('Name', 'Net 30');
 
 $invoice = $qbo->create_invoice([
     'customer_id' => '123',
-    'sales_term_ref' => $net30->Id,  // Apply Net 30 terms
-    'line_items' => [...]
+    'sales_term_ref' => $net30->Id,
+    'due_date' => date('Y-m-d', strtotime('+30 days')),
+    'line_items' => [...],
 ]);
+```
+
+### 3. `get_terms_cached(string $org_id): Collection`
+
+Cached `get_terms` (`qbo:terms:{org_id}`). Backs `GET /quickbooks/terms`.
+
+---
+
+## Cache Management
+
+### 4. `clear_cache(string $orgId): void`
+
+Forget the per-org read caches: items, accounts, all-invoices, credit memos,
+payment methods, deposit accounts, and terms. Call after any write so the next
+fetch is fresh.
+
+```php
+$qbo->update_item($id, $data);
+$qbo->clear_cache($orgId);
+```
+
+Note: `clear_cache` does NOT clear the paginated invoice pages - use
+`clear_invoices_cache` for those.
+
+### 5. `clear_invoices_cache(string $orgId): void`
+
+Forget the paginated invoice caches (`qbo:invoices:{orgId}:page:1..100`).
+
+```php
+$qbo->clear_invoices_cache($orgId);
+```
+
+---
+
+## Pagination Helper
+
+### 6. `call_query_paginated(string $query): Collection` *(protected)*
+
+Internal helper that pages through a QuickBooks query 1000 rows at a time until a
+short page is returned. Backs all `get_all_*` methods. Not part of the public API
+- pass a full query string, e.g. `SELECT * FROM Item`.
+
+```php
+// internal usage
+return $this->call_query_paginated('SELECT * FROM Customer');
 ```
 
 ---
 
 ## Common Workflows
 
-### Clear Cache After Bulk Import
+### Clear Cache After a Bulk Write
 ```php
-// Import 500 items from Metrc
-foreach ($metrcItems as $item) {
-    $qbo->create_item([...]);
+foreach ($rows as $row) {
+    $qbo->create_item($row);
 }
-
-// Clear cache so next fetch gets fresh data
-$qbo->clearCache();
+$qbo->clear_cache($orgId);
 ```
 
-### Use Payment Terms in Invoice
+### Use Payment Terms on an Invoice
 ```php
-// Get available terms
-$terms = $qbo->get_terms();
-
-// Find "Net 30"
-$net30 = collect($terms)->firstWhere('Name', 'Net 30');
-
-// Create invoice with terms
+$net30 = $qbo->get_terms()->firstWhere('Name', 'Net 30');
 $invoice = $qbo->create_invoice([
     'customer_id' => '123',
     'sales_term_ref' => $net30->Id,
     'due_date' => date('Y-m-d', strtotime('+30 days')),
-    'line_items' => [...]
+    'line_items' => [...],
 ]);
 ```
 
-### Log QuickBooks Operations
+### Log an Operation
 ```php
-LogService::store(
-    'QuickBooks Sync',
-    "Synced {$count} items from Metrc to QuickBooks"
-);
+LogService::store('QuickBooks Sync', "Synced {$count} items from Metrc");
 ```
 
 **See:** `patterns/logging.md`

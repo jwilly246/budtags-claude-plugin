@@ -21,16 +21,17 @@ Complete guide to creating, updating, sending, and managing QuickBooks invoices 
 
 ### Basic Invoice Creation
 
-**Method:** `create_invoice(array $data)`
+**Method:** `create_invoice(array $invoice_data): IPPInvoice`
 
 **Minimum Required Fields:**
 - `customer_id` - QuickBooks customer ID
-- `line_items` - Array of line items (at least one)
+- `line_items` - Array of line items (at least one). Each line requires
+  `item_id`, `quantity`, `unit_price`, and `amount`.
 
 **Basic Example:**
 ```php
 $qbo = new QuickBooksApi();
-$qbo->set_user($user);
+$qbo->set_service($user);
 
 $invoice = $qbo->create_invoice([
     'customer_id' => '123',
@@ -38,7 +39,8 @@ $invoice = $qbo->create_invoice([
         [
             'item_id' => '456',
             'quantity' => 10,
-            'unit_price' => 25.00
+            'unit_price' => 25.00,
+            'amount' => 250.00
         ]
     ]
 ]);
@@ -57,37 +59,46 @@ $invoice = $qbo->create_invoice([
     'customer_id' => '123',
 
     // Dates
-    'txn_date' => '2025-01-15',        // Invoice date (default: today)
+    'txn_date' => '2025-01-15',        // Invoice date (optional)
     'due_date' => '2025-02-15',        // Due date (optional, can use sales_term_ref instead)
 
     // Payment Terms
     'sales_term_ref' => '3',           // Payment terms ID (e.g., Net 30)
 
-    // Memos/Notes
-    'customer_memo' => 'Thank you for your business!',  // Visible to customer
-    'private_note' => 'Internal note about this invoice',  // Internal only
+    // Document number (optional)
+    'doc_number' => '1001',
 
-    // Deposit Account
-    'deposit_to_account_ref' => '35',  // Bank account ID for deposits
+    // Customer email -> BillEmail on the invoice (optional)
+    'customer_email' => 'billing@example.com',
 
-    // Line Items (at least one required)
+    // Internal note (optional)
+    'private_note' => 'Internal note about this invoice',
+
+    // Line Items (at least one required; each needs item_id, quantity,
+    // unit_price, and amount)
     'line_items' => [
         [
             'item_id' => '456',
             'quantity' => 10,
             'unit_price' => 25.00,
-            'description' => 'Premium Cannabis Flower - 1oz',
-            'tax_code_ref' => 'NON'  // Tax code (optional)
+            'amount' => 250.00,
+            'description' => 'Premium Cannabis Flower - 1oz'
         ],
         [
             'item_id' => '457',
             'quantity' => 5,
             'unit_price' => 15.00,
+            'amount' => 75.00,
             'description' => 'Cannabis Pre-Rolls'
         ]
     ]
 ]);
 ```
+
+**Supported optional keys:** `txn_date`, `sales_term_ref`, `due_date`,
+`doc_number`, `customer_email` (mapped to `BillEmail`), `private_note`. There is
+no `customer_memo`, `deposit_to_account_ref`, or per-line `tax_code_ref` on
+`create_invoice`.
 
 **Result:**
 ```php
@@ -116,27 +127,27 @@ Invoice {
     'item_id' => '456',           // QuickBooks item ID (required)
     'quantity' => 10,             // Quantity (required)
     'unit_price' => 25.00,        // Unit price (required)
+    'amount' => 250.00,           // Line amount (required; quantity x unit_price)
     'description' => 'Text',      // Description (optional, uses item description if omitted)
-    'tax_code_ref' => 'NON'      // Tax code (optional)
 ]
 ```
 
 **How QuickBooks Processes Line Items:**
 1. Looks up Item by `item_id`
-2. Uses `quantity` × `unit_price` to calculate Amount
+2. Uses your supplied `amount` as the line total (`SalesItemLineDetail` also
+   carries `quantity` and `unit_price`)
 3. Uses provided `description` or falls back to item's default description
 4. Auto-assigns LineNum (1, 2, 3, ...)
 5. Links to Item's income account
-6. Applies tax code if provided
 
 **Multiple Line Items:**
 ```php
 'line_items' => [
-    ['item_id' => '456', 'quantity' => 10, 'unit_price' => 25.00],
-    ['item_id' => '457', 'quantity' => 5, 'unit_price' => 15.00],
-    ['item_id' => '458', 'quantity' => 2, 'unit_price' => 50.00],
+    ['item_id' => '456', 'quantity' => 10, 'unit_price' => 25.00, 'amount' => 250.00],
+    ['item_id' => '457', 'quantity' => 5, 'unit_price' => 15.00, 'amount' => 75.00],
+    ['item_id' => '458', 'quantity' => 2, 'unit_price' => 50.00, 'amount' => 100.00],
 ]
-// Total: (10×25) + (5×15) + (2×50) = $425.00
+// Total: 250 + 75 + 100 = $425.00
 ```
 
 ---
@@ -173,38 +184,41 @@ $invoice = $qbo->create_invoice([
 
 ### Update Invoice
 
-**Method:** `update_invoice(array $data)`
+**Method:** `update_invoice(string $invoice_id, array $invoice_data): IPPInvoice`
 
-**Important:** Must include invoice `id` and **all** line items
+**Important:** The invoice ID is the first argument. When you pass `line_items`
+you replace the whole set, so include **all** lines. Each line takes an optional
+existing `id` plus `item_id`, `quantity`, `unit_price`, `amount`.
 
 ```php
-// First, get the current invoice
-$invoice = $qbo->get_invoice('789');
+// Update with new data (SyncToken is fetched internally)
+$updated = $qbo->update_invoice('789', [
+    'private_note' => 'Updated note',
 
-// Update with new data
-$updated = $qbo->update_invoice([
-    'id' => '789',
-    'customer_memo' => 'Updated memo',
-
-    // MUST include ALL line items (QuickBooks replaces them entirely)
+    // Passing line_items replaces the entire Line set
     'line_items' => [
         [
+            'id' => '1',
             'item_id' => '456',
             'quantity' => 15,  // Changed from 10
             'unit_price' => 25.00,
+            'amount' => 375.00,
             'description' => 'Premium Cannabis Flower - 1oz'
         ],
         [
+            'id' => '2',
             'item_id' => '457',
             'quantity' => 5,
             'unit_price' => 15.00,
+            'amount' => 75.00,
             'description' => 'Cannabis Pre-Rolls'
         ],
-        // Adding new line item
+        // Adding new line item (omit id for new lines)
         [
             'item_id' => '460',
             'quantity' => 3,
             'unit_price' => 10.00,
+            'amount' => 30.00,
             'description' => 'Cannabis Edibles'
         ]
     ]
@@ -213,29 +227,27 @@ $updated = $qbo->update_invoice([
 echo "Invoice updated. New total: \${$updated->TotalAmt}";
 ```
 
-**What Gets Updated:**
-- ✅ Customer memo
-- ✅ Private note
-- ✅ Line items (replaced entirely)
-- ✅ Dates (txn_date, due_date)
-- ✅ Payment terms
+**What Gets Updated (supported keys):**
+- ✅ `doc_number`
+- ✅ `private_note`
+- ✅ Dates (`txn_date`, `due_date`)
+- ✅ `line_items` (replaced entirely when provided)
 
 **Important Notes:**
 - **SyncToken** is automatically fetched and included
-- **Must provide ALL line items**, not just changed ones
-- QuickBooks replaces line items entirely (no partial updates)
-- Cannot update if invoice has been paid
+- When `line_items` is provided, **provide ALL lines**, not just changed ones
+- QuickBooks replaces the line set (no partial line updates)
+- `update_invoice` does not accept `customer_memo` or `sales_term_ref`
+- Throws `ConflictException` on a stale-object / SyncToken error
 
 ---
 
 ### Common Update Scenarios
 
-**1. Change Invoice Date:**
+**1. Change Invoice Date (header-only, no line changes):**
 ```php
-$qbo->update_invoice([
-    'id' => '789',
+$qbo->update_invoice('789', [
     'txn_date' => '2025-01-20',
-    'line_items' => $existingLineItems  // Must include
 ]);
 ```
 
@@ -249,12 +261,12 @@ $existingLines = /* convert $invoice->Line to array format */;
 $existingLines[] = [
     'item_id' => '999',
     'quantity' => 1,
-    'unit_price' => 100.00
+    'unit_price' => 100.00,
+    'amount' => 100.00
 ];
 
 // Update with all lines
-$qbo->update_invoice([
-    'id' => '789',
+$qbo->update_invoice('789', [
     'line_items' => $existingLines
 ]);
 ```
@@ -266,8 +278,7 @@ $invoice = $qbo->get_invoice('789');
 $lines = /* convert and filter */;
 
 // Update with remaining lines
-$qbo->update_invoice([
-    'id' => '789',
+$qbo->update_invoice('789', [
     'line_items' => $lines
 ]);
 ```
@@ -278,17 +289,23 @@ $qbo->update_invoice([
 
 ### Email Invoice to Customer
 
-**Method:** `send_invoice(string $id, string $email)`
+**Method:** `send_invoice(string $invoice_id, ?string $send_to_email = null): bool`
 
 ```php
+// Explicit recipient
 $sent = $qbo->send_invoice('789', 'customer@example.com');
+
+// Omit the email to send to the invoice's stored BillEmail
+$sent = $qbo->send_invoice('789');
 
 if ($sent) {
     echo "Invoice sent successfully";
-} else {
-    echo "Failed to send invoice";
 }
 ```
+
+**Note:** `send_invoice` returns `true` on success and throws on failure (it does
+not return `false`). The email argument is optional; when null the QuickBooks SDK
+sends to the invoice's `BillEmail`.
 
 **What Happens:**
 1. QuickBooks generates PDF
@@ -303,7 +320,8 @@ if ($sent) {
 - Payment link (if QuickBooks Payments enabled)
 
 **Customer Email Source:**
-- Uses email passed to `send_invoice()`
+- Uses email passed to `send_invoice()` when provided
+- Falls back to the invoice's `BillEmail` when the argument is null
 - Can differ from customer's primary email in QuickBooks
 
 **Checking if Sent:**
@@ -320,20 +338,23 @@ if ($invoice->EmailStatus === 'EmailSent') {
 
 ### Get Invoice as PDF
 
-**Method:** `download_invoice_pdf(string $id)`
+**Method:** `download_invoice_pdf(string $invoice_id): string`
+
+**Important:** This returns a **filesystem path** to a generated temp PDF, not the
+binary contents. Stream it with `response()->download()`.
 
 ```php
-$pdfContent = $qbo->download_invoice_pdf('789');
+$pdfPath = $qbo->download_invoice_pdf('789');
 
-// Save to file
-file_put_contents(storage_path('invoices/invoice-789.pdf'), $pdfContent);
+// Return as a download response (matches QuickBooksController::download_invoice_pdf)
+return response()->download($pdfPath, "invoice-789.pdf");
 
-// Or return as download response
-return response($pdfContent, 200, [
-    'Content-Type' => 'application/pdf',
-    'Content-Disposition' => 'attachment; filename="invoice-' . $invoice->DocNumber . '.pdf"'
-]);
+// Or read the file if you need the raw bytes
+$pdfContent = file_get_contents($pdfPath);
 ```
+
+**Note:** The QBO SDK names the temp file after the invoice's internal IPP id with
+no extension, so pass an explicit filename to `response()->download()`.
 
 **Use Cases:**
 - Download for record keeping
@@ -424,26 +445,35 @@ QuickBooks validates:
 
 **Example Validation in Controller:**
 ```php
-public function createInvoice(Request $request)
+public function create_invoice(QuickBooksApi $api): RedirectResponse
 {
-    $validated = $request->validate([
-        'customer_id' => 'required|string',
-        'txn_date' => 'nullable|date',
-        'line_items' => 'required|array|min:1',
-        'line_items.*.item_id' => 'required|string',
-        'line_items.*.quantity' => 'required|numeric|min:0.01',
-        'line_items.*.unit_price' => 'required|numeric|min:0',
+    $api->set_service($this->user());
+
+    // The real controller validates camelCase input then transforms to the
+    // snake_case shape create_invoice() expects. Every line requires `amount`.
+    $input = request()->validate([
+        'customerId' => 'required|string',
+        'txnDate' => 'required|date',
+        'lineItems' => 'required|array|min:1',
+        'lineItems.*.itemId' => 'required|string',
+        'lineItems.*.quantity' => 'required|numeric|min:0',
+        'lineItems.*.unitPrice' => 'required|numeric|min:0',
+        'lineItems.*.amount' => 'required|numeric|min:0',
     ]);
 
-    $qbo = new QuickBooksApi();
-    $qbo->set_user(auth()->user());
+    $api->create_invoice([
+        'customer_id' => $input['customerId'],
+        'txn_date' => $input['txnDate'],
+        'line_items' => array_map(fn ($item) => [
+            'item_id' => $item['itemId'],
+            'quantity' => $item['quantity'],
+            'unit_price' => $item['unitPrice'],
+            'amount' => $item['amount'],
+            'description' => $item['description'] ?? '',
+        ], $input['lineItems']),
+    ]);
 
-    try {
-        $invoice = $qbo->create_invoice($validated);
-        return response()->json($invoice);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 400);
-    }
+    return redirect()->back()->with('message', 'Invoice created successfully in QuickBooks!');
 }
 ```
 
@@ -461,12 +491,12 @@ $invoice = $qbo->create_invoice([
     'customer_id' => $order->qbo_customer_id,
     'txn_date' => $order->order_date,
     'due_date' => $order->due_date,
-    'customer_memo' => "Order #{$order->id}",
     'private_note' => "Internal order ID: {$order->id}",
     'line_items' => $order->items->map(fn($item) => [
         'item_id' => $item->qbo_item_id,
         'quantity' => $item->quantity,
         'unit_price' => $item->unit_price,
+        'amount' => $item->quantity * $item->unit_price,
         'description' => $item->description
     ])->toArray()
 ]);
@@ -551,7 +581,7 @@ if (!$customer) {
 **Solution:**
 ```php
 // Verify all items exist and are active
-$items = $qbo->get_items_cached();
+$items = $qbo->get_items_cached($orgId);  // pass the active org id
 $itemIds = collect($items)->pluck('Id')->toArray();
 
 foreach ($lineItems as $line) {
@@ -569,17 +599,15 @@ foreach ($lineItems as $line) {
 
 **Solution:**
 ```php
-// Always fetch latest before updating
-$invoice = $qbo->get_invoice($invoiceId);
-// Now invoice has current SyncToken
-
-$updated = $qbo->update_invoice([
-    'id' => $invoiceId,
+// update_invoice() re-fetches the invoice internally to get a fresh SyncToken,
+// so a stale-object error is retried simply by calling it again.
+$updated = $qbo->update_invoice($invoiceId, [
     'line_items' => /* ... */
 ]);
 ```
 
-**Note:** `update_invoice()` method already does this internally
+**Note:** `update_invoice()` fetches the current invoice (and its SyncToken)
+internally, and throws `ConflictException` if QuickBooks still reports a conflict
 
 ---
 
@@ -622,7 +650,7 @@ if ($invoice) {
 
 ### CreateInvoiceModal Component
 
-**Location:** `resources/js/Pages/Quickbooks/Modals/CreateInvoiceModal.tsx`
+**Location:** `resources/js/features/quickbooks/components/CreateInvoiceModal.tsx`
 
 **Features:**
 - Customer selection dropdown

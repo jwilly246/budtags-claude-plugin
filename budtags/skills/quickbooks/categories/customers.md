@@ -2,227 +2,121 @@
 
 **Category:** Customer Operations
 **Operations:** 8 methods
-**Purpose:** CRUD operations for QuickBooks customers
+**Purpose:** Read and update QuickBooks customers
 
 ---
 
 ## Overview
 
-Customer operations manage QuickBooks customer records including creation, retrieval, updates, and related entity queries (invoices, credit memos).
-
-**Key Concepts:**
-- Pagination for large customer lists
-- SyncToken required for updates
-- Bulk operations for efficiency
+Customer operations read customer records and update them. Note there is no
+`create_customer` on `QuickBooksApi` - new customers are created by the sync
+flow in the controller (`sync_customer`), and `make_customer()` is a hardcoded
+example only. Updates take the fetched `IPPCustomer` object (for its SyncToken),
+never a bare array.
 
 **See Also:**
-- `ENTITY_TYPES.md` - Customer TypeScript type definition
+- `ENTITY_TYPES.md` - Customer type definition
 - `patterns/syncing.md` - SyncToken update patterns
+- `categories/invoices.md`, `categories/credit-memos.md` - customer-scoped reads
 
 ---
 
 ## Operations
 
-### 5. `get_customers(int $start_at = 1, int $max_count = 100)`
+### 1. `get_customers(int $start_at = 1, int $max_count = 100): Collection`
 
-**Purpose:** Get paginated list of customers
+Paginated list of customers (`SELECT * FROM Customer`). Returns an empty
+Collection on error.
 
-**Signature:**
 ```php
-public function get_customers(int $start_at = 1, int $max_count = 100): array
+$customers = $qbo->get_customers(1, 50);
 ```
-
-**Parameters:**
-- `$start_at` - Starting position (1-indexed)
-- `$max_count` - Max customers per page (default: 100, max: 1000)
-
-**Returns:** Array of Customer objects
-
-**Usage:**
-```php
-$customers = $qbo->get_customers(1, 50); // Get first 50 customers
-```
-
-**Notes:**
-- QuickBooks limits to 1000 results per query
-- Use `get_all_customers()` for full list with auto-pagination
 
 ---
 
-### 6. `get_all_customers()`
+### 2. `get_all_customers(): Collection`
 
-**Purpose:** Get ALL customers with automatic pagination
+All customers, auto-paginated (1000/page via `call_query_paginated`).
 
-**Signature:**
 ```php
-public function get_all_customers(): array
+foreach ($qbo->get_all_customers() as $c) {
+    echo "{$c->DisplayName}\n";
+}
 ```
-
-**Returns:** Array of all Customer objects
-
-**Usage:**
-```php
-$allCustomers = $qbo->get_all_customers();
-// Automatically handles pagination
-```
-
-**Notes:**
-- Uses `fetch_all()` utility for auto-pagination
-- Handles 1000-item-per-page limit
-- May take longer for large customer lists
 
 ---
 
-### 7. `get_customer(string $id)`
+### 3. `get_customer(string $id): IPPCustomer`
 
-**Purpose:** Get single customer by QuickBooks ID
+Single customer by QuickBooks ID (`FindById`).
 
-**Signature:**
-```php
-public function get_customer(string $id): ?object
-```
-
-**Parameters:**
-- `$id` - QuickBooks customer ID
-
-**Returns:** Customer object or `null` if not found
-
-**Usage:**
 ```php
 $customer = $qbo->get_customer('123');
-if ($customer) {
-    echo $customer->DisplayName;
+echo $customer->DisplayName;
+```
+
+---
+
+### 4. `get_customers_by_id(Collection $ids): Collection`
+
+Bulk fetch by IDs via a single `WHERE Id IN (...)` query. Takes a `Collection`
+of string IDs (not an array). Returns an empty Collection on error.
+
+```php
+$customers = $qbo->get_customers_by_id(collect(['123', '456', '789']));
+```
+
+---
+
+### 5. `get_customers_by_id_cached(string $orgId, Collection $ids): Collection`
+
+Cached bulk fetch. Reads each customer from the per-org cache
+(`qbo:customer:{orgId}:{id}`), fetches only the misses, and returns customers in
+the same order as `$ids` (so they stay aligned with a matching invoice list).
+
+```php
+$customers = $qbo->get_customers_by_id_cached($orgId, $invoiceCustomerIds);
+```
+
+---
+
+### 6. `update_customer(IPPCustomer $customer): IPPCustomer`
+
+Update a customer. Pass the fetched `IPPCustomer` object (it already carries the
+SyncToken); mutate its fields first. Throws `ConflictException` on API error.
+
+```php
+$customer = $qbo->get_customer('123');
+$customer->DisplayName = 'New Name';
+if ($customer->PrimaryEmailAddr == null) {
+    $customer->PrimaryEmailAddr = new IPPEmailAddress;
 }
+$customer->PrimaryEmailAddr->Address = 'newemail@example.com';
+
+$updated = $qbo->update_customer($customer);
 ```
+
+**Important:** fetch first (SyncToken), mutate, then update. See
+`patterns/syncing.md`.
 
 ---
 
-### 8. `get_customers_by_id(array $ids)`
+### 7. `get_customer_invoices(string $customer_id, int $start_at = 1, int $max_count = 100): Collection`
 
-**Purpose:** Bulk fetch multiple customers by IDs
+All invoices for one customer (`WHERE CustomerRef = '...'`), with line detail.
 
-**Signature:**
-```php
-public function get_customers_by_id(array $ids): array
-```
-
-**Parameters:**
-- `$ids` - Array of QuickBooks customer IDs
-
-**Returns:** Array of Customer objects
-
-**Usage:**
-```php
-$customers = $qbo->get_customers_by_id(['123', '456', '789']);
-```
-
-**Notes:**
-- More efficient than multiple single requests
-- Returns only found customers (no error for missing IDs)
-
----
-
-### 9. `update_customer(array $data)`
-
-**Purpose:** Update existing customer
-
-**Signature:**
-```php
-public function update_customer(array $data): object
-```
-
-**Parameters:**
-- `$data` - Array with customer data (must include `id`)
-
-**Required Fields:**
-- `id` - QuickBooks customer ID
-
-**Optional Fields:**
-- `display_name`, `company_name`, `given_name`, `family_name`
-- `primary_phone`, `primary_email_address`
-- `billing_address`, `shipping_address`
-
-**Usage:**
-```php
-$updated = $qbo->update_customer([
-    'id' => '123',
-    'display_name' => 'New Name',
-    'primary_email_address' => 'newemail@example.com'
-]);
-```
-
-**Important:**
-- Fetches current customer first to get SyncToken
-- Updates only provided fields
-- Preserves other fields
-
-**See:** `patterns/syncing.md` for SyncToken requirements
-
----
-
-### 10. `make_customer()`
-
-**Purpose:** Example/template method for creating customers
-
-**Signature:**
-```php
-public function make_customer(): object
-```
-
-**Notes:**
-- This appears to be example/template code
-- Creates a hard-coded customer for testing
-- Not recommended for production use
-- Better to create custom method accepting parameters
-
----
-
-### 11. `get_customer_invoices(string $customer_id)`
-
-**Purpose:** Get all invoices for a specific customer
-
-**Signature:**
-```php
-public function get_customer_invoices(string $customer_id): array
-```
-
-**Parameters:**
-- `$customer_id` - QuickBooks customer ID
-
-**Returns:** Array of Invoice objects
-
-**Usage:**
 ```php
 $invoices = $qbo->get_customer_invoices('123');
-foreach ($invoices as $invoice) {
-    echo "Invoice #{$invoice->DocNumber}: \${$invoice->TotalAmt}\n";
-}
 ```
 
-**See Also:** `categories/invoices.md` for invoice operations
+**See Also:** `categories/invoices.md`.
 
 ---
 
-### 12. `get_customer_credit_memos(string $customer_id)`
+### 8. `make_customer(): void`
 
-**Purpose:** Get all credit memos for a specific customer
-
-**Signature:**
-```php
-public function get_customer_credit_memos(string $customer_id): array
-```
-
-**Parameters:**
-- `$customer_id` - QuickBooks customer ID
-
-**Returns:** Array of CreditMemo objects
-
-**Usage:**
-```php
-$credits = $qbo->get_customer_credit_memos('123');
-```
-
-**See Also:** `categories/credit-memos.md` for credit memo operations
+Hardcoded example that creates a fixed sample customer via the SDK Facade.
+Returns `void`. For reference/testing only - not for production.
 
 ---
 
@@ -231,29 +125,28 @@ $credits = $qbo->get_customer_credit_memos('123');
 ### Fetch and Display Customers
 ```php
 $qbo = new QuickBooksApi();
-$qbo->set_user($user);
+$qbo->set_service($user);
 
-$customers = $qbo->get_all_customers();
-foreach ($customers as $customer) {
-    echo "{$customer->DisplayName} - {$customer->PrimaryEmailAddr->Address}\n";
+foreach ($qbo->get_all_customers() as $customer) {
+    echo "{$customer->DisplayName}\n";
 }
 ```
 
 ### Update Customer Contact Info
 ```php
-$updated = $qbo->update_customer([
-    'id' => '123',
-    'primary_email_address' => 'newemail@example.com',
-    'primary_phone' => '(555) 123-4567'
-]);
+$customer = $qbo->get_customer('123');
+$customer->CompanyName = 'Acme Cannabis Co.';
+if ($customer->PrimaryPhone == null) {
+    $customer->PrimaryPhone = new IPPTelephoneNumber;
+}
+$customer->PrimaryPhone->FreeFormNumber = '(555) 123-4567';
+
+$qbo->update_customer($customer);
 ```
 
-### Get Customer Financial Summary
+### Customer Financial Summary
 ```php
 $customer = $qbo->get_customer('123');
 $invoices = $qbo->get_customer_invoices('123');
-$credits = $qbo->get_customer_credit_memos('123');
-
-$totalInvoiced = array_sum(array_column($invoices, 'TotalAmt'));
-$totalCredits = array_sum(array_column($credits, 'TotalAmt'));
+$available = $qbo->get_customer_available_credits('123'); // see credit-memos.md
 ```

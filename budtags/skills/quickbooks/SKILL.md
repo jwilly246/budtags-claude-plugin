@@ -6,10 +6,13 @@ agent: quickbooks-specialist
 
 # QuickBooks API Reference Skill
 
-**Version:** 2.0.1 - Progressive Disclosure  
-**Last Updated:** 2025-11-14
+**Version:** 3.0.0 - Verified against codebase + QBO platform changes
+**Last Updated:** 2026-07-24
+**SDK:** quickbooks/v3-php-sdk v6.3.1 (constraint ^6.2), QBO Accounting API v3, minorversion 75 (final)
 
 You are now equipped with comprehensive knowledge of the complete QuickBooks Online integration via **modular category files**, **scenario templates**, and **pattern guides**. This skill uses **progressive disclosure** to load only the information relevant to your task.
+
+The integration lives in `app/Services/Api/QuickBooksApi.php` (class `App\Services\Api\QuickBooksApi`), uses the official SDK's DataService exclusively (no raw HTTP), and is gated by the `quickbooks-features` feature flag middleware.
 
 ---
 
@@ -18,7 +21,7 @@ You are now equipped with comprehensive knowledge of the complete QuickBooks Onl
 When the user asks about QuickBooks integration, you can:
 
 1. **Find Operations**: Search for specific operations by category or name
-2. **Provide Details**: Read from category files for exact method signatures and examples  
+2. **Provide Details**: Read from category files for exact method signatures and examples
 3. **Explain Patterns**: Reference pattern files for authentication, caching, logging, SyncToken
 4. **Generate Code**: Help implement QuickBooks API calls in Laravel/PHP
 5. **Debug Issues**: Help troubleshoot common integration problems
@@ -28,33 +31,43 @@ When the user asks about QuickBooks integration, you can:
 
 ## Available Resources
 
-### Category Files (8 files, ~80-150 lines each)
+### Category Files (8 files - 56 operations total)
 
-- categories/authentication.md - 4 OAuth & token operations
-- categories/customers.md - 8 customer CRUD operations
-- categories/invoices.md - 9 invoice operations
-- categories/items.md - 7 item operations + Metrc sync
-- categories/credit-memos.md - 5 credit memo operations
-- categories/payments.md - 3 payment operations
-- categories/accounts.md - 5 account query operations
-- categories/utilities.md - 5 utility methods
+- categories/authentication.md - 7 OAuth & service-setup operations
+- categories/customers.md - 8 customer operations
+- categories/invoices.md - 11 invoice operations (incl. cached + overdue)
+- categories/items.md - 8 item operations + Metrc sync
+- categories/credit-memos.md - 6 credit memo operations
+- categories/payments.md - 6 payment/deposit-account operations
+- categories/accounts.md - 4 account query operations
+- categories/utilities.md - 6 utility methods (company info, terms, cache clearing)
 
-### Pattern Files (7 files, ~40-100 lines each)
+### Pattern Files (8 files)
 
-- patterns/authentication.md - OAuth 2.0 flow
-- patterns/token-refresh.md - Automatic token refresh
-- patterns/multi-tenancy.md - Organization scoping (CRITICAL!)
-- patterns/caching.md - Cache strategy
+- patterns/authentication.md - OAuth 2.0 flow (routes /quickbooks/login and /quickbooks/auth)
+- patterns/token-refresh.md - Refresh-on-expiry + refresh-chain gotchas + 5-year hard cap
+- patterns/multi-tenancy.md - Organization scoping via organization_id (CRITICAL!)
+- patterns/caching.md - Cache::flexible() stale-while-revalidate layer
 - patterns/logging.md - LogService (NEVER use Log::)
 - patterns/syncing.md - SyncToken requirements
-- patterns/error-handling.md - Common errors
+- patterns/error-handling.md - Common errors + SDK schema-drift diagnosis
+- patterns/billing-invoice-sync.md - qbo:sync-invoices billing/overdue subsystem
 
-### Scenario Files (4 files, ~80-650 lines each)
+### Scenario Files (4 files)
 
 - scenarios/invoice-workflow.md - Complete invoice lifecycle
 - scenarios/payment-workflow.md - Recording payments
 - scenarios/credit-memo-workflow.md - Credit memos
 - scenarios/metrc-sync-workflow.md - Metrc sync
+
+### Platform Reference
+
+- PLATFORM_CHANGES.md - Dated digest of Intuit platform changes 2025-2026 with
+  BudTags impact verdicts (refresh-token 5-year cap, minorversion 75 final, SDK
+  release table, read metering, CloudEvents webhooks, Reports v2). Load when
+  debugging something that broke WITHOUT a code deploy, when advising on SDK
+  upgrades, or when asked "what changed in QBO".
+- ENTITY_TYPES.md - TypeScript types mirror of resources/js/Types/types-qbo.tsx
 
 ---
 
@@ -69,6 +82,8 @@ Ask or infer:
 - Is this OAuth/auth setup? → Load patterns/authentication.md
 - Is this a workflow? → Load scenarios/
 - Is this an error? → Load patterns/error-handling.md
+- Did it break with no code change? → Load patterns/error-handling.md + PLATFORM_CHANGES.md
+- Billing/overdue/blocked orgs? → Load patterns/billing-invoice-sync.md
 
 ### Step 2: Load Minimal Resources
 
@@ -93,26 +108,15 @@ Load patterns/error-handling.md + patterns/syncing.md
 
 ---
 
-## Expected Context Reduction
-
-| Query Type | Before | After | Reduction |
-|------------|--------|-------|-----------|
-| Create invoice | 2,471 lines | ~640 lines | 74% |
-| OAuth setup | 998 lines | ~530 lines | 47% |
-| SyncToken error | 782 lines | ~530 lines | 32% |
-| Metrc sync | 1,161 lines | ~575 lines | 50% |
-| Average | 2,000-3,000 | 500-700 | **75-80%** |
-
----
-
 ## Critical Patterns
 
 ### Organization Scoping (MOST IMPORTANT!)
 
 - ALL operations are organization-scoped
-- Tokens stored per (user_id, org_id) pair
-- Each org can connect to different QuickBooks company
-- ALWAYS use user->active_org->id
+- Tokens stored per (user_id, organization_id) pair in qbo_access_keys
+- Each org can connect to a different QuickBooks company (realm)
+- Setup idiom: `$qbo = new QuickBooksApi(); $qbo->set_service($user);`
+  (set_service loads the token for the user's active org; there is no set_user)
 
 **See:** patterns/multi-tenancy.md
 
@@ -120,16 +124,17 @@ Load patterns/error-handling.md + patterns/syncing.md
 
 - ALWAYS use LogService::store() (NEVER Log::)
 - ALWAYS fetch entity before updating (SyncToken!)
-- ALWAYS handle errors with try-catch
-- ALWAYS scope queries to active_org_id
-- ALWAYS clear cache after bulk operations
+- ALWAYS handle errors with try-catch; classify auth failures with QuickBooksApi::is_oauth_error($e)
+- ALWAYS scope queries and cache keys to the organization id
+- ALWAYS clear cache after bulk operations (clear_cache($orgId) / clear_invoices_cache($orgId))
 
 ### Common Pitfalls
 
 - Using Log:: instead of LogService
 - Not fetching before update (SyncToken error!)
-- Querying without org_id (security risk!)
-- Not handling token expiration
+- Querying without organization scoping (security risk!)
+- Copying a token chain to a second environment (rotation kills the original - see patterns/token-refresh.md)
+- Treating "Exception appears in converting Response to XML" as an auth error (it is SDK schema drift - see patterns/error-handling.md)
 - Forgetting to clear cache
 
 ---

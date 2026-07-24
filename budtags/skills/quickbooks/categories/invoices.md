@@ -1,161 +1,139 @@
 # QuickBooks Invoice Operations
 
 **Category:** Invoice Operations
-**Operations:** 9 methods
-**Purpose:** Create, read, update, send, and download invoices
+**Operations:** 11 methods
+**Purpose:** Read, create, update, send, and download invoices
 
 ---
 
 ## Overview
 
-Invoice operations handle the complete invoice lifecycle from creation to delivery. Invoices support multiple line items, customer memos, payment terms, and PDF generation.
-
-**Key Concepts:**
-- Line items with quantity, price, and tax codes
-- SyncToken required for updates
-- PDF download and email sending
-- Payment term integration
+Invoice operations cover the full lifecycle. Reads come in paginated, all,
+cached, and overdue variants. Creation and updates take an array payload that the
+service maps into QuickBooks line items. Updates fetch the existing invoice first
+to carry its SyncToken.
 
 **See Also:**
 - `scenarios/invoice-workflow.md` - Complete invoice workflow
-- `ENTITY_TYPES.md` - Invoice and OrderLineItem types
+- `ENTITY_TYPES.md` - Invoice and line item types
 - `patterns/syncing.md` - SyncToken requirements
 
 ---
 
 ## Operations
 
-### 13. `get_invoices(int $start_at = 1, int $max_count = 100)`
-Get paginated list of invoices
+### 1. `get_invoices(int $start_at = 1, int $max_count = 100): LengthAwarePaginator`
 
-**Returns:** Array of Invoice objects
+Paginated invoices (`SELECT *, Line.* FROM Invoice`) wrapped in a
+`LengthAwarePaginator` (path `/orders/quickbooks`). Returns an empty paginator on
+error.
 
-### 14. `get_all_invoices()`
-Get ALL invoices with automatic pagination
+### 2. `get_invoices_cached(string $orgId, int $page = 1, int $perPage = 50): LengthAwarePaginator`
 
-**Returns:** Array of all Invoice objects
+Cached wrapper over `get_invoices`, keyed per org and page
+(`qbo:invoices:{orgId}:page:{page}`), stale-while-revalidate.
 
-### 15. `get_invoice(string $id)`
-Get single invoice by QuickBooks ID
+### 3. `get_all_invoices(): Collection`
 
-**Returns:** Invoice object or `null`
+All invoices, auto-paginated with line detail.
 
-### 16. `get_invoice_count()`
-Get total count of invoices
+### 4. `get_all_invoices_cached(string $org_id): Collection`
 
-**Returns:** Integer count
+Cached `get_all_invoices` (`qbo:all_invoices:{org_id}`). Backs the JSON
+`GET /quickbooks/invoices` endpoint.
 
-### 17. `create_invoice(array $data)`
-Create new invoice with line items
+### 5. `get_overdue_invoices(): Collection`
 
-**Required:**
-- `customer_id` - QuickBooks customer ID
-- `line_items` - Array of line item objects
+Open, past-due invoices (`Balance > '0' AND DueDate < today`), auto-paginated.
+Used by the billing/overdue sync.
 
-**Line Item Structure:**
-```php
-[
-    'item_id' => '456',           // Required
-    'quantity' => 10,             // Required
-    'unit_price' => 25.00,        // Required
-    'description' => 'Product',   // Optional
-    'tax_code_ref' => 'NON'       // Optional
-]
-```
+### 6. `get_invoice(string $id): ?IPPInvoice`
 
-**Usage:**
+Single invoice by ID (`FindById`), or `null`.
+
+### 7. `get_invoice_count(): int`
+
+Total invoice count (`SELECT COUNT(*) FROM Invoice`).
+
+### 8. `create_invoice(array $invoice_data): IPPInvoice`
+
+Create an invoice with line items.
+
+**Required keys:** `customer_id`, `line_items` (each needs `item_id`, `quantity`,
+`unit_price`, `amount`; `description` optional). Line items with a falsy
+`item_id` are skipped.
+
+**Optional keys:** `txn_date`, `sales_term_ref`, `due_date`, `doc_number`,
+`customer_email` (-> `BillEmail`), `private_note`.
+
 ```php
 $invoice = $qbo->create_invoice([
     'customer_id' => '123',
-    'txn_date' => '2025-01-15',
+    'txn_date' => '2026-01-15',
+    'due_date' => '2026-02-14',
     'line_items' => [
         [
             'item_id' => '456',
             'quantity' => 10,
             'unit_price' => 25.00,
-            'description' => 'Premium Cannabis Flower'
-        ]
+            'amount' => 250.00,
+            'description' => 'Premium Flower',
+        ],
     ],
-    'customer_memo' => 'Thank you for your business!'
+    'private_note' => 'Thank you for your business!',
 ]);
 ```
 
-**Returns:** Created Invoice object
+### 9. `update_invoice(string $invoice_id, array $invoice_data): IPPInvoice`
 
-### 18. `update_invoice(array $data)`
-Update existing invoice
+Update header and/or line items. Fetches the existing invoice first (SyncToken),
+then applies any provided `doc_number`, `txn_date`, `due_date`, `private_note`,
+and `line_items`. Throws `ConflictException` on API error.
 
-**Required:** `id` - QuickBooks invoice ID
+```php
+$qbo->update_invoice('789', [
+    'private_note' => 'Updated terms',
+    'line_items' => [
+        ['id' => '1', 'item_id' => '456', 'quantity' => 8, 'unit_price' => 25.00, 'amount' => 200.00],
+    ],
+]);
+```
 
-**Important:** Fetches current invoice first for SyncToken
+### 10. `send_invoice(string $invoice_id, ?string $send_to_email = null): bool`
 
-**Returns:** Updated Invoice object
+Email the invoice via QuickBooks. When `$send_to_email` is null the SDK sends to
+the invoice's stored `BillEmail`. Fetches the invoice first; throws on failure;
+logs via `LogService`.
 
-### 19. `send_invoice(string $invoice_id, string $email)`
-Email invoice to customer
-
-**Parameters:**
-- `invoice_id` - QuickBooks invoice ID
-- `email` - Recipient email address
-
-**Usage:**
 ```php
 $qbo->send_invoice('789', 'customer@example.com');
+$qbo->send_invoice('789'); // uses invoice BillEmail
 ```
 
-**Notes:**
-- Uses QuickBooks email service
-- Sends formatted PDF
-- Logs email event via LogService
+### 11. `download_invoice_pdf(string $invoice_id): string`
 
-### 20. `get_invoice_pdf(string $invoice_id)`
-Download invoice as PDF
+Download the invoice PDF. Returns a **filesystem path** to the generated temp PDF
+(not the binary contents). Throws on error.
 
-**Returns:** PDF content (binary string)
-
-**Usage:**
 ```php
-$pdf = $qbo->get_invoice_pdf('789');
-file_put_contents('invoice.pdf', $pdf);
+$path = $qbo->download_invoice_pdf('789');
+return response()->download($path, "invoice-789.pdf");
 ```
-
-### 21. `delete_invoice(string $id)`
-Delete (void) an invoice
-
-**Important:** Invoices cannot be fully deleted, only voided
-
-**Returns:** Void status confirmation
 
 ---
 
 ## Common Workflows
 
-### Create Invoice with Multiple Line Items
+### Create Then Send
 ```php
-$invoice = $qbo->create_invoice([
-    'customer_id' => '123',
-    'txn_date' => date('Y-m-d'),
-    'due_date' => date('Y-m-d', strtotime('+30 days')),
-    'line_items' => [
-        ['item_id' => '456', 'quantity' => 10, 'unit_price' => 25.00],
-        ['item_id' => '457', 'quantity' => 5, 'unit_price' => 15.00]
-    ]
-]);
-```
-
-### Send Invoice via Email
-```php
-// Create invoice
 $invoice = $qbo->create_invoice($data);
-
-// Send to customer
-$qbo->send_invoice($invoice->Id, $customer->PrimaryEmailAddr->Address);
+$qbo->send_invoice($invoice->Id); // to customer BillEmail
 ```
 
-### Download and Store PDF
+### Serve the PDF
 ```php
-$pdf = $qbo->get_invoice_pdf($invoice->Id);
-Storage::put("invoices/{$invoice->DocNumber}.pdf", $pdf);
+$path = $qbo->download_invoice_pdf($invoice->Id);
+return response()->download($path, "invoice-{$invoice->DocNumber}.pdf");
 ```
 
-**See:** `scenarios/invoice-workflow.md` for complete end-to-end workflow
+**See:** `scenarios/invoice-workflow.md`.

@@ -6,221 +6,259 @@ TypeScript type definitions for all QuickBooks entities used in BudTags.
 
 ---
 
-## Core Entity Types
-
-### Customer
-
-Customer entity with address and contact information.
-
-```typescript
-interface Customer {
-    Id: string;
-    DisplayName: string;
-    CompanyName?: string;
-    GivenName?: string;
-    MiddleName?: string;
-    FamilyName?: string;
-    PrimaryPhone?: Phone;
-    PrimaryEmailAddr?: Email;
-    BillAddr?: Address;
-    ShipAddr?: Address;
-    Balance?: number;
-    Active?: boolean;
-    MetaData?: MetaData;
-}
-```
-
-**Key Fields:**
-- `Id` - QuickBooks customer ID
-- `DisplayName` - Customer display name
-- `CompanyName` - Company/business name
-- `GivenName` / `FamilyName` - First/last name
-- `PrimaryPhone` - Phone object
-- `PrimaryEmailAddr` - Email object
-- `BillAddr` / `ShipAddr` - Address objects
-- `Balance` - Current account balance
-- `Active` - Is customer active?
-
-**API Operations:**
-- `get_customer(id)`
-- `get_customers()`
-- `get_all_customers()`
-- `update_customer(data)`
+> The file uses `export type X = {...}`, not `interface`. QuickBooks returns nearly every field as a **string** (including numeric-looking values like `Balance`, `TotalAmt`, `UnitPrice`), so the types are string-heavy on purpose. Cast to number in the UI when you need arithmetic. The large entities (`QBCustomer`, `Invoice`, `Company`) mirror the full QBO entity; the blocks below show the load-bearing subset - consult the source for the complete field list.
 
 ---
 
-### Invoice
+## Reference Helper Types
 
-Invoice with line items, customer, totals, and dates.
+### QBRef
+
+QuickBooks reference field. The API inconsistently returns refs as either a bare string ID or an object.
 
 ```typescript
-interface Invoice {
-    Id: string;
-    DocNumber: string;
-    TxnDate: string;
-    DueDate?: string;
-    CustomerRef: {
-        value: string;
-        name: string;
-    };
-    Line: OrderLineItem[];
-    TotalAmt: number;
-    Balance: number;
-    EmailStatus?: string;
-    BillEmail?: Email;
-    BillAddr?: Address;
-    CustomerMemo?: {
-        value: string;
-    };
-    PrivateNote?: string;
-    SalesTermRef?: {
-        value: string;
-    };
-    DepositToAccountRef?: {
-        value: string;
-    };
-    MetaData?: MetaData;
-}
+export type QBRef = string | { value: string, name?: string };
 ```
 
-**Key Fields:**
-- `DocNumber` - Invoice number (e.g., "1001")
-- `TxnDate` - Invoice date
-- `DueDate` - Payment due date
-- `CustomerRef` - Customer reference {value: ID, name: Name}
-- `Line` - Array of line items
-- `TotalAmt` - Total invoice amount
-- `Balance` - Remaining balance (TotalAmt - payments)
-- `EmailStatus` - "EmailSent" | "NotSet" | etc.
+Used by `CustomerRef`, `ItemRef`, `ParentRef`, `IncomeAccountRef`, etc. Always narrow before reading `.value`.
 
-**API Operations:**
-- `create_invoice(data)`
-- `update_invoice(data)`
-- `get_invoice(id)`
-- `get_invoices()`
-- `send_invoice(id, email)`
-- `download_invoice_pdf(id)`
+### OverdueLevel / OverdueStatus
 
----
-
-### OrderLineItem
-
-Line item within an invoice or credit memo.
+Client-computed overdue classification for a customer (not a QBO field).
 
 ```typescript
-interface OrderLineItem {
-    Id?: string;
-    LineNum?: number;
-    Amount: number;
-    Description?: string;
-    DetailType: string;
-    SalesItemLineDetail?: {
-        ItemRef: {
-            value: string;
-            name: string;
-        };
-        Qty?: number;
-        UnitPrice?: number;
-        TaxCodeRef?: {
-            value: string;
-        };
-    };
-}
-```
+export type OverdueLevel = 'none' | 'overdue' | 'severely_overdue';
 
-**Key Fields:**
-- `Amount` - Line total (Qty × UnitPrice)
-- `Description` - Line item description
-- `DetailType` - Usually "SalesItemLineDetail"
-- `SalesItemLineDetail.ItemRef` - Item reference
-- `SalesItemLineDetail.Qty` - Quantity
-- `SalesItemLineDetail.UnitPrice` - Unit price
-
-**Usage:**
-```typescript
-const lineItem: OrderLineItem = {
-    Amount: 250.00,
-    Description: 'Premium Cannabis Flower - 1oz',
-    DetailType: 'SalesItemLineDetail',
-    SalesItemLineDetail: {
-        ItemRef: {
-            value: '456',
-            name: 'Cannabis Flower 1oz'
-        },
-        Qty: 10,
-        UnitPrice: 25.00
-    }
+export type OverdueStatus = {
+    level: OverdueLevel,
+    daysOverdue: number,
+    amount: number,
 };
 ```
 
 ---
 
-### Company
+## Core Entity Types
 
-QuickBooks company information.
+### QBCustomer
+
+Customer entity with address and contact information. (~80 fields in source; key subset shown.)
 
 ```typescript
-interface Company {
-    CompanyName: string;
-    LegalName?: string;
-    CompanyAddr?: Address;
-    CustomerCommunicationAddr?: Address;
-    LegalAddr?: Address;
-    PrimaryPhone?: Phone;
-    CompanyStartDate?: string;
-    FiscalYearStartMonth?: string;
-    Country?: string;
-    Email?: Email;
-    WebAddr?: {
-        URI: string;
-    };
-    SupportedLanguages?: string;
-    NameValue?: Array<{
-        Name: string;
-        Value: string;
-    }>;
-    domain?: string;
-    sparse?: boolean;
-    Id?: string;
-    SyncToken?: string;
-    MetaData?: MetaData;
-}
+export type QBCustomer = {
+    Id: string,
+    SyncToken: string,
+    MetaData: MetaData,
+    GivenName?: string,
+    MiddleName?: string,
+    FamilyName?: string,
+    FullyQualifiedName: string,
+    CompanyName: string,
+    DisplayName: string,
+    Active: string,
+    PrimaryPhone: Phone,
+    AlternatePhone?: Phone | string,
+    PrimaryEmailAddr: Email,
+    Taxable?: string,
+    BillAddr: QBAddress,
+    ShipAddr: QBAddress,
+    SalesTermRef: string,
+    PaymentMethodRef: string,
+    Balance: string,
+    BalanceWithJobs: string,
+    CurrencyRef: string,
+    // ...full QBO Customer shape continues in source
+};
 ```
 
-**Key Fields:**
-- `CompanyName` - Company display name
-- `LegalName` - Legal business name
-- `CompanyAddr` - Company address
-- `Email` - Company email
-- `PrimaryPhone` - Company phone
-
-**API Operation:**
-- `get_company_info()`
+**API Operations:** `get_customer(id)`, `get_customers()`, `get_all_customers()`, `get_customers_by_id(ids)`, `update_customer(customer)`
 
 ---
 
-### PaymentMethod
+### Invoice
+
+Invoice with line items, customer ref, totals, dates, and online-payment fields. (~100 fields in source; key subset shown.)
+
+```typescript
+export type Invoice = {
+    Id: string,
+    SyncToken: string,
+    MetaData: MetaData,
+    DocNumber: string,
+    TxnDate: string,
+    CustomerRef: QBRef,
+    CustomerMemo: string,
+    Line: QBOrderLineItem[],
+    BillAddr: QBAddress,
+    ShipAddr: QBAddress,
+    SalesTermRef: string,
+    DueDate: string,
+    PrivateNote: string,
+    TotalAmt: string,
+    Balance: string,
+    EmailStatus: string,
+    BillEmail: Email,
+    PaymentMethodRef: string,
+    DepositToAccountRef: string,
+    AllowOnlineCreditCardPayment: string,
+    AllowOnlineACHPayment: string,
+    InvoiceLink: string,
+    // ...full QBO Invoice shape continues in source
+};
+```
+
+**Key Fields:**
+- `CustomerRef` - `QBRef` (string ID or `{value, name}`)
+- `Line` - array of `QBOrderLineItem`
+- `TotalAmt` / `Balance` - strings; parse for math
+- `InvoiceLink` - QBO-hosted "Pay Online" URL; only populated when online payments are enabled on the invoice (see billing sync notes)
+
+**API Operations:** `create_invoice(data)`, `update_invoice(invoice_id, data)`, `get_invoice(id)`, `get_invoices()`, `get_customer_invoices(customer_id)`, `get_overdue_invoices()`, `send_invoice(id, email)`, `download_invoice_pdf(id)`
+
+---
+
+### QBOrderLineItem
+
+Line item within an invoice or credit memo. Intersected with `ItemMappingMeta` (from `./types`) for BudTags-side mapping metadata.
+
+```typescript
+export type QBOrderLineItem = {
+    Id?: string,
+    LineNum?: string,
+    Description?: string,
+    Amount?: string,
+    LinkedTxn?: Transaction,
+    DetailType?: string,
+    SalesItemLineDetail?: SalesLineItemDetail,
+    // ...other detail-type slots in source
+} & ItemMappingMeta;
+
+type SalesLineItemDetail = {
+    ItemRef?: QBRef,
+    ClassRef?: string,
+    UnitPrice?: string,
+    Qty?: string,
+    TaxCodeRef?: string,
+    ServiceDate?: string,
+    // ...
+};
+```
+
+**Key Fields:**
+- `Amount` - line total (string)
+- `DetailType` - usually `"SalesItemLineDetail"`
+- `SalesItemLineDetail.ItemRef` - `QBRef`
+- `SalesItemLineDetail.Qty` / `UnitPrice` - strings
+
+---
+
+### CreditMemo
+
+Credit memo with remaining credit tracking.
+
+```typescript
+export type CreditMemo = {
+    Id: string,
+    SyncToken?: string,
+    MetaData?: MetaData,
+    DocNumber: string,
+    TxnDate: string,
+    CustomerRef: QBRef,
+    RemainingCredit: string,
+    Balance: string,
+    TotalAmt: string,
+    PrivateNote?: string,
+    Line?: QBOrderLineItem[],
+    CurrencyRef?: string,
+    BillAddr?: QBAddress,
+    PrintStatus?: string,
+    EmailStatus?: string,
+    domain?: string,
+    status?: string,
+    sparse?: string,
+};
+```
+
+**API Operations:** `create_credit_memo(data)`, `get_credit_memos()`, `get_customer_credit_memos(customer_id)`, `get_customer_available_credits(customer_id)`, `apply_credit_to_invoice(...)`
+
+---
+
+### QuickBooksItem
+
+Inventory/service item. Note the union types (`string | boolean`, `string | number`) reflecting QBO's inconsistent serialization.
+
+```typescript
+export type QuickBooksItem = {
+    Id: string,
+    Name: string,
+    Type: string,
+    ParentRef?: QBRef,
+    FullyQualifiedName?: string,
+    Sku?: string,
+    Description?: string,
+    Active: string | boolean,
+    UnitPrice?: string,
+    PurchaseCost?: string,
+    QtyOnHand?: string | number,
+    TrackQtyOnHand?: boolean,
+    Taxable?: string | boolean,
+    IncomeAccountRef?: QBRef,
+    ExpenseAccountRef?: QBRef,
+    AssetAccountRef?: QBRef,
+};
+```
+
+**API Operations:** `create_item(data)`, `update_item(item_id, data)`, `update_item_quantity(item_id, qty)`, `get_items()`, `get_all_items()`, `get_items_cached(orgId)`, `delete_item(id)`, `sync_quantities_from_metrc(...)`
+
+---
+
+### Company
+
+QuickBooks company information. (Key subset shown.)
+
+```typescript
+export type Company = {
+    Id: string,
+    SyncToken: string,
+    MetaData: MetaData,
+    CompanyName: string,
+    LegalName: string,
+    CompanyAddr: QBAddress,
+    LegalAddr: QBAddress,
+    CustomerCommunicationEmailAddr: Email,
+    PrimaryPhone: string,
+    CompanyStartDate: string,
+    FiscalYearStartMonth: string,
+    Country: string,
+    Email: Email,
+    WebAddr: string,
+    SupportedLanguages: string,
+    DefaultTimeZone: string,
+    NameValue: NameValue[],
+    // ...full QBO CompanyInfo shape continues in source
+};
+
+type NameValue = { Name: string, Value: string };
+```
+
+**API Operation:** `get_company_info()`
+
+---
+
+### QBPaymentMethod
 
 Payment method reference (Cash, Check, Credit Card, etc.).
 
 ```typescript
-interface PaymentMethod {
-    Id: string;
-    Name: string;
-    Active?: boolean;
-    Type?: string;
-}
+export type QBPaymentMethod = {
+    Id: string,
+    Name: string,
+    Active: string,
+    Type: string,
+};
 ```
 
-**Common Payment Methods:**
-- Cash (ID: "1")
-- Check (ID: "2")
-- Credit Card (ID: "3")
-- Debit Card (ID: "4")
-
-**API Operations:**
-- `get_payment_methods()`
-- `get_payment_method(id)`
+**API Operations:** `get_payment_methods()`, `get_payment_method(id)`, `get_payment_methods_cached(orgId)`
 
 ---
 
@@ -229,187 +267,171 @@ interface PaymentMethod {
 Chart of Accounts entry.
 
 ```typescript
-interface Account {
-    Id: string;
-    Name: string;
-    AccountType: string;
-    AccountSubType?: string;
-    Active?: boolean;
-    CurrentBalance?: number;
-    Classification?: string;
-    MetaData?: MetaData;
-}
+export type Account = {
+    Id: string,
+    Name: string,
+    Active: string,
+    AccountType: string,
+    AccountSubType: string,
+    CurrentBalance: string,
+};
 ```
 
-**Account Types:**
-- `Bank` - Bank accounts
-- `Income` - Income/revenue accounts
-- `Expense` - Expense accounts
-- `Asset` - Asset accounts
-- `Liability` - Liability accounts
-- `Equity` - Equity accounts
+**API Operations:** `get_accounts()`, `get_all_accounts()`, `get_all_accounts_cached(orgId)`, `get_account(id)`, `get_deposit_accounts()` (Bank + Active only)
 
-**API Operations:**
-- `get_accounts()`
-- `get_all_accounts()`
-- `get_account(id)`
-- `get_deposit_accounts()` - Bank accounts only
+---
+
+### Term
+
+Payment term (net-15, net-30, etc.).
+
+```typescript
+export type Term = {
+    Id: string,
+    Name: string,
+    DueDays: number | string,
+    Active: boolean,
+    Type?: string,
+};
+```
+
+**API Operations:** `get_terms()`, `get_terms_cached(orgId)`
 
 ---
 
 ## Supporting Types
 
-### Address
+These are declared but not exported (used internally by the entity types above).
 
-Physical address structure.
+### QBAddress
 
 ```typescript
-interface Address {
-    Line1?: string;
-    Line2?: string;
-    Line3?: string;
-    Line4?: string;
-    Line5?: string;
-    City?: string;
-    Country?: string;
-    CountrySubDivisionCode?: string;  // State code
-    PostalCode?: string;
-    Lat?: string;
-    Long?: string;
-    Id?: string;
-}
-```
-
-**Usage:**
-```typescript
-const address: Address = {
-    Line1: '123 Main St',
-    City: 'Los Angeles',
-    CountrySubDivisionCode: 'CA',
-    PostalCode: '90001'
+type QBAddress = {
+    Id?: string,
+    Line1: string,
+    Line2?: string,
+    Line3?: string,
+    Line4?: string,
+    Line5?: string,
+    City: string,
+    Country: string,
+    CountryCode?: string,
+    County?: string,
+    CountrySubDivisionCode?: string,  // state code
+    PostalCode: string,
+    PostalCodeSuffix?: string,
+    Lat?: string,
+    Long?: string,
+    Tag?: string,
+    Note?: string,
 };
 ```
-
----
 
 ### Phone
 
-Phone number structure.
-
 ```typescript
-interface Phone {
-    FreeFormNumber: string;
-}
-```
-
-**Usage:**
-```typescript
-const phone: Phone = {
-    FreeFormNumber: '(555) 123-4567'
+type Phone = {
+    Id?: string,
+    DeviceType: string,
+    CountryCode?: string,
+    AreaCode?: string,
+    ExchangeCode?: string,
+    Extension?: string,
+    FreeFormNumber: string,
+    Default?: string,
+    Tag?: string,
 };
 ```
-
----
 
 ### Email
 
-Email address structure.
-
 ```typescript
-interface Email {
-    Address: string;
-}
-```
-
-**Usage:**
-```typescript
-const email: Email = {
-    Address: 'customer@example.com'
+type Email = {
+    Id?: string,
+    Address: string,
+    Default?: string,
+    Tag?: string,
 };
 ```
-
----
 
 ### MetaData
 
-Entity metadata (timestamps, version).
-
 ```typescript
-interface MetaData {
-    CreateTime: string;      // ISO 8601 timestamp
-    LastUpdatedTime: string; // ISO 8601 timestamp
-}
+type MetaData = {
+    CreatedByRef: string,
+    CreateTime: string,
+    LastModifiedByRef: string,
+    LastUpdatedTime: string,
+    LastChangedInQB: string,
+    Synchronized: string,
+};
 ```
 
-**Example:**
-```typescript
-{
-    CreateTime: '2025-01-15T10:30:00-08:00',
-    LastUpdatedTime: '2025-01-20T14:45:00-08:00'
-}
-```
+`Transaction`, `TaxLine`, `TaxLineDetail`, `TransactionTaxInfo`, and `SalesLineItemDetail` are also declared internally for the invoice/line-item shapes.
 
 ---
 
-## Usage Examples
+## Billing Portal Types
 
-### Creating Invoice with Typed Data
+These back the billing/overdue subsystem (see `patterns/billing-invoice-sync.md`). They are BudTags-native shapes, not raw QBO entities.
+
+### QboInvoiceSnapshot
+
+One cached invoice row, the shape `qbo:sync-invoices` writes into Redis and the billing page reads.
 
 ```typescript
-import { Invoice, OrderLineItem } from '@/Types/types-qbo';
+export type QboInvoiceSnapshot = {
+    qbo_invoice_id: string,
+    qbo_customer_id: number,
+    doc_number: string,
+    total_amount: number,
+    balance: number,
+    due_date: string | null,
+    txn_date: string | null,
+    status: 'paid' | 'unpaid' | 'overdue' | 'voided',
+    invoice_link?: string | null,
+    synced_at: string,
+};
+```
 
-const lineItems: OrderLineItem[] = [
-    {
-        Amount: 250.00,
-        Description: 'Premium Cannabis Flower - 1oz',
-        DetailType: 'SalesItemLineDetail',
-        SalesItemLineDetail: {
-            ItemRef: { value: '456', name: 'Flower 1oz' },
-            Qty: 10,
-            UnitPrice: 25.00
-        }
-    }
-];
+The `status` union mirrors the PHP `InvoiceStatus` enum (`paid` / `unpaid` / `overdue` / `voided`).
 
-const invoiceData = {
-    customer_id: '123',
-    txn_date: '2025-01-15',
-    line_items: lineItems.map(item => ({
-        item_id: item.SalesItemLineDetail.ItemRef.value,
-        quantity: item.SalesItemLineDetail.Qty,
-        unit_price: item.SalesItemLineDetail.UnitPrice,
-        description: item.Description
-    }))
+### BillingStatus / FullBillingStatus
+
+`BillingStatus` is used both by the billing settings page (full shape with invoices) and by the shared Inertia prop injected on every page (summary-only fields for banners). `FullBillingStatus` marks the billing-page fields required.
+
+```typescript
+export type BillingStatus = {
+    // Billing page fields (present on /orgs/active/billing)
+    total_owed?: number,
+    invoice_count?: number,
+    unpaid_count?: number,
+    overdue_count?: number,
+    payment_blocked?: boolean,
+    payment_warning?: boolean,
+    oldest_overdue_date?: string | null,
+    invoices?: QboInvoiceSnapshot[],
+
+    // Shared prop fields (present on every page via HandleInertiaRequests)
+    is_overdue?: boolean,
+    is_blocked?: boolean,
+    days_overdue?: number,
+    total_overdue?: number,
 };
 
-// Submit to backend
-router.post('/quickbooks/create-invoice', invoiceData);
+export type FullBillingStatus = Required<Pick<BillingStatus,
+    'total_owed' | 'invoice_count' | 'unpaid_count' | 'overdue_count'
+    | 'payment_blocked' | 'payment_warning' | 'oldest_overdue_date' | 'invoices'
+>> & BillingStatus;
 ```
 
----
+### InvoiceWithCustomerLicenses
 
-### Using Customer Type in Component
+Invoice enriched with the customer's license numbers for the QBO orders table.
 
 ```typescript
-import { Customer } from '@/Types/types-qbo';
-
-interface Props {
-    customers: Customer[];
-}
-
-const CustomerList: React.FC<Props> = ({ customers }) => {
-    return (
-        <div>
-            {customers.map(customer => (
-                <div key={customer.Id}>
-                    <h3>{customer.DisplayName}</h3>
-                    <p>{customer.PrimaryEmailAddr?.Address}</p>
-                    <p>{customer.PrimaryPhone?.FreeFormNumber}</p>
-                    <p>Balance: ${customer.Balance?.toFixed(2)}</p>
-                </div>
-            ))}
-        </div>
-    );
+export type InvoiceWithCustomerLicenses = Invoice & {
+    customer_licenses: string[],
 };
 ```
 
@@ -417,49 +439,44 @@ const CustomerList: React.FC<Props> = ({ customers }) => {
 
 ## Type Imports
 
-**Always import from types-qbo.tsx:**
+**Always import from `types-qbo.tsx` (never redefine):**
 
 ```typescript
-import {
-    Customer,
+import type {
+    QBRef,
+    QBCustomer,
     Invoice,
+    QBOrderLineItem,
+    CreditMemo,
+    QuickBooksItem,
     Company,
-    PaymentMethod,
+    QBPaymentMethod,
     Account,
-    OrderLineItem,
-    Address,
-    Phone,
-    Email,
-    MetaData
+    Term,
+    OverdueStatus,
+    QboInvoiceSnapshot,
+    BillingStatus,
+    FullBillingStatus,
+    InvoiceWithCustomerLicenses,
 } from '@/Types/types-qbo';
 ```
 
-**Never duplicate type definitions** - always use the centralized types file.
+> `Customer`, `OrderLineItem`, `PaymentMethod`, and `Address` are NOT exported names. Use `QBCustomer`, `QBOrderLineItem`, `QBPaymentMethod`, and `QBAddress` (internal).
 
 ---
 
 ## API Response Matching
 
-All QuickBooks API responses match these TypeScript types exactly. QuickBooks uses PascalCase for all field names, which is preserved in our types.
+QuickBooks uses PascalCase field names, preserved verbatim in these types. Remember that numeric-looking fields arrive as strings and refs arrive as `QBRef` (string OR object) - narrow before use.
 
 **Example API Response:**
 ```json
 {
     "Id": "123",
     "DisplayName": "Acme Dispensary",
-    "PrimaryEmailAddr": {
-        "Address": "acme@example.com"
-    },
-    "Balance": 1250.50
+    "PrimaryEmailAddr": { "Address": "acme@example.com" },
+    "Balance": "1250.50"
 }
 ```
 
-**Maps directly to Customer type without transformation.**
-
----
-
-## Next Steps
-
-- **[OPERATIONS_CATALOG.md](OPERATIONS_CATALOG.md)** - See which operations return which types
-- **[CODE_EXAMPLES.md](CODE_EXAMPLES.md)** - Real code examples using these types
-- **[WORKFLOWS/](WORKFLOWS/)** - Workflow guides with type usage examples
+**Maps directly to `QBCustomer` without transformation** (note `Balance` is a string).

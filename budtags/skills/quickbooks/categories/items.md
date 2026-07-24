@@ -1,17 +1,19 @@
 # QuickBooks Item/Product Operations
 
 **Category:** Item/Product Operations
-**Operations:** 7 methods
-**Purpose:** Manage QuickBooks items (products/services) and sync with Metrc
+**Operations:** 8 methods
+**Purpose:** Manage QuickBooks items (products/services) and sync quantities from Metrc
 
 ---
 
 ## Overview
 
-Item operations manage QuickBooks inventory and service items. Includes integration with Metrc for cannabis product mapping and quantity synchronization.
+Item operations read, create, and update QuickBooks items and push Metrc
+quantities onto mapped QB items. There is no single-item getter, and
+`create_item` always starts inventory at 0.
 
 **Key Models:**
-- `QboItemMapping` - Maps Metrc items to QuickBooks items
+- `QboItemMapping` - Maps Metrc item IDs to QuickBooks item IDs (per org)
 
 **See Also:**
 - `scenarios/metrc-sync-workflow.md` - Complete Metrc sync guide
@@ -21,99 +23,109 @@ Item operations manage QuickBooks inventory and service items. Includes integrat
 
 ## Operations
 
-### 22. `get_items(int $start_at = 1, int $max_count = 100)`
-Get paginated list of items
+### 1. `get_items(int $start_at = 1, int $max_count = 100): Collection`
 
-**Returns:** Array of Item objects
+Paginated items (`SELECT * FROM Item`). Logs and returns empty on error.
 
-### 23. `get_all_items()`
-Get ALL items with automatic pagination
+### 2. `get_all_items(): Collection`
 
-**Returns:** Array of all Item objects
+All items, auto-paginated.
 
-### 24. `get_items_cached(int $ttl = 300)`
-Get items with caching (default 5min TTL)
+### 3. `get_items_cached(string $orgId): Collection`
 
-**Usage:**
+Cached `get_all_items` for an org (`qbo:items:{orgId}`). Note the parameter is the
+**org id**, not a TTL. Backs `GET /quickbooks/items`.
+
+**See:** `patterns/caching.md`.
+
+### 4. `create_item(array $item_data): IPPItem`
+
+Create an item. Always sets `TrackQtyOnHand = true`, `QtyOnHand = 0`, and
+`InvStartDate = today` - any `quantity_on_hand` / `inv_start_date` you pass is
+ignored.
+
+**Required:** `name`.
+**Optional:** `type` (default `'Inventory'`), `cost` (-> `PurchaseCost`),
+`income_account_ref`, `expense_account_ref`, `asset_account_ref`.
+
 ```php
-$items = $qbo->get_items_cached(300); // Cache for 5 minutes
+$item = $qbo->create_item([
+    'name' => 'Premium Cannabis Flower',
+    'type' => 'Inventory',
+    'cost' => 12.50,
+    'income_account_ref' => '79',
+]);
 ```
 
-**See:** `patterns/caching.md` for cache strategy
+### 5. `update_item(string $item_id, array $data): IPPItem`
 
-### 25. `get_item(string $id)`
-Get single item by QuickBooks ID
+Update item fields. Fetches the item first (SyncToken), then applies any of
+`UnitPrice`, `PurchaseCost`, `QtyOnHand` (PascalCase keys). Throws on error.
 
-**Returns:** Item object or `null`
-
-### 26. `create_item(array $data)`
-Create new item (product or service)
-
-**Required:**
-- `name` - Item name
-- `type` - 'Inventory' or 'Service'
-
-**Optional:**
-- `income_account_ref` - Income account ID
-- `expense_account_ref` - Expense account ID
-- `asset_account_ref` - Asset account ID (inventory only)
-- `quantity_on_hand` - Initial quantity
-- `inv_start_date` - Inventory start date
-
-**Returns:** Created Item object
-
-### 27. `update_item(array $data)`
-Update existing item
-
-**Required:** `id` - QuickBooks item ID
-
-**Important:** Fetches current item first for SyncToken
-
-**Returns:** Updated Item object
-
-### 28. `sync_quantities_from_metrc()`
-Sync inventory quantities from Metrc to QuickBooks
-
-**Usage:**
 ```php
-$result = $qbo->sync_quantities_from_metrc();
-// Returns: ['synced' => 15, 'failed' => 0, 'skipped' => 3]
+$qbo->update_item('456', ['UnitPrice' => 30.00, 'QtyOnHand' => 120]);
 ```
 
-**Process:**
-1. Load QboItemMapping for current org
-2. Fetch package quantities from Metrc
-3. Update QuickBooks item quantities
-4. Log sync results
+### 6. `update_item_quantity(string $item_id, float $new_quantity): IPPItem`
 
-**Returns:** Array with sync statistics
+Convenience setter for just `QtyOnHand`. Fetches first, updates, throws on error.
 
-**See:** `scenarios/metrc-sync-workflow.md` for complete workflow
+```php
+$qbo->update_item_quantity('456', 120);
+```
+
+### 7. `delete_item(string $item_id): IPPItem`
+
+Soft delete: fetches the item and sets `Active = false` (QuickBooks best
+practice). Returns the updated item; throws on error. There is no hard delete.
+
+```php
+$qbo->delete_item('456');
+```
+
+### 8. `sync_quantities_from_metrc(array $packages, array $mappings): array`
+
+Sum active Metrc package quantities per Metrc item, then push each total onto the
+mapped QB item via `update_item_quantity`. Packages with a `FinishedDate` or
+`ArchivedDate` are excluded.
+
+- `$packages` - Metrc packages (from `MetrcApi`)
+- `$mappings` - `[metrc_item_id => qbo_item_id]`
+- Returns `['synced' => int, 'failed' => int, 'errors' => string[]]`
+
+```php
+$packages = $metrc_api->get_cached_packages($facility);
+$mappings = ['MetrcItem1' => 'QB456', 'MetrcItem2' => 'QB457'];
+$result = $qbo->sync_quantities_from_metrc($packages, $mappings);
+// ['synced' => 2, 'failed' => 0, 'errors' => []]
+```
+
+**See:** `scenarios/metrc-sync-workflow.md`.
 
 ---
 
 ## Common Workflows
 
-### Create Inventory Item
+### Create an Inventory Item
 ```php
 $item = $qbo->create_item([
     'name' => 'Premium Cannabis Flower',
     'type' => 'Inventory',
-    'quantity_on_hand' => 100,
-    'inv_start_date' => '2025-01-01',
-    'income_account_ref' => '79'  // Sales Income
+    'income_account_ref' => '79',
 ]);
+// QtyOnHand starts at 0; set it after with update_item_quantity
+$qbo->update_item_quantity($item->Id, 100);
 ```
 
 ### Sync Quantities from Metrc
 ```php
-// First, ensure item mappings exist in QboItemMapping table
-// Then sync quantities
-$result = $qbo->sync_quantities_from_metrc();
+$packages = $metrc_api->get_cached_packages($facility);
+$mappings = QboItemMapping::where('organization_id', $orgId)
+    ->pluck('qbo_item_id', 'metrc_item_id')
+    ->all();
 
-if ($result['synced'] > 0) {
-    echo "Successfully synced {$result['synced']} items";
-}
+$result = $qbo->sync_quantities_from_metrc($packages, $mappings);
+echo "Synced {$result['synced']}, failed {$result['failed']}";
 ```
 
 **See:** `scenarios/metrc-sync-workflow.md`

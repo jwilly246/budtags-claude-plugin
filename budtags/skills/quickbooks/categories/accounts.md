@@ -1,82 +1,51 @@
 # QuickBooks Account Operations
 
 **Category:** Account Operations
-**Operations:** 5 methods
-**Purpose:** Query chart of accounts for financial tracking
+**Operations:** 4 methods
+**Purpose:** Query the chart of accounts
 
 ---
 
 ## Overview
 
-Account operations access the QuickBooks chart of accounts. Accounts categorize financial transactions (income, expenses, assets, liabilities).
+Account operations read the QuickBooks chart of accounts. There are no
+type-filtered helpers such as `get_income_accounts` / `get_expense_accounts` -
+filter the full list yourself by `AccountType`.
 
-**Common Account Types:**
-- Income
-- Expense
-- Bank
-- Other Current Asset
-- Accounts Receivable
-- Accounts Payable
+**Common Account Types:** Income, Expense, Cost of Goods Sold, Bank,
+Other Current Asset, Accounts Receivable, Accounts Payable.
 
 **See Also:**
 - `ENTITY_TYPES.md` - Account type definition
+- `categories/payments.md` - `get_deposit_accounts` / `get_deposit_accounts_cached`
+  (Bank-type accounts for payment deposits)
 
 ---
 
 ## Operations
 
-### 37. `get_accounts()`
-Get all accounts
+### 1. `get_accounts(int $start_at = 1, int $max_count = 100): Collection`
 
-**Returns:** Array of Account objects
+Paginated accounts (`SELECT * FROM Account`). Returns empty on error.
 
-**Usage:**
+### 2. `get_all_accounts(): Collection`
+
+All accounts, auto-paginated.
+
+### 3. `get_all_accounts_cached(string $org_id): Collection`
+
+Cached `get_all_accounts` (`qbo:accounts:{org_id}`), stale-while-revalidate.
+Backs `GET /quickbooks/accounts`.
+
+### 4. `get_account(string $id): ?object`
+
+Single account by ID (`FindById`), or `null`. Used to validate a deposit account
+before recording a payment.
+
 ```php
-$accounts = $qbo->get_accounts();
-foreach ($accounts as $account) {
-    echo "{$account->Name} ({$account->AccountType})\n";
-}
-```
-
-### 38. `get_income_accounts()`
-Get accounts of type 'Income'
-
-**Returns:** Array of Account objects (type 'Income')
-
-**Usage:**
-```php
-$incomeAccounts = $qbo->get_income_accounts();
-```
-
-**Use Case:** Assigning income accounts to invoice line items or items
-
-### 39. `get_expense_accounts()`
-Get accounts of type 'Expense' or 'Cost of Goods Sold'
-
-**Returns:** Array of Account objects
-
-**Usage:**
-```php
-$expenseAccounts = $qbo->get_expense_accounts();
-```
-
-**Use Case:** Assigning expense accounts to items or bills
-
-### 40. `get_deposit_accounts()` *(duplicate - see payments category)*
-Get bank and asset accounts for deposits
-
-**Returns:** Array of Account objects
-
-### 41. `get_account(string $id)`
-Get single account by QuickBooks ID
-
-**Returns:** Account object or `null`
-
-**Usage:**
-```php
-$account = $qbo->get_account('79');
-if ($account) {
-    echo "Account: {$account->Name}";
+$account = $qbo->get_account('35');
+if ($account && $account->AccountType === 'Bank') {
+    // valid deposit account
 }
 ```
 
@@ -84,32 +53,17 @@ if ($account) {
 
 ## Common Workflows
 
-### List All Accounts by Type
+### Group Accounts by Type
 ```php
-$accounts = $qbo->get_accounts();
-
-$byType = [];
-foreach ($accounts as $account) {
-    $byType[$account->AccountType][] = $account;
-}
-
+$byType = $qbo->get_all_accounts()->groupBy('AccountType');
 foreach ($byType as $type => $accts) {
-    echo "$type:\n";
-    foreach ($accts as $acct) {
-        echo "  - {$acct->Name}\n";
-    }
+    echo "{$type}: {$accts->count()}\n";
 }
 ```
 
-### Find Account for Invoice Line Items
+### Find Income Accounts (filter yourself)
 ```php
-$incomeAccounts = $qbo->get_income_accounts();
-
-// Use in invoice line items
-$lineItem = [
-    'item_id' => '456',
-    'quantity' => 10,
-    'unit_price' => 25.00,
-    'income_account_ref' => $incomeAccounts[0]->Id
-];
+$income = $qbo->get_all_accounts()
+    ->filter(fn ($a) => $a->AccountType === 'Income')
+    ->values();
 ```

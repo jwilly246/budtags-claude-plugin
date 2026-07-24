@@ -1,19 +1,16 @@
 # QuickBooks Payment Operations
 
 **Category:** Payment Operations
-**Operations:** 3 methods
-**Purpose:** Record customer payments against invoices
+**Operations:** 6 methods
+**Purpose:** Record customer payments and read payment methods / deposit accounts
 
 ---
 
 ## Overview
 
-Payment operations record customer payments and link them to invoices, reducing outstanding balances.
-
-**Key Concepts:**
-- Payments linked to invoices
-- Payment methods (Cash, Check, Credit Card, etc.)
-- Deposit accounts for payment tracking
+Payment operations record customer payments against invoices and provide the
+supporting reference reads (payment methods, deposit accounts). A payment links
+to exactly one invoice via a `LinkedTxn`.
 
 **See Also:**
 - `scenarios/payment-workflow.md` - Complete payment guide
@@ -23,93 +20,85 @@ Payment operations record customer payments and link them to invoices, reducing 
 
 ## Operations
 
-### 34. `get_payment_methods()`
-Get all payment methods
+### 1. `get_payment_methods(): Collection`
 
-**Returns:** Array of PaymentMethod objects
+Active payment methods (`WHERE Active = true`). Takes no pagination args.
 
-**Usage:**
 ```php
-$methods = $qbo->get_payment_methods();
-foreach ($methods as $method) {
-    echo "{$method->Id}: {$method->Name}\n";
-}
-// Output: 1: Cash, 2: Check, 3: Credit Card, etc.
-```
-
-### 35. `get_deposit_accounts()`
-Get all accounts that can receive deposits
-
-**Returns:** Array of Account objects (type 'Bank' or 'Other Current Asset')
-
-**Usage:**
-```php
-$accounts = $qbo->get_deposit_accounts();
-foreach ($accounts as $account) {
-    echo "{$account->Id}: {$account->Name}\n";
+foreach ($qbo->get_payment_methods() as $m) {
+    echo "{$m->Id}: {$m->Name}\n";
 }
 ```
 
-### 36. `create_payment(array $data)`
-Record customer payment against invoice
+### 2. `get_payment_methods_cached(string $org_id): Collection`
 
-**Required:**
-- `customer_id` - QuickBooks customer ID
-- `invoice_id` - QuickBooks invoice ID to apply payment to
-- `amount` - Payment amount
-- `txn_date` - Payment date
-- `payment_method_id` - Payment method ID (from get_payment_methods())
-- `deposit_account_id` - Deposit account ID (from get_deposit_accounts())
+Cached `get_payment_methods` (`qbo:payment_methods:{org_id}`). Backs
+`GET /quickbooks/payment-methods`.
 
-**Usage:**
+### 3. `get_payment_method(string $id): ?object`
+
+Single payment method by ID (`FindById`), or `null`. Used to validate a chosen
+method before recording a payment.
+
+### 4. `get_deposit_accounts(): Collection`
+
+Accounts that can receive deposits: filters all accounts to
+`AccountType === 'Bank'` and active.
+
+### 5. `get_deposit_accounts_cached(string $org_id): Collection`
+
+Cached `get_deposit_accounts` (`qbo:deposit_accounts:{org_id}`). Backs
+`GET /quickbooks/deposit-accounts`.
+
+### 6. `create_payment(array $payment_data): IPPPayment`
+
+Record a payment linked to an invoice. Logs on success/failure via `LogService`.
+
+**Required keys:** `invoice_id`, `customer_id`, `amount`, `txn_date`.
+**Optional keys:** `payment_method_id` (-> `PaymentMethodRef`), `payment_ref_num`
+(check/transaction #), `deposit_to_account_id` (-> `DepositToAccountRef`).
+
 ```php
 $payment = $qbo->create_payment([
-    'customer_id' => '123',
     'invoice_id' => '789',
+    'customer_id' => '123',
     'amount' => 250.00,
-    'txn_date' => '2025-01-15',
-    'payment_method_id' => '1',  // Cash
-    'deposit_account_id' => '35' // Checking Account
+    'txn_date' => '2026-01-15',
+    'payment_method_id' => '1',
+    'deposit_to_account_id' => '35',
 ]);
-
-echo "Payment recorded: \${$payment->TotalAmt}";
 ```
 
-**Returns:** Created Payment object
-
-**Notes:**
-- Payment reduces invoice balance
-- Links payment to invoice automatically
-- Can make partial payments
-- Logs payment via LogService
+**Note:** the deposit key is `deposit_to_account_id` (not `deposit_account_id`).
 
 ---
 
 ## Common Workflows
 
-### Record Full Payment on Invoice
+### Record a Full Payment
 ```php
 $invoice = $qbo->get_invoice('789');
+$customerId = is_object($invoice->CustomerRef)
+    ? $invoice->CustomerRef->value
+    : $invoice->CustomerRef;
 
-$payment = $qbo->create_payment([
-    'customer_id' => $invoice->CustomerRef,
+$qbo->create_payment([
     'invoice_id' => $invoice->Id,
-    'amount' => $invoice->Balance,  // Pay full balance
+    'customer_id' => $customerId,
+    'amount' => (float) $invoice->Balance,
     'txn_date' => date('Y-m-d'),
-    'payment_method_id' => '1',     // Cash
-    'deposit_account_id' => '35'    // Checking
 ]);
 ```
 
-### Record Partial Payment
+### Record a Partial Payment with Method + Deposit
 ```php
-$payment = $qbo->create_payment([
-    'customer_id' => '123',
+$qbo->create_payment([
     'invoice_id' => '789',
-    'amount' => 100.00,  // Partial payment
+    'customer_id' => '123',
+    'amount' => 100.00,
     'txn_date' => date('Y-m-d'),
-    'payment_method_id' => '3',  // Credit Card
-    'deposit_account_id' => '35'
+    'payment_method_id' => '3',
+    'deposit_to_account_id' => '35',
 ]);
 ```
 

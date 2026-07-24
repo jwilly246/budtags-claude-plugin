@@ -10,7 +10,7 @@ Guide to creating credit memos and applying credits to invoices in QuickBooks.
 
 ```php
 $qbo = new QuickBooksApi();
-$qbo->set_user($user);
+$qbo->set_service($user);
 
 $creditMemo = $qbo->create_credit_memo([
     'customer_id' => '123',
@@ -19,6 +19,7 @@ $creditMemo = $qbo->create_credit_memo([
             'item_id' => '456',
             'quantity' => 2,
             'unit_price' => 25.00,
+            'amount' => 50.00,
             'description' => 'Return - damaged product'
         ]
     ]
@@ -26,6 +27,10 @@ $creditMemo = $qbo->create_credit_memo([
 
 echo "Credit memo #{$creditMemo->DocNumber} created: \${$creditMemo->TotalAmt}";
 ```
+
+`create_credit_memo` returns a plain `object` (no typed SDK class). Each line
+requires `item_id`, `quantity`, `unit_price`, and `amount`; `description` is
+optional.
 
 ### Complete Credit Memo with Options
 
@@ -37,10 +42,14 @@ $creditMemo = $qbo->create_credit_memo([
 
     // Optional
     'txn_date' => '2025-01-15',
-    'customer_memo' => 'Refund for damaged items',
+    'doc_number' => 'CM-1001',
+    'customer_email' => 'billing@example.com',  // mapped to BillEmail
     'private_note' => 'Customer reported product quality issue',
 ]);
 ```
+
+**Supported optional keys:** `txn_date`, `doc_number`, `customer_email` (mapped to
+`BillEmail`), `private_note`. There is no `customer_memo` key.
 
 ---
 
@@ -73,13 +82,12 @@ foreach ($creditMemos as $memo) {
 
 ### Apply Credit to Specific Invoice
 
+**Method:** `apply_credit_to_invoice(string $credit_memo_id, string $invoice_id, float $amount, string $customer_id): object`
+
+All four arguments are positional and required.
+
 ```php
-$payment = $qbo->apply_credit_to_invoice([
-    'customer_id' => '123',
-    'credit_memo_id' => '456',
-    'invoice_id' => '789',
-    'amount' => 50.00
-]);
+$payment = $qbo->apply_credit_to_invoice('456', '789', 50.00, '123');
 
 echo "Applied \${$payment->TotalAmt} credit to invoice";
 ```
@@ -103,24 +111,26 @@ $invoice = $qbo->get_invoice('789');
 // Create credit memo matching invoice
 $creditMemo = $qbo->create_credit_memo([
     'customer_id' => $invoice->CustomerRef->value,
-    'customer_memo' => "Full refund for Invoice #{$invoice->DocNumber}",
+    'private_note' => "Full refund for Invoice #{$invoice->DocNumber}",
     'line_items' => [
         // Copy line items from invoice
         [
             'item_id' => '456',
             'quantity' => 10,
-            'unit_price' => 25.00
+            'unit_price' => 25.00,
+            'amount' => 250.00
         ]
     ]
 ]);
 
 // Apply credit to original invoice
-$qbo->apply_credit_to_invoice([
-    'customer_id' => $invoice->CustomerRef->value,
-    'credit_memo_id' => $creditMemo->Id,
-    'invoice_id' => '789',
-    'amount' => $creditMemo->TotalAmt
-]);
+// apply_credit_to_invoice(credit_memo_id, invoice_id, amount, customer_id)
+$qbo->apply_credit_to_invoice(
+    $creditMemo->Id,
+    '789',
+    $creditMemo->TotalAmt,
+    $invoice->CustomerRef->value
+);
 
 // Invoice now has $0 balance
 ```
@@ -131,24 +141,20 @@ $qbo->apply_credit_to_invoice([
 // Customer returns 2 out of 10 units
 $creditMemo = $qbo->create_credit_memo([
     'customer_id' => '123',
-    'customer_memo' => 'Partial return - 2 units damaged',
+    'private_note' => 'Partial return - 2 units damaged',
     'line_items' => [
         [
             'item_id' => '456',
             'quantity' => 2,  // Only returned quantity
-            'unit_price' => 25.00
+            'unit_price' => 25.00,
+            'amount' => 50.00
         ]
     ]
 ]);
 // Credit: $50.00
 
 // Apply to invoice
-$qbo->apply_credit_to_invoice([
-    'customer_id' => '123',
-    'credit_memo_id' => $creditMemo->Id,
-    'invoice_id' => '789',
-    'amount' => 50.00
-]);
+$qbo->apply_credit_to_invoice($creditMemo->Id, '789', 50.00, '123');
 ```
 
 ### Scenario 3: Store Credit (Not Applied to Invoice)
@@ -157,12 +163,13 @@ $qbo->apply_credit_to_invoice([
 // Create credit memo without applying it
 $creditMemo = $qbo->create_credit_memo([
     'customer_id' => '123',
-    'customer_memo' => 'Store credit for future purchases',
+    'private_note' => 'Store credit for future purchases',
     'line_items' => [
         [
             'item_id' => '456',
             'quantity' => 1,
-            'unit_price' => 100.00
+            'unit_price' => 100.00,
+            'amount' => 100.00
         ]
     ]
 ]);
@@ -180,20 +187,10 @@ $creditMemo = $qbo->create_credit_memo([
 ]);
 
 // Apply $100 to invoice 1
-$qbo->apply_credit_to_invoice([
-    'customer_id' => '123',
-    'credit_memo_id' => $creditMemo->Id,
-    'invoice_id' => '789',
-    'amount' => 100.00
-]);
+$qbo->apply_credit_to_invoice($creditMemo->Id, '789', 100.00, '123');
 
 // Apply remaining $100 to invoice 2
-$qbo->apply_credit_to_invoice([
-    'customer_id' => '123',
-    'credit_memo_id' => $creditMemo->Id,
-    'invoice_id' => '790',
-    'amount' => 100.00
-]);
+$qbo->apply_credit_to_invoice($creditMemo->Id, '790', 100.00, '123');
 ```
 
 ---
@@ -203,28 +200,29 @@ $qbo->apply_credit_to_invoice([
 ### Pattern 1: Automatic Credit Application
 
 ```php
-// Get customer's unpaid invoices
-$invoices = $qbo->get_customer_invoices('123');
-$unpaidInvoices = array_filter($invoices, fn($inv) => $inv->Balance > 0);
+// Get customer's unpaid invoices (get_customer_invoices returns a Collection)
+$unpaidInvoices = $qbo->get_customer_invoices('123')
+    ->filter(fn ($inv) => $inv->Balance > 0)
+    ->values();
 
 // Get available credits
 $availableCredit = $qbo->get_customer_available_credits('123');
 
-if ($availableCredit > 0 && count($unpaidInvoices) > 0) {
+if ($availableCredit > 0 && $unpaidInvoices->isNotEmpty()) {
     // Apply credits to oldest invoice first
-    $oldestInvoice = $unpaidInvoices[0];
+    $oldestInvoice = $unpaidInvoices->first();
 
     $applyAmount = min($availableCredit, $oldestInvoice->Balance);
 
-    $creditMemos = $qbo->get_customer_credit_memos('123');
-    $unappliedMemo = array_filter($creditMemos, fn($cm) => $cm->Balance > 0)[0];
+    $creditMemos = $qbo->get_customer_credit_memos('123');  // Collection
+    $unappliedMemo = $creditMemos->first(fn ($cm) => $cm->Balance > 0);
 
-    $qbo->apply_credit_to_invoice([
-        'customer_id' => '123',
-        'credit_memo_id' => $unappliedMemo->Id,
-        'invoice_id' => $oldestInvoice->Id,
-        'amount' => $applyAmount
-    ]);
+    $qbo->apply_credit_to_invoice(
+        $unappliedMemo->Id,
+        $oldestInvoice->Id,
+        $applyAmount,
+        '123'
+    );
 }
 ```
 
@@ -234,7 +232,7 @@ if ($availableCredit > 0 && count($unpaidInvoices) > 0) {
 
 ### ApplyCreditModal Component
 
-**Location:** `resources/js/Pages/Quickbooks/Modals/ApplyCreditModal.tsx`
+**Location:** `resources/js/Components/ApplyCreditModal.tsx`
 
 **Features:**
 - Shows available credit memos for customer
@@ -251,10 +249,18 @@ if ($availableCredit > 0 && count($unpaidInvoices) > 0) {
 
 **Cause:** Trying to apply more credit than available
 
-**Solution:**
+**Solution:** There is no single-credit-memo getter. Fetch the customer's credit
+memos (or the cached org list) and locate the one you need.
+
 ```php
-$creditMemo = $qbo->get_credit_memo($creditMemoId);
-$maxApplicable = $creditMemo->Balance;
+// Filter the customer's credit memos to the target memo
+$creditMemo = $qbo->get_customer_credit_memos($customerId)
+    ->firstWhere('Id', $creditMemoId);
+
+// Or, from the cached org-wide list:
+// $creditMemo = $qbo->get_credit_memos_cached($orgId)->firstWhere('Id', $creditMemoId);
+
+$maxApplicable = (float) $creditMemo->Balance;
 
 if ($amount > $maxApplicable) {
     throw new \Exception("Only \${$maxApplicable} available on this credit memo");
