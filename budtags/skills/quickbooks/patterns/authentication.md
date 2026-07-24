@@ -155,18 +155,24 @@ $api->set_service_from_token($token);  // token is a QboAccessKey, not user-scop
 
 The callback route is unauthenticated (`web` middleware only), so it cannot rely on `auth()`. Identity is carried across the redirect in three session keys written by `initiate_login`: `qb_oauth_user_id`, `qb_oauth_org_id`, and `qb_return_url`. `set_login_tokens` resolves the user with `findOrFail`, then clears all three keys once the exchange completes.
 
-### Token Storage (NOT encrypted at rest)
+### Token Storage (encrypted at rest since 2026-07-24)
 
-Tokens are stored as plain columns. `access_key` is a `text` column and `refresh_key` is a `string` (varchar) column; neither is encrypted. The only cast on `QboAccessKey` is `expires_at => datetime`:
+Both token columns use Laravel `encrypted` casts (added on branch `qbo-token-encryption`, matching the SpotifyAccessKey idiom). Both columns are `text` (encrypted payloads exceed varchar(255); migration `2026_07_24_000000_encrypt_qbo_access_key_tokens` widened `refresh_key` and encrypted existing rows idempotently, with a reversible `down()`):
 
 ```php
 class QboAccessKey extends Model {
     protected $hidden = ['access_key', 'refresh_key'];  // keep tokens out of JSON/Inertia props
-    protected $casts = ['expires_at' => 'datetime'];
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'access_key' => 'encrypted',
+        'refresh_key' => 'encrypted',
+    ];
 }
 ```
 
-The `$hidden` array prevents the raw tokens from leaking into serialized model output (JSON responses, Inertia props) but is serialization hiding, not encryption. If you handle these values, treat the database column as the source of truth and never surface them to the client.
+Reading `$token->access_key` transparently decrypts; all writes encrypt. Never read the columns with `DB::table()` (bypasses casts). The corrupt-token guard in `set_service_from_token()` catches `DecryptException` (pre-encryption plaintext rows, APP_KEY rotation) and treats the row as corrupt: delete + re-auth, same as empty credentials. `$hidden` additionally keeps tokens out of serialized output (JSON responses, Inertia props).
+
+Before 2026-07-24 tokens were stored in PLAINTEXT - any DB dump from before then contains live token material.
 
 ---
 
@@ -227,12 +233,12 @@ QBO_CLIENT_SECRET=
 ### Access Token
 - **Lifespan:** 1 hour
 - **Refresh:** Automatic - `set_service_from_token()` calls `refresh_token()` once `now() >= expires_at`
-- **Storage:** Plain `access_key` column (hidden from serialization, see above)
+- **Storage:** `access_key` column, encrypted at rest via cast (hidden from serialization, see above)
 
 ### Refresh Token
 - **Lifespan:** 100-day inactivity rule PLUS a 5-year hard cap since 2026-01-27 (never resets on refresh; earliest expirations for accounting-scope apps begin October 2028 - see `PLATFORM_CHANGES.md`)
 - **Usage:** Refreshes the access token when expired; `refresh_token()` persists the rotated pair back to the row
-- **Storage:** Plain `refresh_key` column (hidden from serialization, see above)
+- **Storage:** `refresh_key` column, encrypted at rest via cast (hidden from serialization, see above)
 
 **See:** `patterns/token-refresh.md` for automatic refresh logic
 

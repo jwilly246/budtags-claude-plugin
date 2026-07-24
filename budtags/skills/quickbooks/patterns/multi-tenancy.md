@@ -27,9 +27,9 @@ Built across two migrations - the base table, then `organization_id` + the uniqu
 Schema::create('qbo_access_keys', function (Blueprint $table) {
     $table->id();
     $table->timestamps();
-    $table->text('access_key');    // OAuth access token (plain, NOT encrypted)
+    $table->text('access_key');    // OAuth access token (encrypted at rest via cast since 2026-07-24)
     $table->text('realm_id');      // QuickBooks company ID
-    $table->string('refresh_key'); // OAuth refresh token (plain, NOT encrypted)
+    $table->string('refresh_key'); // OAuth refresh token (widened to text + encrypted by 2026_07_24 migration)
     $table->dateTime('expires_at');
     $table->foreignUuid('user_id')->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
 });
@@ -51,10 +51,14 @@ Schema::table('qbo_access_keys', function (Blueprint $table) {
 ```php
 protected $fillable = ['user_id', 'organization_id', 'access_key', 'refresh_key', 'expires_at', 'realm_id'];
 protected $hidden = ['access_key', 'refresh_key']; // keep tokens out of JSON/Inertia props
-protected $casts = ['expires_at' => 'datetime'];
+protected $casts = [
+    'expires_at' => 'datetime',
+    'access_key' => 'encrypted',
+    'refresh_key' => 'encrypted',
+];
 ```
 
-Tokens are hidden from serialization but stored in plaintext - see `patterns/authentication.md`.
+Tokens are hidden from serialization AND encrypted at rest (since 2026-07-24) - see `patterns/authentication.md`.
 
 ---
 
