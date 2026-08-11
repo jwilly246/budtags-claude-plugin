@@ -44,6 +44,12 @@ def main():
     except json.JSONDecodeError:
         return
 
+    # Hook "ask" decisions punch through bypass-permissions mode and wedge
+    # unattended runs on a dialog nobody is watching. Bypass mode means the
+    # user has explicitly accepted this risk class: stay silent.
+    if input_data.get("permission_mode") == "bypassPermissions":
+        return
+
     command = input_data.get("tool_input", {}).get("command", "")
     if not command:
         return

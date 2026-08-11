@@ -73,11 +73,18 @@ def main() -> None:
         return
 
     # --- 4 & 5: pushes ---------------------------------------------------
-    if re.search(r"\bgit\s+(\S+\s+)*push\b", command):
+    # The token walk refuses to step over "stash" so `git stash push` (and
+    # `git -C /path stash push`) never trips the remote-push rule.
+    if re.search(r"\bgit\s+(?:(?!stash\b)\S+\s+)*push\b", command):
         if re.search(r"\bpush\b[^|;&]*(\s--force\b|\s-f\b|\s--force-with-lease\b)", command):
             deny("Force pushes are not allowed from Claude. If genuinely needed, the user runs it themselves.")
             return
-        ask("git push detected. Pushes are normally user-performed (local commits only); approve only if you explicitly asked Claude to push.")
+        if input_data.get("permission_mode") == "bypassPermissions":
+            # An "ask" would wedge unattended bypass-mode runs on a dialog
+            # nobody is watching. Deny outright: pushes stay user-performed.
+            deny("git push is denied in bypass-permissions mode (no prompt possible). Pushes are user-performed; the user runs them directly.")
+        else:
+            ask("git push detected. Pushes are normally user-performed (local commits only); approve only if you explicitly asked Claude to push.")
         return
 
     # --- 2: bulk staging --------------------------------------------------

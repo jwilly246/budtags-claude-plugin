@@ -139,11 +139,16 @@ def main():
 
     is_protected, level, message, context = check_protected_file(file_path)
 
+    # In bypass-permissions mode an "ask" would wedge unattended runs on a
+    # dialog nobody is watching; downgrade to the inform path (context note
+    # still reaches the model, no prompt).
+    bypass = input_data.get('permission_mode') == 'bypassPermissions'
+
     if is_protected:
         # Extract just the filename for the message
         filename = file_path.split('/')[-1] if '/' in file_path else file_path
 
-        if level == "ask":
+        if level == "ask" and not bypass:
             result = {
                 "hookSpecificOutput": {
                     "hookEventName": "PreToolUse",
