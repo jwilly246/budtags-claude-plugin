@@ -368,6 +368,14 @@ drop the `budtags_test_*` databases manually (the `--recreate-databases` flag is
 unreliable) and re-run. NEVER diagnose post-migration parallel-test failures as code
 regressions before ruling out DB staleness.
 
+**Worktree runs:** if this plan executes inside a git worktree, EVERY test/gate
+invocation (including `composer migrate-test-dbs`) must be prefixed with that
+worktree's database: `DB_DATABASE=budtags_test_<slug> composer check`. The
+`worktree-test-db` hook denies unprefixed runs and echoes the exact prefix to use.
+Stale-DB recovery then targets `budtags_test_<slug>_*` only — never drop the main
+tree's `budtags_test_*` family, another session may be mid-gate on it. See the
+`worktree` skill for provisioning.
+
 ### 1.7 Gate Check
 
 **If both the Orchestrator Review (1.5) and Verification (1.6) passed:**
