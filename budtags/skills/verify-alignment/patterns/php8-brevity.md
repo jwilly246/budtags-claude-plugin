@@ -1,8 +1,8 @@
 # PHP 8 Brevity Patterns
 
 **Source:** Nick's original code patterns, PHP 8.3 features
-**Last Updated:** 2026-01-10
-**Pattern Count:** 8 shorthand patterns
+**Last Updated:** 2026-06-10
+**Pattern Count:** 10 patterns (shorthand + functional style)
 
 ---
 
@@ -344,6 +344,187 @@ $label = new LabelOptions($template, 0, '', true, '', '');
 
 ---
 
+## Pattern 9: Collection Pipelines, Never foreach to Build Data
+
+**Rule:** If a `foreach` exists to BUILD a value (array, collection, sum, lookup map), it must be a collection pipeline. `foreach` is acceptable ONLY for pure side effects (dispatching jobs, writing logs, calling APIs) where no value is accumulated.
+
+This is the #1 imperative pattern that keeps creeping back in. Flag it every time.
+
+### ✅ CORRECT
+
+```php
+// Transform
+$labels = $packages->map(fn($p) => $p->Label);
+
+// Filter + transform
+$active_names = $items->filter(fn($i) => $i->is_active)->pluck('name');
+
+// Build a keyed lookup
+$by_label = $packages->keyBy('Label');
+$prices_by_sku = $rows->mapWithKeys(fn($r) => [$r->sku => $r->price]);
+
+// Aggregate
+$total = $lines->sum(fn($l) => $l->qty * $l->price);
+
+// Group
+$by_brand = $products->groupBy('brand_id');
+
+// Flatten nested data
+$all_tags = $orders->flatMap(fn($o) => $o->tags);
+
+// Partition into two buckets
+[$matched, $unmatched] = $items->partition(fn($i) => $i->metrc_id !== null);
+
+// Plain arrays: wrap in collect() and pipe
+$slugs = collect($raw_names)->map(fn($n) => Str::slug($n))->all();
+```
+
+### ❌ WRONG (Imperative accumulation)
+
+```php
+// Building an array with foreach
+$labels = [];
+foreach ($packages as $p) {
+    $labels[] = $p->Label;
+}
+
+// Filtering with foreach + if
+$active_names = [];
+foreach ($items as $i) {
+    if ($i->is_active) {
+        $active_names[] = $i->name;
+    }
+}
+
+// Building a lookup with foreach
+$by_label = [];
+foreach ($packages as $p) {
+    $by_label[$p->Label] = $p;
+}
+
+// Accumulating a sum
+$total = 0;
+foreach ($lines as $l) {
+    $total += $l->qty * $l->price;
+}
+```
+
+### When foreach IS Acceptable
+
+```php
+// ✅ Pure side effects, nothing accumulated
+foreach ($orders as $order) {
+    SyncOrderJob::dispatch($order);
+}
+
+// ✅ But prefer each() only when chaining; standalone foreach is fine for side effects
+```
+
+**Litmus test:** Is there a variable initialized to `[]`, `0`, `''`, or `collect()` immediately before the loop, and appended/added to inside it? That is accumulation — rewrite as a pipeline.
+
+### Automated Scan
+
+```bash
+# Empty-array init directly followed by foreach = accumulation smell
+grep -rn -B1 "foreach" app --include="*.php" | grep -E "=\s*(\[\]|collect\(\)|0|'')\s*;" | head -20
+```
+
+---
+
+## Pattern 10: Guard Clauses & Expression-Style Conditionals
+
+**Rule:** No nested `if/else` pyramids and no `if/else` whose only job is assigning a variable. Use early returns (guard clauses) for preconditions, and ternary/`match()`/`??` for conditional values. Conditionals should produce VALUES, not mutate state across branches.
+
+### ✅ CORRECT - Guard Clauses
+
+```php
+public function apply_receipt(Order $order): void
+{
+    if ($order->received_at) return;
+    if (!$order->lines->count()) return;
+
+    $org = $order->organization;
+    if (!$org->hasFeature('marketplace-seller')) return;
+
+    // Happy path at zero indentation
+    $order->lines->each(fn($l) => $this->receive_line($l));
+}
+```
+
+### ❌ WRONG - Nested Pyramid
+
+```php
+public function apply_receipt(Order $order): void
+{
+    if (!$order->received_at) {
+        if ($order->lines->count()) {
+            $org = $order->organization;
+            if ($org->hasFeature('marketplace-seller')) {
+                foreach ($order->lines as $l) {
+                    $this->receive_line($l);
+                }
+            }
+        }
+    }
+}
+```
+
+### ✅ CORRECT - Conditional Values as Expressions
+
+```php
+// Ternary for two-way
+$status = $order->paid_at ? 'paid' : 'unpaid';
+
+// match(true) for multi-way
+$tier = match(true) {
+    $total >= 10000 => 'platinum',
+    $total >= 1000  => 'gold',
+    default         => 'standard',
+};
+
+// ?? / ?-> for null-driven branching (see Patterns 1 & 4)
+$display_name = $brand->parent?->name ?? $brand->name;
+```
+
+### ❌ WRONG - if/else Assignment
+
+```php
+// Branching just to assign — make it an expression
+if ($order->paid_at) {
+    $status = 'paid';
+} else {
+    $status = 'unpaid';
+}
+
+if ($total >= 10000) {
+    $tier = 'platinum';
+} elseif ($total >= 1000) {
+    $tier = 'gold';
+} else {
+    $tier = 'standard';
+}
+```
+
+### When if/else IS Acceptable
+
+- Branches with multiple statements / genuinely different side effects
+- Branches that need logging or early API calls per-branch
+- Readability would suffer from forcing a `match(true)` (rare — be honest)
+
+**Litmus test:** Does every branch end by assigning the SAME variable (or returning)? Then it's a value — use ternary/`match()`. Is the `else` just the happy path after a precondition check? Invert the condition and return early.
+
+### Automated Scan
+
+```bash
+# if/else blocks that only assign one variable
+grep -rn -A2 "} else {" app --include="*.php" | grep -E "^\s*\\\$[a-z_]+ =" | head -20
+
+# Deep nesting (3+ indent levels of if)
+grep -rn "            if (" app --include="*.php" | head -20
+```
+
+---
+
 ## Verification Checklist
 
 When reviewing for brevity:
@@ -356,6 +537,9 @@ When reviewing for brevity:
 - [ ] Loop variables appropriately short in tight scopes
 - [ ] Simple view data uses `compact()` where appropriate
 - [ ] Boolean parameters use named arguments
+- [ ] NO `foreach` that builds data — collection pipelines (`map`/`filter`/`reduce`/`keyBy`/`mapWithKeys`/`sum`/`groupBy`/`flatMap`) only
+- [ ] NO if/else that only assigns a variable — ternary / `match()` / `??` instead
+- [ ] Preconditions use early-return guard clauses, not nested if pyramids
 
 ---
 

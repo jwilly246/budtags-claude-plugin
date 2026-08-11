@@ -125,7 +125,9 @@ For each domain detected in Phase 1, load the relevant verify-alignment patterns
 - [ ] No premature constants — inline strings unless used 3+ times across files
 - [ ] PHP 8 brevity: `??`, `?->`, `fn()`, `match()` where appropriate
 - [ ] Form requests used for validation on create/update endpoints
-- [ ] Functional style: `map`/`filter`/`reduce`, never `foreach` to build data
+- [ ] Functional style: `map`/`filter`/`reduce`/`keyBy`/`mapWithKeys`/`sum`/`groupBy`, never `foreach` to build data (accumulator var + loop = violation)
+- [ ] No if/else that only assigns a variable — ternary / `match()` / `??` instead
+- [ ] Guard clauses (early returns) for preconditions, never nested if pyramids
 - [ ] Full descriptive variable names, no abbreviations
 
 **If flash messages/redirects involved:**
@@ -141,6 +143,8 @@ For each domain detected in Phase 1, load the relevant verify-alignment patterns
 - [ ] Types defined in `Types/` files — never inline in hooks, never re-exported
 - [ ] No `as any` or `: any` type assertions
 - [ ] No `useEffect` for syncing refs/values — reorganize code instead
+- [ ] Functional style: `map`/`filter`/`reduce`/`flatMap`/`Object.fromEntries`, never `for`/`forEach` + `push` to build data
+- [ ] No `let` + if/else branch assignment — ternary or lookup object, then `const`; early returns for handler preconditions
 - [ ] No abbreviated variable names
 - [ ] `AuthenticatedLayout` + `Head` on all pages
 
@@ -236,7 +240,7 @@ Generate a structured report. Use this exact format:
 
 **Severity guidelines:**
 - **CRITICAL**: Security issues (missing org scoping, auth bypass), data corruption risks, broken functionality
-- **HIGH**: Pattern violations that affect maintainability (wrong method names, Log facade instead of LogService, foreach instead of map)
+- **HIGH**: Pattern violations that affect maintainability (wrong method names, Log facade instead of LogService, imperative style: foreach/forEach+push building data, if/else assignment instead of ternary/match, nested if pyramids instead of guard clauses)
 - **MEDIUM**: Style issues, missing test edge cases, minor type safety gaps
 - **SUGGESTION**: Opportunities for improvement, not blocking
 

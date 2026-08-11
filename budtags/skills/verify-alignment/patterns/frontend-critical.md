@@ -1,10 +1,11 @@
 # Frontend Critical Patterns
 
 **Source:** `.claude/docs/frontend/components.md`, `.claude/docs/frontend/structure.md`
-**Last Updated:** 2025-12-13
+**Last Updated:** 2026-06-10
 **Pattern Count:** Essential React/Inertia patterns + React 19 features
 
 > **Note (Dec 2025):** Added React 19 useTransition pattern, expanded deferred props with Inertia::defer(), added TableSkeleton pattern.
+> **Note (Jun 2026):** Added Pattern 12 functional style (no imperative loop accumulation, no if/else assignment).
 
 ---
 
@@ -706,6 +707,124 @@ Extract ONLY when:
 
 ---
 
+## Pattern 12: Functional Style (No Imperative Accumulation)
+
+**Rule:** Never use `for`/`forEach` + `push` to build arrays/objects, and never use `if/else` whose only job is assigning a variable. Derive values as expressions: `map`/`filter`/`reduce`/`Object.fromEntries` for data, ternaries and early returns for conditionals. Imperative accumulation keeps creeping back in — flag it every time.
+
+### ✅ CORRECT - Pipelines
+
+```typescript
+// Transform
+const labels = packages.map(pkg => pkg.Label);
+
+// Filter + transform
+const activeNames = items.filter(item => item.is_active).map(item => item.name);
+
+// Build a lookup map
+const byId = Object.fromEntries(products.map(product => [product.id, product]));
+const byIdMap = new Map(products.map(product => [product.id, product]));
+
+// Aggregate
+const total = lines.reduce((sum, line) => sum + line.qty * line.price, 0);
+
+// Group
+const byBrand = Object.groupBy(products, product => product.brand_id);
+
+// Flatten
+const allTags = orders.flatMap(order => order.tags);
+```
+
+### ❌ WRONG - Imperative Accumulation
+
+```typescript
+// Building an array with push
+const labels: string[] = [];
+for (const pkg of packages) {
+    labels.push(pkg.Label);
+}
+
+// forEach + push is the same violation
+const activeNames: string[] = [];
+items.forEach(item => {
+    if (item.is_active) {
+        activeNames.push(item.name);
+    }
+});
+
+// Mutating an object in a loop
+const byId: Record<string, Product> = {};
+for (const product of products) {
+    byId[product.id] = product;
+}
+```
+
+### ✅ CORRECT - Conditionals as Expressions
+
+```typescript
+// Ternary for two-way values
+const statusColor = order.paid_at ? 'text-emerald-600' : 'text-red-600';
+
+// Lookup object for multi-way values (TS has no match())
+const tierLabel = { platinum: 'Platinum', gold: 'Gold', standard: 'Standard' }[tier];
+
+// Early return guard clauses in functions/handlers
+function handlePick(item: Item) {
+    if (!item.id) return;
+    if (item.id === selectedId) return;
+
+    setData('item_id', item.id);
+}
+
+// Conditional rendering: && and ternary, not if/else helper variables
+{isOpen && <FormContent item={item} />}
+{error ? <ErrorBanner message={error} /> : <ResultsTable rows={rows} />}
+```
+
+### ❌ WRONG - if/else Assignment
+
+```typescript
+// Branching just to assign — make it an expression
+let statusColor: string;
+if (order.paid_at) {
+    statusColor = 'text-emerald-600';
+} else {
+    statusColor = 'text-red-600';
+}
+
+// let + reassignment across branches is the smell
+let tierLabel = '';
+if (tier === 'platinum') {
+    tierLabel = 'Platinum';
+} else if (tier === 'gold') {
+    tierLabel = 'Gold';
+} else {
+    tierLabel = 'Standard';
+}
+```
+
+### When Imperative Code IS Acceptable
+
+- Pure side effects with nothing accumulated (e.g., `items.forEach(item => observer.observe(item.el))`)
+- Genuinely different multi-statement branches (different side effects per branch, not different values)
+- Hot-path code where a profiler showed pipeline overhead matters (rare — be honest)
+
+**Litmus tests:**
+- A variable initialized to `[]`, `{}`, `0`, or `''` right before a loop that appends to it → pipeline.
+- `let` + every branch assigns the same variable → ternary or lookup object, then `const`.
+- `else` block that's just the happy path → invert the condition and return early.
+
+### Automated Scan
+
+```bash
+# let declarations (almost always a sign of imperative accumulation or branch assignment)
+grep -rn "let " resources/js --include="*.tsx" --include="*.ts" | grep -v "node_modules" | head -20
+
+# push into accumulator arrays
+grep -rn "\.push(" resources/js --include="*.tsx" --include="*.ts" | head -20
+```
+
+---
+
 ## Verification Checklist
 
 ### Component & Design System (Pattern 8)
@@ -759,6 +878,12 @@ Extract ONLY when:
 - [ ] Values inline in components (default)
 - [ ] No constants files for component-local values
 - [ ] Only extracted if 3+ usages across different files
+
+### Functional Style (Pattern 12)
+- [ ] NO `for`/`forEach` + `push` to build arrays — `map`/`filter`/`reduce`/`flatMap` pipelines
+- [ ] NO object mutation in loops to build lookups — `Object.fromEntries`/`new Map(...)`
+- [ ] NO `let` + if/else branch assignment — ternary or lookup object, then `const`
+- [ ] Preconditions in handlers use early returns, not nested if pyramids
 
 ---
 
