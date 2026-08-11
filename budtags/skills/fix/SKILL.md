@@ -1,7 +1,7 @@
 ---
 name: fix
 description: Lightweight bug fix workflow for ad-hoc issues that don't warrant full plan/decompose/run. Enforces investigate → implement → verify flow. Use when fixing a bug, resolving an error, or making a targeted correction.
-version: 1.0.0
+version: 1.1.0
 category: project
 auto_activate:
   keywords:
@@ -45,7 +45,16 @@ Before writing any code, understand the problem.
 - Read the relevant files fully — don't guess from function names
 - State the root cause clearly before proceeding
 
-**1.4 State your fix approach:**
+**1.4 Falsify before you fix (adversarial probe):**
+Before touching code, try to DISPROVE your own root cause with one live probe whose output would look DIFFERENT if the diagnosis is wrong:
+
+- A DB query (`mcp__laravel-boost__database-query`), a tinker call, a log search, or a targeted grep proving the code path actually executes the way you claim
+- Show the raw probe output in the conversation — not a paraphrase
+- If the probe contradicts the diagnosis, go back to 1.3. Do not implement a fix for a disproven cause.
+
+Skip this only when the root cause is directly visible in the failing line itself (a typo, a null deref proven by the stack trace). A plausible story about an API's behavior, data shape, or timing is exactly the kind of claim that has been wrong before — probe it.
+
+**1.5 State your fix approach:**
 Brief statement (2-3 sentences max) of what you'll change and why. Not a full plan — just enough to confirm direction.
 
 **If the root cause is unclear or the fix touches more than 3-4 files:** Stop and tell the user this may need `/create-plan` instead.
