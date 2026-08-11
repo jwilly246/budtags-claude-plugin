@@ -18,7 +18,7 @@ The Distru Sales domain covers customer-facing orders and their billing artifact
 
 > Note: There is **no PUT** verb on /orders or /invoices anymore — POST handles both create and update via UPSERT.
 
-## Order entity shape (23 top-level fields)
+## Order entity shape (25+ top-level fields)
 
 ```jsonc
 {
@@ -28,8 +28,10 @@ The Distru Sales domain covers customer-facing orders and their billing artifact
   "company": { "id": "<uuid>", "name": "...", "updated_datetime": "..." },
   "creator": { /* full User object — id, full_name, email, role, banned, deleted_at */ },
   "owner": { /* full User object | null */ },
-  "billing_location": { /* Location object | null */ },
-  "shipping_location": { /* Location object | null */ },
+  "billing_location": { /* Location | null — the BUYER's ship-to; carries the buyer's FLAT license_number */ },
+  "shipping_location": { /* Location | null — the BUYER's ship-to (same object as billing on sampled orders), NOT the seller side */ },
+  "inventory_source": { /* Location | null — the SELLER's ship-from; the only order-level field with the seller's FLAT license_number (live-verified 2026-08-06 on Evo prod) */ },
+  "blaze_payment_type": null,                     // live-observed 2026-08-06; not in Distru's Models doc
   "order_datetime": "<iso>",
   "delivery_datetime": "<iso>",
   "due_datetime": "<iso>",
