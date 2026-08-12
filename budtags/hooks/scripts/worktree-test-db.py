@@ -72,9 +72,6 @@ def worktree_root(start_dir: str):
 
 def db_slug(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-    # A base ending in _<worker digit> would collide with TestCase's
-    # already-suffixed guard (str_ends_with($db, "_$token")); strip it.
-    slug = re.sub(r"_?\d+$", "", slug)
     return slug[:24].rstrip("_") or "wt"
 
 
@@ -98,7 +95,10 @@ def main() -> None:
     if root is None:
         return  # main tree (or not a git repo): default DB names are correct
 
-    database = f"budtags_test_{db_slug(os.path.basename(root))}"
+    # Name deliberately OUTSIDE the budtags_test% wildcard: stale-DB hygiene in
+    # other sessions drops budtags_test_* and would take a worktree family named
+    # budtags_test_<slug> mid-run (2026-08-06 incident: 302 tests died).
+    database = f"budtags_{db_slug(os.path.basename(root))}_test"
     deny(
         f"Worktree test-DB guard: this command runs inside git worktree "
         f"'{os.path.basename(root)}', which would collide with the main tree's "
