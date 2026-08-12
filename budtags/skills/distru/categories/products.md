@@ -13,7 +13,7 @@ The Distru Products domain covers the catalog model: Products with rich relation
 | POST | `/public/v1/products` | Create or update | UPSERT. **Field name inversion** — read `vendor`/`product_group`, write `vendor_id`/`group_id`. |
 | GET | `/public/v1/test-results` | List test results | **HYPHEN slug** (`/test_results` returns 404). Eventually consistent. |
 | GET | `/public/v1/test-results/{id}` | Get one test result | |
-| GET | `/public/v1/product-pos-mappings` | List POS mappings | **HYPHEN slug**. `id` is INTEGER, not UUID. |
+| GET | `/public/v1/product-pos-mappings` | List POS mappings | **HYPHEN slug**. `id` is now a UUID STRING (was INTEGER pre-2026-08). **Pagination broken — see shape section.** |
 | GET | `/public/v1/product-pos-mappings/{id}` | Get one POS mapping | |
 | POST | `/public/v1/product-pos-mappings` | Create or update | UPSERT. |
 | **DELETE** | `/public/v1/product-pos-mappings/{id}` | **DELETE** a POS mapping | **The ONLY DELETE in the entire Distru API.** |
@@ -207,23 +207,26 @@ NO `tags[]` filter (no `tags` field exists). NO `upc` filter. NO `compliance_typ
 
 ## Product POS Mappings shape
 
+**LIVE WIRE (verified 2026-08-12 on Indulge Life — the first tenant with real mappings).** The 2026-05 mapping recorded `id` as INTEGER and `inserted_at`/`updated_at` timestamps; the live wire has since changed BOTH. A DUTCHIE record, captured verbatim:
+
 ```jsonc
 {
-  "id": <INTEGER>,                                                // The ONLY integer id in the API
+  "id": "00000000-0000-0000-0000-0000a6562a45",                   // UUID STRING (zero-padded). NOT integer anymore.
   "product_id": "<uuid>",                                         // FK to /products
   "pos_type": "BLAZE|DUTCHIE|TREEZ|...",                          // discriminator
-  "inserted_at": "<iso>",                                         // `_at` suffix, unique to this endpoint
-  "updated_at": "<iso>",
-  // Per-pos_type fields (only populated for matching pos_type):
-  "blaze_asset_id": "<string|null>",
-  "blaze_product_id": "<string|null>",
-  "blaze_retailer_id": "<string|null>",
-  "dutchie_product_id": "<integer-stored-as-string|null>",
-  "dutchie_retailer_id": "<string|null>",
-  "treez_product_id": "<string|null>",
-  "treez_retailer_id": "<string|null>"
+  "inserted_datetime": "<iso>",                                   // standard `_datetime` suffix now (was `inserted_at`)
+  "updated_datetime": "<iso>",
+  // Per-pos_type fields (ABSENT — not null — for non-matching pos_type):
+  "dutchie_product_id": 189769,                                   // INTEGER on the wire for DUTCHIE
+  "dutchie_retailer_id": "<uuid>"
+  // blaze_asset_id / blaze_product_id / blaze_retailer_id (BLAZE rows)
+  // treez_product_id / treez_retailer_id (TREEZ rows)
 }
 ```
+
+**Cardinality (real data):** one mapping per (product, retailer/store), NOT per (product, pos_type). Indulge Life: 426 products x 3 Dutchie retailers = 848 mappings, up to 3 per (product, pos_type). Never assume a product has at most one mapping per POS vendor.
+
+**PAGINATION IS BROKEN on this endpoint (runaway hazard).** On tenants WITH mappings it ignores `page[number]` and returns the ENTIRE result set on every request while `next_page` advances forever (2026-08-12: 848 records re-served for 2,615 "pages" until the worker was killed). On tenants WITHOUT mappings it serves `data: []` with an ever-incrementing `next_page` (2026-05-21). `DistruApi` defends with the empty-page terminator plus a repeat-content terminator (consecutive byte-identical pages → stop); never loop on `next_page` alone against this endpoint.
 
 `DELETE /product-pos-mappings/{id}` is the ONLY DELETE endpoint in the entire Distru API. Other resources don't support DELETE.
 
