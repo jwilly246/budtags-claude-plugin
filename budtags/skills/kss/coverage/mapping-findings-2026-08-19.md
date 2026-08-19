@@ -93,3 +93,28 @@ integration_company_mappings; same product carries both external_ids keys.
 
 Keys still owed for the next verification rounds: Gelato Distru key (overlap study), CA Metrc key
 (PalletTag/UID vs actual transfers), production KSS key (true fill rates).
+
+## Dual-source overlap study - MEASURED (Gelato Distru key arrived 2026-08-19)
+
+90-day window (2026-05-21..08-19), Distru live vs KSS test snapshot, script-only:
+- Split: 12.4%/87.6% by order count, 9.9%/90.1% by dollars (Distru direct $1.06M vs KSS $9.71M).
+  Customer estimated 25/75 - KSS even more dominant.
+- Bulk leg Gelato->Kiva: 25 Distru orders, $2.47M = 70% of Distru dollars. Naive union inflates
+  revenue ~19%. Double-count firewall is MANDATORY.
+- Retailer dedup: 97% (130/134) of Distru direct-order licenses exist as KSS customers; +492
+  exact-name overlaps. License-first partner resolution validated with real data.
+- Product dedup BROKEN as designed: 0 SKU matches (SupplierProductNumber garbage), 2/778 exact-name.
+  Fix: Metrc-tag bridge bootstrap (KSS batches.UID and Distru package tags are both Metrc tags ->
+  package->product each side -> product pairs), residue manual.
+- Gelato owns retail stores ('Gelato Retail - Lake Elsinore' among top direct companies) - own-store
+  transfers need their own classification in combined views.
+- Gelato Distru tenant: 1,253 companies, 1,840 products, 2 locations; 'Kiva Sales and Service Inc'
+  is the bulk-leg company (relationship_type null).
+
+## Probe gotchas (Distru)
+
+- Distru's edge returns **403 for Python-urllib User-Agent** - looks exactly like an RBAC failure
+  (we nearly misdiagnosed). curl or a real User-Agent works. An intermittent 500 also appeared once
+  on /companies; retry succeeded.
+- Gelato Distru API key lives on line 3 of budtags repo meeting-plans-endo-2026-08-12/ksskey
+  (line 1 = KSS test key). JWT, exp ~2027-08.
