@@ -140,3 +140,17 @@ LIST price ($8.00, same for all); customerPricing.UnitPrice = that RETAILER's ef
 attached); invoiceTransactions.UnitPrice = REALIZED price frozen on each past sale. customerPricing is
 the forward-looking per-retailer quote sheet; invoices are backward-looking history. Only
 customerPricing answers "what would retailer X pay today".
+
+## Audit COMPLETE + paid-status semantics (2026-08-19)
+
+- NOUSE audit finished across five Jason rulings: final matrix MAP:54 NEW:193 JOIN:114 BLOCKED:56 NOUSE:0
+  (of 417). End-state architecture = a full kss_* mirror layer (distru_* precedent): kss_invoices(+lines),
+  kss_purchases(+lines), kss_ar_aging(+invoices), kss_payments, kss_payment_applications, kss_credit_terms,
+  kss_customer_pricing, kss_inventory_snapshots, kss_retailer_inventory, kss_customers, kss_vendors,
+  kss_users, kss_sales_reps, kss_products, kss_product_categories, kss_locations, kss_states, kss_suppliers.
+  Decision D resolved: kss_purchases mirror + recon report (REPORT status retired). Decision G promoted.
+- PAID-STATUS: derive kss_invoices paid from OpenBalance==0, NEVER from Status - live-verified that
+  Verified (7) invoices average $2,425 still owed; Balanced (5) unused on test. Retailer cash payments are
+  invisible to Supplier keys (only SupplierCredit rows). KSS AP to suppliers not in the API - Gelato's own
+  receivables stay on the Distru/QBO path. No KSS writes into order_payments ever.
+- Money fields: string decimals -> integer cents (no-floats rule), never floats.
