@@ -37,7 +37,7 @@ Two environments, each with its own isolated database and separate keys:
 | Production | `api.kssdata.com` | Live data, updated continuously |
 | Test | `api.test.kssdata.com` | Data refreshed every Sunday morning |
 
-A production key is rejected by test and vice versa. **Our sandbox key is a TEST key** → `https://api.test.kssdata.com/api/v1/...`. All endpoints are versioned under `/api/v1` — a category-file path like `/customers` means `https://api.test.kssdata.com/api/v1/customers`.
+A production key is rejected by test and vice versa. **Our sandbox key is a TEST key and is a Supplier-type key scoped to SupplierID 61 = "Gelato" (CA)** (live-verified 2026-08-19; see `coverage/live-probe-2026-08-19.md`) → `https://api.test.kssdata.com/api/v1/...`. All endpoints are versioned under `/api/v1` — a category-file path like `/customers` means `https://api.test.kssdata.com/api/v1/customers`. Being a Supplier key, it cannot call `POST /payments/applications` and sees data filtered to Gelato's supplier scope. Observed rate limit: 1028 requests/hour.
 
 ### Three key types with different data visibility
 
@@ -82,15 +82,15 @@ All list endpoints: default page size **50**, maximum **500** (larger values sil
 { "Data": [ ... ], "Page": 2, "PageSize": 100, "HasNextPage": true }
 ```
 
-`HasNextPage` boolean indicates more results exist. Detail GETs (`/:customerID` etc.) ALSO wrap the single record in a `Data` **array** (no Page/PageSize fields) — never expect a bare object.
+`HasNextPage` boolean indicates more results exist — live-verified present on every list response (the per-endpoint doc examples omit it, but the Pagination section's contract governs). Detail GETs (`/:customerID` etc.) ALSO return the full envelope — the single record wrapped in a `Data` **array** plus `Page`/`PageSize`/`HasNextPage` (live-verified) — never expect a bare object.
 
 ### Array filters are comma-separated single params
 
 `?CustomerIDs=1,2,3&States=CA,NJ` — typed `number[]`/`string[]`/`boolean[]` in the docs, always passed as one comma-separated query value. No `[]` bracket syntax anywhere.
 
-### Error body casing is inconsistent in the docs
+### Error body key is `Error` (PascalCase) — live-confirmed
 
-The Errors section prose says errors include a JSON body with an `error` field, but the documented example is `{ "Error": "InvoiceIDs parameter is required" }` (PascalCase). Handle both keys until live behavior is confirmed. Status codes: 400 (missing/invalid parameter), 401 (missing/invalid key), 403 (no access), 404 (endpoint does not exist), 429 (rate limited), 500 (server error).
+The Errors section prose says `error`, but the wire truth (live-verified 2026-08-19) matches the documented example: `{ "Error": "InvoiceIDs parameter is required" }`. Read `Error`. Status codes: 400 (missing/invalid parameter), 401 (missing/invalid key), 403 (no access), 404 (endpoint does not exist), 429 (rate limited), 500 (server error).
 
 ### Rate limiting is per key, per hour
 
@@ -108,6 +108,11 @@ Most records carry a `TimeUpdated` timestamp, but there is **no generic updated-
 
 - `GET /users` lists the `States` parameter **twice** in its Parameters table (source doc bug).
 - Invoice `Statuses` enum skips 6: documented values are `1,2,3,4,5,7` (7 = Verified). There is no documented 6.
+- Errors prose says `error`; the real key is `Error` (see above).
+
+### Live records are SPARSE — treat every field as optional
+
+Live-verified 2026-08-19: across 500 live `/customers` records, 10 doc-example fields (`OnHold`, `SalesRep*`, `ProfilePictureURL`, `CollectionAgent*`, `NextDeliveryDates`, `DeliveryMinimum`) never appeared — not even as `null` — possibly gated by our Supplier key type. Conversely `/purchases` returned 5 fields the docs don't document (`PurchaseGlobalID`, `PurchaseGlobalIDExportedAt`, `PurchasePDFURLAPIKeyID`, `ReceivingNum`, `TimeCreated`). `/products` matched its doc example perfectly (32/32 across 434 records). Importers must read with `?? null` and never assume the doc example's full shape. Details: `coverage/live-probe-2026-08-19.md`.
 
 ---
 
@@ -146,6 +151,10 @@ Most records carry a `TimeUpdated` timestamp, but there is **no generic updated-
 - `categories/purchases.md` — GET /purchases, /purchases/:purchaseID
 - `categories/purchase-transactions.md` — GET /purchaseTrans (line items for purchases; PurchaseIDs required)
 - `categories/sales-reps.md` — GET /salesReps (ProductGroups filter: 'Supplier' for Supplier Reps, or product-line names e.g. 'Cookies')
+
+### Coverage (Budtags-specific live findings, NOT wire-contract docs)
+
+- `coverage/live-probe-2026-08-19.md` — live verification against the test key: key type/scope, confirmed envelope + error casing + ETag/304, live-vs-doc field diffs per endpoint, unresolved questions
 
 ### Pattern files (verbatim transcriptions of the docs' intro sections)
 
@@ -261,7 +270,10 @@ Assuming test data is current — the test DB refreshes every Sunday morning
 Treating POST /payments/applications as synchronous — it queues Pending and exports to Encompass later
 Retrying a 429 immediately — honor Retry-After seconds
 Expecting an updated-since filter — only TimeUpdated on records + ETag re-walks
-Reading the error message from body.error only — the documented example uses "Error"
+Reading the error message from body.error — the live key is "Error" (PascalCase)
+Assuming doc-example fields always arrive — live records omit fields entirely; read with ?? null
+Treating numeric-looking values as numbers — e.g. inventory DOI/AvgDailySales90d are string decimals
+Calling POST /payments/applications with our key — Supplier keys get 403
 ```
 
 ---
