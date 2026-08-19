@@ -70,3 +70,26 @@ principles and gotchas an implementer must know even without the mapping doc ope
   can be empty while the bulk query returns rows.
 - purchases 'Terms' includes 'Interco Transfer' (intra-Kiva moves) - filter from revenue recon.
 - Bulk-stamped TimeUpdated values on test (whole pages share one stamp) - page-level freshness only.
+
+## Value-level join verification (script-only, test key)
+
+- ID graph is SOUND: inventory/batches/purchaseTrans/invoiceTransactions ProductID -> products all 100%
+  (products + inventory sets fully paginated).
+- batches.UID: 100% valid Metrc tag format (500/500 non-null). purchaseTrans.PalletTag: 100% valid where
+  present (26/500 null). The Metrc bridge and reconciliation joins are REAL, not doc claims.
+- BatchCode cross-joins measured 67-77% only because the batch walk was sample-limited - re-run full-walk
+  before quoting a rate.
+- customers.LicenseNum: 90.6% valid CA format on page 1 (44 null + LIC-99999-FAKE garbage) - importers
+  tolerate missing/garbage licenses.
+
+## Dual-source requirement (customer statement 2026-08-19)
+
+~25% of orders in Distru, ~75% in KSS; Budtags = single combined view. Consequences: Decision C is half
+the order universe, not analytics; union-at-view-layer recommended over ingesting KSS invoices into
+marketplace_orders; CRITICAL double-count firewall - the Gelato->KSS bulk leg (Distru order) depletes as
+KSS invoices, so combined retailer-order views must EXCLUDE the bulk leg (it reconciles via PalletTag /
+Decision D); same retailer in both sources resolves to ONE business_partner via partner resolution +
+integration_company_mappings; same product carries both external_ids keys.
+
+Keys still owed for the next verification rounds: Gelato Distru key (overlap study), CA Metrc key
+(PalletTag/UID vs actual transfers), production KSS key (true fill rates).
