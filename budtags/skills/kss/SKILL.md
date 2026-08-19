@@ -155,6 +155,8 @@ Live-verified 2026-08-19: across 500 live `/customers` records, 10 doc-example f
 ### Coverage (Budtags-specific live findings, NOT wire-contract docs)
 
 - `coverage/live-probe-2026-08-19.md` — live verification against the test key: key type/scope, confirmed envelope + error casing + ETag/304, live-vs-doc field diffs per endpoint, unresolved questions
+- `coverage/mapping-findings-2026-08-19.md` — running log of mapping-project findings: supplier-side semantics, Jason-ratified mapping principles (ownership isolation; first-party ledgers are never landing zones), Metrc joins (UID/PalletTag = Metrc tags), twin-audit table finds, wire gotchas. **Read before writing any KSS importer.** Authority for per-field dispositions: `KSS-INTEGRATION-MAPPING.md` at the budtags repo root
+- `coverage/wire-inventory-2026-08-19.json` — machine-readable per-field fill/type/example harvest behind the mapping doc
 
 ### Pattern files (verbatim transcriptions of the docs' intro sections)
 
