@@ -154,3 +154,15 @@ customerPricing answers "what would retailer X pay today".
   invisible to Supplier keys (only SupplierCredit rows). KSS AP to suppliers not in the API - Gelato's own
   receivables stay on the Distru/QBO path. No KSS writes into order_payments ever.
 - Money fields: string decimals -> integer cents (no-floats rule), never floats.
+
+## THE SINGLE MIGRATION (Jason 2026-08-19)
+
+One all-encompassing consolidated migration (`kss_integration_schema`) - the Distru convention, planned
+upfront this time: 21 kss_* tables (158 data columns + keys/links) AND the 4 alters
+(organizations.kss_supplier_id, product_batches label/units columns, promo_deals.external_ids,
+integration_sync_events enum) all in ONE file with idempotent guards; iterate in place until shipped, then
+locked. Money columns decimal(14,6) preserving wire precision (sub-cent values occur live); app arithmetic
+per integer-cents rule. kss_time_updated/kss_time_created datetime(3) on every mirror row as the diff cursor.
+kss_purchase_lines.pallet_tag stored AND indexed (the Metrc join). Reserved for prod data: kss_allocations,
+kss_promotions_products, kss_customer_credit_terms. Full spec: THE SINGLE MIGRATION section of
+KSS-INTEGRATION-MAPPING.md.
