@@ -166,3 +166,23 @@ per integer-cents rule. kss_time_updated/kss_time_created datetime(3) on every m
 kss_purchase_lines.pallet_tag stored AND indexed (the Metrc join). Reserved for prod data: kss_allocations,
 kss_promotions_products, kss_customer_credit_terms. Full spec: THE SINGLE MIGRATION section of
 KSS-INTEGRATION-MAPPING.md.
+
+## Verification sweep (2026-08-19, "any rocks unturned" pass)
+
+- Doc consistency: CLEAN - every NEW row lands in the single-migration spec (or is a declared echo); every
+  MAP row's cited Budtags column exists in the schema. Verified mechanically.
+- **`/inventory/batches` is CURRENT-INVENTORY-SCOPED, not batch history.** Full walk: 1,117 rows / 434
+  batch codes. Recent invoice lines -> batches join 99.7%; all-history purchase lines only 18.5% because
+  sold-out batches VANISH from the endpoint. Importer rule: harvest batches continuously, retain forever
+  (last_seen_at, never delete on absence); the mirror is the only history. Open: do cdn.e8.co COA links
+  outlive the listing? If not, archive PDFs at harvest.
+- Users full walk (5,354): 13 Role=Supplier users exist with SupplierIDs FILLED (the always-null finding
+  was a first-1000-pages artifact); field shape identical. Customers full walk (2,575): 12-field sparse
+  shape confirmed at full scale.
+- Mirror-convention alignment with distru_* tables: adopted `raw_payload` json (distru_batches precedent -
+  fidelity backstop) + `last_seen_at` on every kss_* table. Importers log via existing
+  `integration_import_jobs` (source='kss' fits, no schema change).
+- Tables examined late and cleared: integration_import_jobs, leaflink_item_mappings (product-mapping
+  precedent), distru_batches/distru_packages (conventions), retailer_onboardings (irrelevant -
+  storefront), transporter_companies (not needed now), order_scanned_packages + transfer_logs (recon join
+  sources for PalletTag matching, no schema impact).
