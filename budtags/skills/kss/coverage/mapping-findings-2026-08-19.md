@@ -118,3 +118,25 @@ Keys still owed for the next verification rounds: Gelato Distru key (overlap stu
   on /companies; retry succeeded.
 - Gelato Distru API key lives on line 3 of budtags repo meeting-plans-endo-2026-08-12/ksskey
   (line 1 = KSS test key). JWT, exp ~2027-08.
+
+## Jason's NOUSE rulings (2026-08-19) - keep-everything
+
+- AR/collections (60 fields) + depletion-mirror riders (13) + printed-label potency (4): ALL promoted
+  NOUSE -> NEW with named tables/columns. New stores: kss_ar_aging + kss_ar_aging_invoices,
+  kss_payments, kss_payment_applications, kss_credit_terms; kss_invoices rider columns; product_batches
+  label_thc/label_cbd/label_total_cannabinoids/coa_expiration_date. First-party-ledger principle stands
+  (all reconcile against, never write into, seller_credits/credit_applications).
+- Matrix now: MAP:55 NEW:128 REPORT:13 JOIN:114 NOUSE:53 BLOCKED:54 (of 417).
+- Every kept group is UI-classified in the mapping doc: UI SURFACE (KSS inventory, retailer inventory,
+  combined orders) vs DASHBOARD/REPORT (AR health, credit recon, label audit, purchase recon) vs
+  EXISTING UI (promos, partners, products) vs PLUMBING (reference maps).
+- kss_invoices.pdf_url: stored but SENSITIVE (embeds Encompass APIKeyID) - internal fetch only.
+
+## customerPricing semantics (live-verified explainer)
+
+Three price layers, same product ('Last Bite 100mg' example): products/customerPricing.FullPrice =
+LIST price ($8.00, same for all); customerPricing.UnitPrice = that RETAILER's effective price TODAY
+(list minus their active promo: $4.90-$7.30 across 60 customers, 7 distinct prices, PromotionID
+attached); invoiceTransactions.UnitPrice = REALIZED price frozen on each past sale. customerPricing is
+the forward-looking per-retailer quote sheet; invoices are backward-looking history. Only
+customerPricing answers "what would retailer X pay today".
