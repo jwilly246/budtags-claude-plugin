@@ -186,3 +186,10 @@ KSS-INTEGRATION-MAPPING.md.
   precedent), distru_batches/distru_packages (conventions), retailer_onboardings (irrelevant -
   storefront), transporter_companies (not needed now), order_scanned_packages + transfer_logs (recon join
   sources for PalletTag matching, no schema impact).
+
+## COA URL longevity - RESOLVED (live-tested)
+
+cdn.e8.co COA links OUTLIVE the batch listing: 2024-era invoices' COAs (batches long vanished from
+/inventory/batches) still serve PDFs (200, application/pdf, ~0.5MB). Store the URL; archiving PDFs is
+optional robustness. Bonus: /invoiceCOAs works for OLD invoices, so batch->COA mapping is recoverable
+historically; lab POTENCY fields exist only on /inventory/batches and remain harvest-or-lose.
