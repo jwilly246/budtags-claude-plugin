@@ -1,0 +1,6849 @@
+{
+ "states": {
+  "path": "/states",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "OrderCutOffDaysInAdvance": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1"
+    ]
+   },
+   "OrderCutOffTime": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2:30 PM"
+    ]
+   },
+   "StateAbbreviation": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "StateName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "California"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:05:11.570Z"
+    ]
+   },
+   "TimeZone": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "America/Los_Angeles"
+    ]
+   }
+  }
+ },
+ "locations": {
+  "path": "/locations",
+  "params": {},
+  "sampled": 2,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Address": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2300 N Loop Rd",
+     "7800 Airport Business Park Way"
+    ]
+   },
+   "Address2": {
+    "present": 2,
+    "of": 2,
+    "nulls": 1,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Unit A"
+    ]
+   },
+   "Address3": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "N/A"
+    ]
+   },
+   "City": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Alameda",
+     "Van Nuys"
+    ]
+   },
+   "DBA": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Kiva Sales & Service"
+    ]
+   },
+   "Location": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Alameda",
+     "Van Nuys"
+    ]
+   },
+   "LocationID": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "3"
+    ]
+   },
+   "PostalCode": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "94502",
+     "91406"
+    ]
+   },
+   "State": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-20T02:08:40.944Z"
+    ]
+   }
+  }
+ },
+ "salesReps": {
+  "path": "/salesReps",
+  "params": {},
+  "sampled": 20,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Customers": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "<array of 57 objects>",
+     "<array of 3 objects>",
+     "<array of 49 objects>"
+    ]
+   },
+   "Customers[].CustomerID": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "10",
+     "114",
+     "125"
+    ]
+   },
+   "Customers[].CustomerName": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Legendary Organics - Thousand Oaks",
+     "99 High Tide",
+     "Ojai Greens"
+    ]
+   },
+   "Email": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "alex.katherman@kivaconfections.com",
+     "andrew@kivaconfections.com",
+     "ashley.novak@kivaconfections.com"
+    ]
+   },
+   "Name": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Alex Katherman",
+     "Andrew DeBlanc",
+     "Ashley Novak"
+    ]
+   },
+   "ProductGroups": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "['KSS Pro']",
+     "['Supplier']"
+    ]
+   },
+   "Suppliers": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "<array of 1 objects>"
+    ]
+   },
+   "Suppliers[].Supplier": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato"
+    ]
+   },
+   "Suppliers[].SupplierID": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "Type": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Territory Manager",
+     "Supplier Rep"
+    ]
+   },
+   "UserID": {
+    "present": 20,
+    "of": 20,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "9732",
+     "3441",
+     "4416"
+    ]
+   }
+  }
+ },
+ "users": {
+  "path": "/users",
+  "params": {
+   "Active": "true,false"
+  },
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "CustomerIDs": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "[368]",
+     "[918]",
+     "[812]"
+    ]
+   },
+   "Department": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 997,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "AP",
+     "AR",
+     "Accounting"
+    ]
+   },
+   "Email": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 12,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "geary.payments@urbananow.com",
+     "mission.payments@urbananow.com",
+     "buyer4cca@gmail.com"
+    ]
+   },
+   "FullName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Accounts Payable Urbana Geary",
+     "Accounts Payable Urbana Mission",
+     "Ed @ CCA*"
+    ]
+   },
+   "JobTitle": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 502,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "AP",
+     "Buyer",
+     "GM"
+    ]
+   },
+   "KSSLiveAccess": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True",
+     "False"
+    ]
+   },
+   "LocationIDs": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "[1]",
+     "[3, 1]",
+     "[1, 3]"
+    ]
+   },
+   "PowerUser": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True",
+     "False"
+    ]
+   },
+   "Role": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Customer"
+    ]
+   },
+   "SiteUserID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3065",
+     "3066",
+     "959"
+    ]
+   },
+   "States": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "['CA']"
+    ]
+   },
+   "SupplierIDs": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "UserActive": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "UserID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "81",
+     "82",
+     "87"
+    ]
+   }
+  }
+ },
+ "suppliers": {
+  "path": "/suppliers",
+  "params": {
+   "Active": "true,false"
+  },
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Active": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "BrandAssetsURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Description": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "A step into normalcy. Forget about what cannabis was. Enjoy "
+    ]
+   },
+   "State": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "Supplier": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato"
+    ]
+   },
+   "SupplierID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "SupplierWebsiteURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-20T02:15:03.492Z"
+    ]
+   }
+  }
+ },
+ "suppliers_creditTerms": {
+  "path": "/suppliers/creditTerms",
+  "params": {},
+  "sampled": 11,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "SupplierID": {
+    "present": 11,
+    "of": 11,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "Term": {
+    "present": 11,
+    "of": 11,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "NET 14",
+     "NET 30",
+     "NET 7"
+    ]
+   },
+   "TermID": {
+    "present": 11,
+    "of": 11,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2",
+     "3",
+     "5"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 11,
+    "of": 11,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z"
+    ]
+   }
+  }
+ },
+ "vendors": {
+  "path": "/vendors",
+  "params": {
+   "Active": "true,false"
+  },
+  "sampled": 2,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Active": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "LeadTimeDays": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "21"
+    ]
+   },
+   "LocationID": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1"
+    ]
+   },
+   "MaxDOI": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "30"
+    ]
+   },
+   "PickupDates": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "[]",
+     "['2026-08-17', '2026-08-24', '2026-08-31', '2026-09-07', '20"
+    ]
+   },
+   "RequirePOBatchCodes": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "SupplierID": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TargetDOI": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "21"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z",
+     "2026-08-05T23:26:26.272Z"
+    ]
+   },
+   "VendorAddress": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "9350 TRADE PL",
+     "3060 Hilltop Rd"
+    ]
+   },
+   "VendorAddress2": {
+    "present": 2,
+    "of": 2,
+    "nulls": 1,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "SUITE B1"
+    ]
+   },
+   "VendorCity": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "SAN DIEGO",
+     "Moss Landing"
+    ]
+   },
+   "VendorID": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "153",
+     "209"
+    ]
+   },
+   "VendorLicenseNumber": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "C11-0001454-LIC",
+     "C11-0001913-LIC"
+    ]
+   },
+   "VendorName": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Urban Therapies, LLC (Gelato)",
+     "GREEN VIBE INC. (Gelato)"
+    ]
+   },
+   "VendorPostalCode": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "92126-6334",
+     "95039"
+    ]
+   },
+   "VendorState": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   }
+  }
+ },
+ "productCategories": {
+  "path": "/productCategories",
+  "params": {},
+  "sampled": 10,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "CategoryName": {
+    "present": 10,
+    "of": 10,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Edibles/Ingestibles",
+     "Beverages",
+     "Concentrates"
+    ]
+   },
+   "ProductCategoryID": {
+    "present": 10,
+    "of": 10,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "10",
+     "2"
+    ]
+   },
+   "Sequence": {
+    "present": 10,
+    "of": 10,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "2",
+     "3"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 10,
+    "of": 10,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:05:03.280Z"
+    ]
+   }
+  }
+ },
+ "products": {
+  "path": "/products",
+  "params": {
+   "Statuses": "0,1,2,3,4,5"
+  },
+  "sampled": 778,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Blend": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Hybrid",
+     "Indica",
+     "Sativa"
+    ]
+   },
+   "BrandFamily": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Neon Habits Flower",
+     "Bulk Flower",
+     "Gelato Chocolate"
+    ]
+   },
+   "BrandID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "6363",
+     "6364",
+     "6365"
+    ]
+   },
+   "BrandName": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Neon Habits Flower Hybrid Purple Aurora",
+     "Neon Habits Flower Indica Blue light",
+     "Neon Habits Flower Sativa Vibrant Voltage"
+    ]
+   },
+   "BrandStyle": {
+    "present": 778,
+    "of": 778,
+    "nulls": 778,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Description": {
+    "present": 778,
+    "of": 778,
+    "nulls": 2,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Purple Aurora is a captivating cannabis strain that combines",
+     "Blue Light is a soothing indica strain designed for those se",
+     "Vibrant Voltage is an electrifying sativa strain that ignite"
+    ]
+   },
+   "Flavor": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "hybrid purple aurora",
+     "indica blue light",
+     "sativa vibrant voltage"
+    ]
+   },
+   "FullSizeImageURL": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/58611c92481d2b649e2ba19d5c50",
+     "https://cdn.e8.co/Kiva/S3Images/4d3b7ab0168a1cc1f3220470b3d1",
+     "https://cdn.e8.co/Kiva/S3Images/20e38fd36f0d9693be2426239fb6"
+    ]
+   },
+   "Ingredients": {
+    "present": 778,
+    "of": 778,
+    "nulls": 65,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "100% Cannabis Flower",
+     "Ingredient: Milk Chocolate (Sugar, Cocoa Butter, Milk Powder",
+     "Ingredienta: Caramel Flavored Milk Chocolate (Sugar, Cocoa B"
+    ]
+   },
+   "IsSample": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "False",
+     "True"
+    ]
+   },
+   "KSSLiveCategoryID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "4",
+     "1",
+     "2"
+    ]
+   },
+   "KSSMenuCategory": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Flower",
+     "Edibles/Ingestibles",
+     "Concentrates"
+    ]
+   },
+   "PackageID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "327",
+     "238",
+     "240"
+    ]
+   },
+   "PackageName": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4/28g Pouch",
+     "8/28g Pouch",
+     "8/14g Pouch"
+    ]
+   },
+   "Potency": {
+    "present": 778,
+    "of": 778,
+    "nulls": 778,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PotencyTHC": {
+    "present": 778,
+    "of": 778,
+    "nulls": 186,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "32.87% THC",
+     "27.06% THC",
+     "25.08% THC"
+    ]
+   },
+   "ProductGroupID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "12"
+    ]
+   },
+   "ProductID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11537",
+     "11538",
+     "11539"
+    ]
+   },
+   "ProductName": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Neon Habits Flower 28g Hybrid Purple Aurora",
+     "Neon Habits Flower 28g Indica Blue light",
+     "Neon Habits Flower 28g Sativa Vibrant Voltage"
+    ]
+   },
+   "ProductTypeID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "275",
+     "277",
+     "268"
+    ]
+   },
+   "ProductTypeName": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Flower: Full Oz",
+     "Flower: Half Oz",
+     "Edible: Chocolate"
+    ]
+   },
+   "State": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "StatusID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "0",
+     "1"
+    ]
+   },
+   "StrainID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 625,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2536",
+     "2537",
+     "150"
+    ]
+   },
+   "StrainName": {
+    "present": 778,
+    "of": 778,
+    "nulls": 625,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Euphoria",
+     "Watermelon Gelato",
+     "Bubba Kush"
+    ]
+   },
+   "Supplier": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato"
+    ]
+   },
+   "SupplierID": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "SupplierProductNumber": {
+    "present": 778,
+    "of": 778,
+    "nulls": 3,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "N/A",
+     "0",
+     "NA"
+    ]
+   },
+   "ThumbnailImageURL": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/58611c92481d2b649e2ba19d5c50",
+     "https://cdn.e8.co/Kiva/S3Images/6ce0abfafd3546302aed41bfb1f0",
+     "https://cdn.e8.co/Kiva/S3Images/5ced4e3f18dc2ca747044cd20d83"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:00:11.480Z"
+    ]
+   },
+   "UnitNetWeight": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "28g",
+     "14g",
+     "80g"
+    ]
+   },
+   "WholesaleUnitsPerCase": {
+    "present": 778,
+    "of": 778,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "4",
+     "8",
+     "10"
+    ]
+   }
+  }
+ },
+ "customers": {
+  "path": "/customers",
+  "params": {
+   "AccountStatuses": "Active,Inactive,OutOfBus"
+  },
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "AccountStatus": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Active",
+     "Inactive",
+     "OutOfBus"
+    ]
+   },
+   "Address": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2300 N Loop Rd, Alameda, CA 94502",
+     "63758 Orr Way, Palm Springs, CA 92262",
+     "328 Malbert St A, Perris, CA 92570"
+    ]
+   },
+   "ChainName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 615,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Legendary Organics",
+     "Eaze",
+     "Erba-Sawtelle"
+    ]
+   },
+   "CustomerID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "2",
+     "3"
+    ]
+   },
+   "CustomerName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "KSS Live Test Customer",
+     "Tree",
+     "Highlands Reserve"
+    ]
+   },
+   "CustomerNameAlt": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 457,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Legendary Organics",
+     "Cannabis Buyers' Club",
+     "#N/A"
+    ]
+   },
+   "DeliveryDates": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 519,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "['2026-08-20', '2026-08-27', '2026-09-03', '2026-09-10', '20",
+     "['2026-08-21', '2026-08-28', '2026-09-04', '2026-09-11', '20",
+     "['2026-08-18', '2026-08-25', '2026-09-01', '2026-09-08', '20"
+    ]
+   },
+   "DeliveryDays": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 448,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1",
+     "4",
+     "5"
+    ]
+   },
+   "LicenseNum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 140,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "LIC-99999-FAKE",
+     "C10-0001155-LIC",
+     "C10-0001394-LIC"
+    ]
+   },
+   "LocationID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "3"
+    ]
+   },
+   "State": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:00:46.270Z"
+    ]
+   }
+  }
+ },
+ "customers_creditTerms": {
+  "path": "/customers/creditTerms",
+  "params": {},
+  "sampled": 0,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {}
+ },
+ "deliveryDays": {
+  "path": "/deliveryDays",
+  "params": {},
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "CustomerID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "3",
+     "4"
+    ]
+   },
+   "DeliveryDates": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 46,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "['2026-08-20', '2026-08-27', '2026-09-03', '2026-09-10', '20",
+     "['2026-08-21', '2026-08-28', '2026-09-04', '2026-09-11', '20",
+     "['2026-08-18', '2026-08-25', '2026-09-01', '2026-09-08', '20"
+    ]
+   },
+   "DeliveryDays": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 46,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4",
+     "5",
+     "2"
+    ]
+   }
+  }
+ },
+ "allocations": {
+  "path": "/allocations",
+  "params": {},
+  "sampled": 0,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {}
+ },
+ "arAging": {
+  "path": "/arAging",
+  "params": {},
+  "sampled": 358,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "ARAccountID": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "855",
+     "857",
+     "859"
+    ]
+   },
+   "CloseDate": {
+    "present": 358,
+    "of": 358,
+    "nulls": 18,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-13T00:00:00.000Z"
+    ]
+   },
+   "CreditInvoices": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "array",
+     "string"
+    ],
+    "examples": [
+     "[]",
+     "<array of 1 objects>",
+     "<array of 2 objects>"
+    ]
+   },
+   "CreditInvoices[].InvoiceID": {
+    "present": 94,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "736325",
+     "838879",
+     "838758"
+    ]
+   },
+   "CreditInvoices[].InvoiceNum": {
+    "present": 94,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-736325",
+     "X-838879",
+     "X-838758"
+    ]
+   },
+   "CreditInvoices[].OpenBalance": {
+    "present": 94,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "16.000000",
+     "166.500000",
+     "182.800000"
+    ]
+   },
+   "CurrentDue": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "250.000000",
+     "5617.500000",
+     "0.000000"
+    ]
+   },
+   "CurrentInvoices": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "array",
+     "string"
+    ],
+    "examples": [
+     "<array of 3 objects>",
+     "[]",
+     "<array of 2 objects>"
+    ]
+   },
+   "CurrentInvoices[].InvoiceID": {
+    "present": 287,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "833554",
+     "838750",
+     "842039"
+    ]
+   },
+   "CurrentInvoices[].InvoiceNum": {
+    "present": 287,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-833554",
+     "X-838750",
+     "X-842039"
+    ]
+   },
+   "CurrentInvoices[].OpenBalance": {
+    "present": 287,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "50.000000",
+     "100.000000",
+     "598.500000"
+    ]
+   },
+   "Due_1_30": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.003108",
+     "0.000000",
+     "940.000000"
+    ]
+   },
+   "Due_31_60": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "240.000000",
+     "96.093748"
+    ]
+   },
+   "Due_61_90": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "2330.672164",
+     "720.220000"
+    ]
+   },
+   "Due_91": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "177.434828",
+     "0.200000"
+    ]
+   },
+   "Invoices_1_30": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "array",
+     "string"
+    ],
+    "examples": [
+     "<array of 1 objects>",
+     "[]",
+     "<array of 2 objects>"
+    ]
+   },
+   "Invoices_1_30[].InvoiceID": {
+    "present": 80,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "826669",
+     "821805",
+     "820508"
+    ]
+   },
+   "Invoices_1_30[].InvoiceNum": {
+    "present": 80,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-826669",
+     "X-821805",
+     "X-820508"
+    ]
+   },
+   "Invoices_1_30[].OpenBalance": {
+    "present": 80,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.003108",
+     "940.000000",
+     "700.000000"
+    ]
+   },
+   "Invoices_31_60": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "array",
+     "string"
+    ],
+    "examples": [
+     "[]",
+     "<array of 1 objects>",
+     "<array of 3 objects>"
+    ]
+   },
+   "Invoices_31_60[].InvoiceID": {
+    "present": 22,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "815124",
+     "797706",
+     "794507"
+    ]
+   },
+   "Invoices_31_60[].InvoiceNum": {
+    "present": 22,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-815124",
+     "X-797706",
+     "X-794507"
+    ]
+   },
+   "Invoices_31_60[].OpenBalance": {
+    "present": 22,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "240.000000",
+     "96.093748",
+     "39.243970"
+    ]
+   },
+   "Invoices_61_90": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "array",
+     "string"
+    ],
+    "examples": [
+     "[]",
+     "<array of 1 objects>",
+     "<array of 2 objects>"
+    ]
+   },
+   "Invoices_61_90[].InvoiceID": {
+    "present": 18,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "787363",
+     "769664",
+     "772902"
+    ]
+   },
+   "Invoices_61_90[].InvoiceNum": {
+    "present": 18,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-787363",
+     "X-769664",
+     "X-772902"
+    ]
+   },
+   "Invoices_61_90[].OpenBalance": {
+    "present": 18,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2330.672164",
+     "720.000000",
+     "0.220000"
+    ]
+   },
+   "Invoices_91": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "array",
+     "string"
+    ],
+    "examples": [
+     "[]",
+     "<array of 1 objects>",
+     "<array of 32 objects>"
+    ]
+   },
+   "Invoices_91[].InvoiceID": {
+    "present": 33,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "727888",
+     "715549",
+     "481605"
+    ]
+   },
+   "Invoices_91[].InvoiceNum": {
+    "present": 33,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-727888",
+     "X-715549",
+     "X-481605"
+    ]
+   },
+   "Invoices_91[].OpenBalance": {
+    "present": 33,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "177.434828",
+     "0.200000",
+     "1.720000"
+    ]
+   },
+   "OpenCredit": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "16.000000",
+     "349.300000"
+    ]
+   },
+   "StatementDate": {
+    "present": 358,
+    "of": 358,
+    "nulls": 18,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-13T00:00:00.000Z"
+    ]
+   },
+   "SupplierID": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TimeCreated": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:03:01.996Z",
+     "2026-08-16T08:03:02.107Z",
+     "2026-08-16T08:03:01.599Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:03:01.996Z",
+     "2026-08-16T08:03:02.107Z",
+     "2026-08-16T08:03:01.599Z"
+    ]
+   },
+   "TotalBalanceOutstanding": {
+    "present": 358,
+    "of": 358,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "250.003108",
+     "5617.500000",
+     "417.434828"
+    ]
+   }
+  }
+ },
+ "inventory": {
+  "path": "/inventory",
+  "params": {},
+  "sampled": 484,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Allocated": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "AvailableUnits": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "145",
+     "1150",
+     "38"
+    ]
+   },
+   "AvgDailySales90d": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "7.91",
+     "65.79",
+     "5.69"
+    ]
+   },
+   "DOI": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "18.33",
+     "17.48",
+     "6.68"
+    ]
+   },
+   "Delivered": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00",
+     "50.00",
+     "10.00"
+    ]
+   },
+   "Inventory": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-134.00",
+     "-7025.00",
+     "-175.00"
+    ]
+   },
+   "Loaded": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "20.00",
+     "446.00",
+     "112.00"
+    ]
+   },
+   "LocationID": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "3"
+    ]
+   },
+   "NotAuthorized": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "False"
+    ]
+   },
+   "OnFloorInventory": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "175.00",
+     "1585.00",
+     "213.00"
+    ]
+   },
+   "Picked": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "110.00",
+     "775.00",
+     "0.00"
+    ]
+   },
+   "PreSales": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "30.00",
+     "435.00",
+     "175.00"
+    ]
+   },
+   "ProductID": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "19049",
+     "19442",
+     "19492"
+    ]
+   },
+   "PurchaseTransID": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8514143",
+     "8585922",
+     "8642091"
+    ]
+   },
+   "Received": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "450.00",
+     "10006.00",
+     "725.00"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-19T17:13:26.230Z"
+    ]
+   },
+   "Unsellable": {
+    "present": 484,
+    "of": 484,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00",
+     "60.00",
+     "30.00"
+    ]
+   }
+  }
+ },
+ "inventory_batches": {
+  "path": "/inventory/batches",
+  "params": {},
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "BatchCode": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "BULK-480",
+     "BULK-479",
+     "BULK-474"
+    ]
+   },
+   "BestByDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "CBDPotency": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.1393",
+     "0.1657",
+     "0.1112"
+    ]
+   },
+   "COAExpirationDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2027-04-12T00:00:00.000+00:00",
+     "2027-03-01T00:00:00.000+00:00",
+     "2027-07-20T00:00:00.000+00:00"
+    ]
+   },
+   "COAURL": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/0e3c26784fe0334a3d2df1b631d9",
+     "https://cdn.e8.co/Kiva/S3Images/d82301c111857b7e798dcb6dba95",
+     "https://cdn.e8.co/Kiva/S3Images/e6e01e61da9f0b4d912c68e81055"
+    ]
+   },
+   "ExpirationDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2027-04-12T00:00:00.000+00:00",
+     "2027-03-01T00:00:00.000+00:00",
+     "2027-06-29T00:00:00.000+00:00"
+    ]
+   },
+   "HarvestDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "InventoryUnits": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "12",
+     "0",
+     "130"
+    ]
+   },
+   "LabelCBDPotency": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.1400",
+     "0.1700",
+     "0.1100"
+    ]
+   },
+   "LabelTHCPotency": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "25.0800",
+     "23.8100",
+     "25.0900"
+    ]
+   },
+   "LabelTotalCannabinoids": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "25.3600",
+     "24.1400",
+     "25.3100"
+    ]
+   },
+   "Laboratory": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Excelbis Labs",
+     "SC Laboratories California LLC",
+     "C8-0000133-LIC"
+    ]
+   },
+   "LocationID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "3"
+    ]
+   },
+   "ManufactureDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PackDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-12T00:00:00.000+00:00",
+     "2026-03-01T00:00:00.000+00:00",
+     "2026-07-20T00:00:00.000+00:00"
+    ]
+   },
+   "PotencyType": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Percentage"
+    ]
+   },
+   "ProductID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11540",
+     "11543",
+     "11544"
+    ]
+   },
+   "PurchaseTransID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8006575",
+     "7737063",
+     "8006577"
+    ]
+   },
+   "State": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "SupplierID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "THCPotency": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "25.0787",
+     "23.8089",
+     "25.0887"
+    ]
+   },
+   "TimeCreated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-05-27T23:12:15.571Z",
+     "2026-05-27T23:12:15.872Z",
+     "2026-05-27T23:12:15.264Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-19T17:13:41.190Z"
+    ]
+   },
+   "TotalCannabinoids": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "25.3574",
+     "24.1403",
+     "25.3111"
+    ]
+   },
+   "UID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1A406030003D735000412201",
+     "1A406030003D735000395053",
+     "1A406030003D735000395048"
+    ]
+   },
+   "Vintage": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   }
+  }
+ },
+ "retailerInventory": {
+  "path": "/retailerInventory",
+  "params": {},
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "CustomerID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3",
+     "4",
+     "10"
+    ]
+   },
+   "DailySales": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1.00",
+     "0.03",
+     "8.00"
+    ]
+   },
+   "ID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "4795531",
+     "4459789",
+     "2080640"
+    ]
+   },
+   "Inventory": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00",
+     "8.00",
+     "2.00"
+    ]
+   },
+   "LastInventoryDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2000-01-01T00:00:00.000Z",
+     "2026-08-15T00:00:00.000Z",
+     "2025-08-13T00:00:00.000Z"
+    ]
+   },
+   "ProductID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11567",
+     "11816",
+     "11775"
+    ]
+   },
+   "TimeCreated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z",
+     "2026-05-06T22:03:55.926Z",
+     "2026-05-06T22:03:56.703Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-01-14T20:38:02.284Z",
+     "2025-12-01T19:52:22.785Z",
+     "2025-07-24T18:08:08.800Z"
+    ]
+   }
+  }
+ },
+ "invoices": {
+  "path": "/invoices",
+  "params": {
+   "Statuses": "1,2,3,4,5,7"
+  },
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "ARNote": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 931,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CM ($85.40) APPLIED PER TASK ID 4124994",
+     "CM ($892.00) APPLIED PER TASK ID 4124833",
+     "CM ($444.20) SUPPLIER"
+    ]
+   },
+   "BuiltByUserEmail": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "positivegreen268@gmail.com",
+     "ashley.novak@kivaconfections.com",
+     "marion@flavrhouse.com"
+    ]
+   },
+   "BuiltByUserID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "13432",
+     "4416",
+     "12178"
+    ]
+   },
+   "BuiltByUserName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Faizan PG",
+     "Ashley Novak",
+     "Marion Smith"
+    ]
+   },
+   "CustomerID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2838",
+     "2955",
+     "564"
+    ]
+   },
+   "CustomerName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Potent",
+     "Off The Charts - Hemet 2",
+     "PCF - Main"
+    ]
+   },
+   "Date": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-09-02T00:00:00.000Z",
+     "2026-08-27T00:00:00.000Z",
+     "2026-08-25T00:00:00.000Z"
+    ]
+   },
+   "DueDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-09-16T00:00:00.000Z",
+     "2026-10-26T00:00:00.000Z",
+     "2026-10-24T00:00:00.000Z"
+    ]
+   },
+   "InvoiceID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "843083",
+     "841597",
+     "840204"
+    ]
+   },
+   "InvoiceLastUpdated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-15T14:00:13.000Z",
+     "2026-08-12T15:19:53.000Z",
+     "2026-08-11T16:31:55.000Z"
+    ]
+   },
+   "InvoiceNum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-843083",
+     "X-841597",
+     "X-840204"
+    ]
+   },
+   "InvoiceTimeCreated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-15T14:00:12.000Z",
+     "2026-08-12T14:30:08.000Z",
+     "2026-08-10T15:17:01.000Z"
+    ]
+   },
+   "InvoiceTotal": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000",
+     "7080.080000",
+     "3950.000000"
+    ]
+   },
+   "Memo": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 25,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Order Submitted by Faizan PG (positivegreen268@gmail.com)",
+     "ORDER PER DILLON (xT's are Sunset Connect & Keef STAFF SAMPL",
+     "GELATO"
+    ]
+   },
+   "OpenBalance": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000",
+     "7080.080000",
+     "3950.000000"
+    ]
+   },
+   "OpenCredit": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "997.200000",
+     "641.050000"
+    ]
+   },
+   "OpenDebit": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000",
+     "7080.080000",
+     "3950.000000"
+    ]
+   },
+   "PDFURL": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 904,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://kivatest.encompass8.com/api?APIKeyID=17289&Get=4A5DF"
+    ]
+   },
+   "PODate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PONum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 774,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "840204",
+     "840148",
+     "840247"
+    ]
+   },
+   "Status": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "2",
+     "4"
+    ]
+   },
+   "SubmittedByUserEmail": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "positivegreen268@gmail.com",
+     "ashley.novak@kivaconfections.com",
+     "marion@flavrhouse.com"
+    ]
+   },
+   "SubmittedByUserID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "13432",
+     "4416",
+     "12178"
+    ]
+   },
+   "SubmittedByUserName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 6,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Faizan PG",
+     "Ashley Novak",
+     "Marion Smith"
+    ]
+   },
+   "TermID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2",
+     "20",
+     "34"
+    ]
+   },
+   "TotalCases": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4.800000",
+     "15.000000",
+     "57.000000"
+    ]
+   },
+   "TotalDiscount": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "517.000000",
+     "1630.000000"
+    ]
+   },
+   "TotalExtPrice": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000",
+     "973.000000",
+     "3950.000000"
+    ]
+   },
+   "TotalFullPrice": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000",
+     "1490.000000",
+     "5580.000000"
+    ]
+   },
+   "TotalNumUnits": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "94.000000",
+     "205.000000",
+     "760.000000"
+    ]
+   }
+  }
+ },
+ "invoices_creditTerms": {
+  "path": "/invoices/creditTerms",
+  "params": {},
+  "sampled": 41,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "AccountOnHold": {
+    "present": 41,
+    "of": 41,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "False",
+     "True"
+    ]
+   },
+   "DaysOfCredit": {
+    "present": 41,
+    "of": 41,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "0",
+     "14",
+     "30"
+    ]
+   },
+   "Term": {
+    "present": 41,
+    "of": 41,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Upon Receipt",
+     "NET 14",
+     "NET 30"
+    ]
+   },
+   "TermID": {
+    "present": 41,
+    "of": 41,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "2",
+     "3"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 41,
+    "of": 41,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z"
+    ]
+   }
+  }
+ },
+ "menuPromotions": {
+  "path": "/menuPromotions",
+  "params": {},
+  "sampled": 2,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Description": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato 1g Live Rosin AIO - Buy 4 cases, get 2 cases for 1 pe",
+     "Gelato 3.5g Flower - Buy 5 cases, get 1 for 1 penny per unit"
+    ]
+   },
+   "EndDate": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-09-30T00:00:00.000Z"
+    ]
+   },
+   "MenuPromotionID": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "651",
+     "652"
+    ]
+   },
+   "StartDate": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-05-27T00:00:00.000Z"
+    ]
+   },
+   "State": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "SupplierID": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TimeCreated": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:05:03.918Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 2,
+    "of": 2,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:05:03.690Z"
+    ]
+   }
+  }
+ },
+ "promotionsProducts": {
+  "path": "/promotionsProducts",
+  "params": {},
+  "sampled": 0,
+  "http": [
+   500
+  ],
+  "has_next_after_sample": null,
+  "error_body": null,
+  "fields": {}
+ },
+ "payments_types": {
+  "path": "/payments/types",
+  "params": {},
+  "sampled": 7,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Name": {
+    "present": 7,
+    "of": 7,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "NorCal Cash",
+     "NorCal Check",
+     "NorCal EFT"
+    ]
+   },
+   "PaymentTypeID": {
+    "present": 7,
+    "of": 7,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "2",
+     "3"
+    ]
+   },
+   "SupplierID": {
+    "present": 7,
+    "of": 7,
+    "nulls": 1,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TimeCreated": {
+    "present": 7,
+    "of": 7,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 7,
+    "of": 7,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z"
+    ]
+   }
+  }
+ },
+ "payments": {
+  "path": "/payments",
+  "params": {},
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "ARAccountID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "4050",
+     "3886",
+     "3722"
+    ]
+   },
+   "ARNote": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 993,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Partially Applied CM (6,236.94) AR Tracker REQ0813261",
+     "APPLIED AS PER REMIT TASK ID 4042135",
+     "partial app"
+    ]
+   },
+   "Amount": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4.800000",
+     "40.000000",
+     "36.000000"
+    ]
+   },
+   "AvailableAmount": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4.800000",
+     "40.000000",
+     "36.000000"
+    ]
+   },
+   "AvailableBalance": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4.800000",
+     "40.000000",
+     "36.000000"
+    ]
+   },
+   "LoadSheetStatusID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3",
+     "7"
+    ]
+   },
+   "Memo": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Credit Submitted by Yolanda Gelato (yolanda@flavrhouse.com):",
+     "Credit Submitted by Jorgelina Morales (jorgelina@flavrhouse.",
+     "Credit Submitted by Marion Smith (marion@flavrhouse.com): pr"
+    ]
+   },
+   "PaymentID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1202362",
+     "1201057",
+     "1202363"
+    ]
+   },
+   "PaymentInvoiceID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "842310",
+     "842357",
+     "842315"
+    ]
+   },
+   "PaymentInvoiceNum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-842310",
+     "X-842357",
+     "X-842315"
+    ]
+   },
+   "PaymentTypeID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "-1"
+    ]
+   },
+   "PaymentTypeName": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "SupplierCredit"
+    ]
+   },
+   "PostDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-14T00:00:00.000Z",
+     "2026-08-13T00:00:00.000Z",
+     "2026-08-12T00:00:00.000Z"
+    ]
+   },
+   "SupplierID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TimeCreated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-13T15:52:16.000Z",
+     "2026-08-13T16:36:14.000Z",
+     "2026-08-13T15:54:25.000Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:12:56.081Z",
+     "2026-08-16T08:12:36.011Z",
+     "2026-08-16T08:12:53.601Z"
+    ]
+   }
+  }
+ },
+ "payments_openInvoices": {
+  "path": "/payments/openInvoices",
+  "params": {},
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "ARAccountID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1378",
+     "982",
+     "2989"
+    ]
+   },
+   "CreditTermID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2",
+     "6",
+     "3"
+    ]
+   },
+   "CustomerID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "638",
+     "241",
+     "1906"
+    ]
+   },
+   "Date": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-09-20T00:00:00.000Z",
+     "2024-09-24T00:00:00.000Z",
+     "2024-10-01T00:00:00.000Z"
+    ]
+   },
+   "DueDate": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-10-04T00:00:00.000Z",
+     "2024-10-08T00:00:00.000Z",
+     "2024-10-15T00:00:00.000Z"
+    ]
+   },
+   "InvoiceID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "481956",
+     "482420",
+     "481605"
+    ]
+   },
+   "InvoiceNum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-481956",
+     "X-482420",
+     "X-481605"
+    ]
+   },
+   "InvoiceTotal": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.200000",
+     "0.380000",
+     "1.720000"
+    ]
+   },
+   "OpenBalance": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.176190",
+     "0.380000",
+     "1.720000"
+    ]
+   },
+   "PONum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 672,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Jesse Logue / SoCal",
+     "Gio Velasquez 10/4/24",
+     "DION KING GELATO SAMPLES NEED SEPARATE"
+    ]
+   },
+   "TermID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2",
+     "6",
+     "3"
+    ]
+   }
+  }
+ },
+ "payments_applications": {
+  "path": "/payments/applications",
+  "params": {},
+  "sampled": 1000,
+  "http": [
+   200,
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "ARAccountID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3233",
+     "3897",
+     "3695"
+    ]
+   },
+   "Amount": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "488.800000",
+     "394.500000",
+     "111.600000"
+    ]
+   },
+   "AppliedBy": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "AlinePerez",
+     "Luc\u00ecaManzana",
+     "LauraContro"
+    ]
+   },
+   "PaymentApplicationID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "958038",
+     "958037",
+     "958031"
+    ]
+   },
+   "PaymentInvoiceNum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-819609",
+     "X-819608",
+     "X-800948"
+    ]
+   },
+   "RequestID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "RequestedByUserID": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Status": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Confirmed"
+    ]
+   },
+   "TargetInvoiceNum": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-814766",
+     "X-842748",
+     "X-843012"
+    ]
+   },
+   "TimeApplied": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-14T17:17:34.000Z",
+     "2026-08-14T17:13:36.000Z",
+     "2026-08-14T17:00:54.000Z"
+    ]
+   },
+   "TimeExported": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "TimeRequested": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 1000,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "TimeUpdated": {
+    "present": 1000,
+    "of": 1000,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-14T21:23:58.000Z",
+     "2026-08-13T18:53:21.000Z",
+     "2026-08-12T21:11:30.000Z"
+    ]
+   }
+  }
+ },
+ "purchases": {
+  "path": "/purchases",
+  "params": {
+   "Statuses": "New,Accepted,Received,Confirmed,Verified"
+  },
+  "sampled": 219,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "DueDate": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2025-02-25T00:00:00.000Z",
+     "2026-07-15T00:00:00.000Z",
+     "2026-07-20T00:00:00.000Z"
+    ]
+   },
+   "Freight": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "InvoiceDate": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-12T00:00:00.000Z",
+     "2026-05-01T00:00:00.000Z",
+     "2026-05-06T00:00:00.000Z"
+    ]
+   },
+   "LastCalcTime": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-07-27T15:34:36.000Z",
+     "2026-06-18T16:19:50.000Z",
+     "2026-05-06T16:49:59.000Z"
+    ]
+   },
+   "LastEditTime": {
+    "present": 219,
+    "of": 219,
+    "nulls": 219,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Memo": {
+    "present": 219,
+    "of": 219,
+    "nulls": 187,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Convert $ products to xT",
+     "sku correction",
+     "Please convert to xT"
+    ]
+   },
+   "OtherCost": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "PONum": {
+    "present": 219,
+    "of": 219,
+    "nulls": 2,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato PO 79816",
+     "Gelato PO 105160",
+     "Gelato PO 105378"
+    ]
+   },
+   "PostDate": {
+    "present": 219,
+    "of": 219,
+    "nulls": 18,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-12T00:00:00.000Z",
+     "2026-08-10T00:00:00.000Z",
+     "2026-07-31T00:00:00.000Z"
+    ]
+   },
+   "PublicPDFLink": {
+    "present": 219,
+    "of": 219,
+    "nulls": 10,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://kivatest.encompass8.com/api?APIKeyID=17289&Get=4A5DF"
+    ]
+   },
+   "PurchaseGlobalID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 214,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "01KZZN0JYZYR21V9F3XSCKQEGS",
+     "01KZZN0JZ02TANVCRA1SYNBCGF",
+     "01KZQBF3TM49EJRFEA0K5KXXEG"
+    ]
+   },
+   "PurchaseGlobalIDExportedAt": {
+    "present": 219,
+    "of": 219,
+    "nulls": 217,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:12:15.597Z"
+    ]
+   },
+   "PurchaseID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "79816",
+     "105160",
+     "105378"
+    ]
+   },
+   "PurchasePDFURLAPIKeyID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 10,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "17289"
+    ]
+   },
+   "ReceiveDate": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-12T00:00:00.000Z",
+     "2026-05-06T00:00:00.000Z",
+     "2026-06-02T00:00:00.000Z"
+    ]
+   },
+   "ReceivingNum": {
+    "present": 219,
+    "of": 219,
+    "nulls": 219,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "ShipmentID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "74519",
+     "99205",
+     "99418"
+    ]
+   },
+   "ShipmentNum": {
+    "present": 219,
+    "of": 219,
+    "nulls": 11,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato PO 105160",
+     "Gelato PO 105378",
+     "Gelato PO 106746"
+    ]
+   },
+   "Status": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Received",
+     "New",
+     "Accepted"
+    ]
+   },
+   "Tax": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "TermID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8",
+     "9"
+    ]
+   },
+   "Terms": {
+    "present": 219,
+    "of": 219,
+    "nulls": 1,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Interco Transfer"
+    ]
+   },
+   "TimeCreated": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z",
+     "2026-05-06T22:11:24.956Z",
+     "2026-05-21T22:13:38.206Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-05T23:26:14.370Z",
+     "2026-06-26T19:57:59.240Z",
+     "2026-05-21T22:13:36.480Z"
+    ]
+   },
+   "ToLocationID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3",
+     "1"
+    ]
+   },
+   "ToLocationName": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Van Nuys",
+     "Alameda"
+    ]
+   },
+   "Total": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-6373.50",
+     "0.00",
+     "-6370.00"
+    ]
+   },
+   "TotalCases": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00",
+     "132.00",
+     "-320.00"
+    ]
+   },
+   "VendorID": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "153",
+     "209",
+     "78"
+    ]
+   },
+   "VendorName": {
+    "present": 219,
+    "of": 219,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Urban Therapies, LLC (Gelato)",
+     "GREEN VIBE INC. (Gelato)",
+     "AUTUMN BRANDS LLC"
+    ]
+   }
+  }
+ },
+ "customerPricing": {
+  "path": "/customerPricing",
+  "params": {
+   "CustomerIDs": "1,2,3,4,10,14,19,21,28,29,30,31,32,33,34,35,36,37,38,40"
+  },
+  "sampled": 500,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "CustomerID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1",
+     "2",
+     "3"
+    ]
+   },
+   "Discount": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000",
+     "15.000000",
+     "3.100000"
+    ]
+   },
+   "EndDate": {
+    "present": 500,
+    "of": 500,
+    "nulls": 439,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "3000-12-31T00:00:00.000Z"
+    ]
+   },
+   "FullPrice": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "50.000000",
+     "8.000000",
+     "15.000000"
+    ]
+   },
+   "ProductID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11540",
+     "11541",
+     "11542"
+    ]
+   },
+   "PromotionID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 439,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "18507",
+     "18054",
+     "8722"
+    ]
+   },
+   "StartDate": {
+    "present": 500,
+    "of": 500,
+    "nulls": 439,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T00:00:00.000Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 500,
+    "of": 500,
+    "nulls": 439,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:08:16.202Z",
+     "2026-08-16T08:10:06.905Z",
+     "2026-08-16T08:05:13.049Z"
+    ]
+   },
+   "UnitPrice": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "50.000000",
+     "35.00",
+     "8.000000"
+    ]
+   }
+  }
+ },
+ "customers_detail": {
+  "path": "/customers/1",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "AccountStatus": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Active"
+    ]
+   },
+   "Address": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2300 N Loop Rd, Alameda, CA 94502"
+    ]
+   },
+   "ChainName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "CustomerID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1"
+    ]
+   },
+   "CustomerName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "KSS Live Test Customer"
+    ]
+   },
+   "CustomerNameAlt": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "DeliveryDates": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "DeliveryDays": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "LicenseNum": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "LIC-99999-FAKE"
+    ]
+   },
+   "LocationID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1"
+    ]
+   },
+   "State": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:00:46.270Z"
+    ]
+   }
+  }
+ },
+ "invoiceTransactions": {
+  "path": "/invoiceTransactions",
+  "params": {
+   "InvoiceIDs": "843083,841597,840204,840148,840247,840112,840120,840098,840091,840146,840269,840223,840144,840257,840133,842622,842624,842359,841716,842541",
+   "Statuses": "1,2,3,4,5,7"
+  },
+  "sampled": 500,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": true,
+  "error_body": null,
+  "fields": {
+   "BackOrder": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "0",
+     "16",
+     "12"
+    ]
+   },
+   "BatchCode": {
+    "present": 500,
+    "of": 500,
+    "nulls": 48,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "GCONES-184",
+     "GCONES-176",
+     "GCONES-182"
+    ]
+   },
+   "COA_URL": {
+    "present": 500,
+    "of": 500,
+    "nulls": 48,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/a46f44938a02a0b61bcf64be4391",
+     "https://cdn.e8.co/Kiva/S3Images/c62cbade757f24471275df725878",
+     "https://cdn.e8.co/Kiva/S3Images/93c05e83563212960646dcf6a1f8"
+    ]
+   },
+   "Cases": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1.00",
+     "2.00",
+     "0.00"
+    ]
+   },
+   "CustomerID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1639",
+     "1637",
+     "1640"
+    ]
+   },
+   "Discount": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1.000000",
+     "4.000000",
+     "0.200000"
+    ]
+   },
+   "ExtPrice": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "70.000000",
+     "48.000000",
+     "80.000000"
+    ]
+   },
+   "FullPrice": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "8.000000",
+     "5.000000",
+     "12.000000"
+    ]
+   },
+   "InvoiceID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "840091",
+     "840098",
+     "840112"
+    ]
+   },
+   "InvoiceTransID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8597672",
+     "8597673",
+     "8597674"
+    ]
+   },
+   "NumUnits": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "10",
+     "12",
+     "20"
+    ]
+   },
+   "Ordered": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "10",
+     "12",
+     "20"
+    ]
+   },
+   "ProductID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11566",
+     "11567",
+     "11568"
+    ]
+   },
+   "ProductName": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato Last Bite 100mg Hybrid Birthday Cake 10pc",
+     "Gelato Last Bite 100mg Hyrbid Milk Chocolate Caramel 10pc",
+     "Gelato Last Bite 100mg Hyrbid Mint Chocolate 10pc"
+    ]
+   },
+   "PromotionID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8722",
+     "8937",
+     "8703"
+    ]
+   },
+   "SupplierID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TimeCreated": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-10T21:38:45.668Z",
+     "2026-08-10T21:38:45.426Z",
+     "2026-08-10T22:12:51.344Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:04:33.210Z",
+     "2026-08-16T08:04:46.590Z",
+     "2026-08-16T08:04:50.190Z"
+    ]
+   },
+   "UnitPrice": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "7.000000",
+     "4.000000",
+     "8.000000"
+    ]
+   }
+  }
+ },
+ "invoiceCOAs": {
+  "path": "/invoiceCOAs",
+  "params": {
+   "InvoiceIDs": "843083,841597,840204,840148,840247,840112,840120,840098,840091,840146,840269,840223,840144,840257,840133,842622,842624,842359,841716,842541"
+  },
+  "sampled": 500,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "BatchCode": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "GCONES-184",
+     "GCONES-176",
+     "GCONES-182"
+    ]
+   },
+   "COA_URL": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/a46f44938a02a0b61bcf64be4391",
+     "https://cdn.e8.co/Kiva/S3Images/c62cbade757f24471275df725878",
+     "https://cdn.e8.co/Kiva/S3Images/93c05e83563212960646dcf6a1f8"
+    ]
+   },
+   "InvoiceID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "840091",
+     "840098",
+     "840112"
+    ]
+   },
+   "InvoiceTransID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8597672",
+     "8597673",
+     "8597674"
+    ]
+   },
+   "ProductID": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11566",
+     "11567",
+     "11568"
+    ]
+   },
+   "TimeCreated": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-13T16:32:41.093Z",
+     "2026-08-13T16:44:13.137Z",
+     "2026-08-13T16:44:29.172Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 500,
+    "of": 500,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-13T16:32:41.093Z",
+     "2026-08-13T16:44:13.137Z",
+     "2026-08-13T16:44:29.172Z"
+    ]
+   }
+  }
+ },
+ "invoices_detail": {
+  "path": "/invoices/843083",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "ARNote": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "BuiltByUserEmail": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "positivegreen268@gmail.com"
+    ]
+   },
+   "BuiltByUserID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "13432"
+    ]
+   },
+   "BuiltByUserName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Faizan PG"
+    ]
+   },
+   "CustomerID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2838"
+    ]
+   },
+   "CustomerName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Potent"
+    ]
+   },
+   "Date": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-09-02T00:00:00.000Z"
+    ]
+   },
+   "DueDate": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-09-16T00:00:00.000Z"
+    ]
+   },
+   "InvoiceID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "843083"
+    ]
+   },
+   "InvoiceLastUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-15T14:00:13.000Z"
+    ]
+   },
+   "InvoiceNum": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "X-843083"
+    ]
+   },
+   "InvoiceTimeCreated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-15T14:00:12.000Z"
+    ]
+   },
+   "InvoiceTotal": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000"
+    ]
+   },
+   "Memo": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Order Submitted by Faizan PG (positivegreen268@gmail.com)"
+    ]
+   },
+   "OpenBalance": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000"
+    ]
+   },
+   "OpenCredit": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000"
+    ]
+   },
+   "OpenDebit": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000"
+    ]
+   },
+   "PDFURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PODate": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PONum": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Status": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1"
+    ]
+   },
+   "SubmittedByUserEmail": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "positivegreen268@gmail.com"
+    ]
+   },
+   "SubmittedByUserID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "13432"
+    ]
+   },
+   "SubmittedByUserName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Faizan PG"
+    ]
+   },
+   "TermID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2"
+    ]
+   },
+   "TotalCases": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4.800000"
+    ]
+   },
+   "TotalDiscount": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000"
+    ]
+   },
+   "TotalExtPrice": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000"
+    ]
+   },
+   "TotalFullPrice": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "260.000000"
+    ]
+   },
+   "TotalNumUnits": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "94.000000"
+    ]
+   }
+  }
+ },
+ "invoiceTransactions_detail": {
+  "path": "/invoiceTransactions/843083",
+  "params": {},
+  "sampled": 9,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "BackOrder": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "0"
+    ]
+   },
+   "BatchCode": {
+    "present": 9,
+    "of": 9,
+    "nulls": 9,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "COA_URL": {
+    "present": 9,
+    "of": 9,
+    "nulls": 9,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Cases": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1.00",
+     "0.40"
+    ]
+   },
+   "CustomerID": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "2838"
+    ]
+   },
+   "Discount": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.000000"
+    ]
+   },
+   "ExtPrice": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "60.000000",
+     "20.000000"
+    ]
+   },
+   "FullPrice": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "5.000000",
+     "2.000000"
+    ]
+   },
+   "InvoiceID": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "843083"
+    ]
+   },
+   "InvoiceTransID": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8625539",
+     "8625540",
+     "8625541"
+    ]
+   },
+   "NumUnits": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "12",
+     "10"
+    ]
+   },
+   "Ordered": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "12",
+     "10"
+    ]
+   },
+   "ProductID": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "14440",
+     "14902",
+     "19433"
+    ]
+   },
+   "ProductName": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato Lolli's Single Infused Preroll 1.2g Indica Grand Dadd",
+     "Gelato Lolli's Single Infused Preroll 1.2g Sativa Jack Herer",
+     "Gelato Preroll 1g Sativa Citrus Punch 25pk"
+    ]
+   },
+   "PromotionID": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1022",
+     "2139"
+    ]
+   },
+   "SupplierID": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "TimeCreated": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:01:47.116Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:04:50.300Z"
+    ]
+   },
+   "UnitPrice": {
+    "present": 9,
+    "of": 9,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "5.000000",
+     "2.000000"
+    ]
+   }
+  }
+ },
+ "invoiceCOAs_detail": {
+  "path": "/invoiceCOAs/843083",
+  "params": {},
+  "sampled": 0,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {}
+ },
+ "purchaseTrans": {
+  "path": "/purchaseTrans",
+  "params": {
+   "PurchaseIDs": "79816,105160,105378,106746,106749,106806,107332,107333,107716,107796,109125,109127,109705,110153,110480,110803,111685,111705,111419,110879"
+  },
+  "sampled": 196,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "BatchCode": {
+    "present": 196,
+    "of": 196,
+    "nulls": 19,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "BULK-320",
+     "BULK-303",
+     "GC-2842"
+    ]
+   },
+   "Cases": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-9.38",
+     "9.38",
+     "-51.00"
+    ]
+   },
+   "CodeDate": {
+    "present": 196,
+    "of": 196,
+    "nulls": 149,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2027-02-15T00:00:00.000Z",
+     "2027-04-06T00:00:00.000Z",
+     "2027-03-18T00:00:00.000Z"
+    ]
+   },
+   "DepositCost": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "ExpirationDate": {
+    "present": 196,
+    "of": 196,
+    "nulls": 17,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2025-11-21T00:00:00.000Z",
+     "2025-09-05T00:00:00.000Z",
+     "2027-02-15T00:00:00.000Z"
+    ]
+   },
+   "ExtPrice": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-3187.50",
+     "0.75",
+     "-5202.00"
+    ]
+   },
+   "FOB": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "42.50",
+     "0.01",
+     "10.20"
+    ]
+   },
+   "LaidInCost": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "42.50",
+     "0.01",
+     "10.20"
+    ]
+   },
+   "NumUnits": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-75.00",
+     "75.00",
+     "-510.00"
+    ]
+   },
+   "Ordered": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-75.00",
+     "75.00",
+     "-510.00"
+    ]
+   },
+   "PalletTag": {
+    "present": 196,
+    "of": 196,
+    "nulls": 24,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "1A406030000B0A1000333837",
+     "1A406030000B0A1000333838",
+     "1A406030000B0A1001110105"
+    ]
+   },
+   "ProductID": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11540",
+     "13011",
+     "11542"
+    ]
+   },
+   "PurchaseID": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "79816",
+     "105160",
+     "105378"
+    ]
+   },
+   "PurchaseTransID": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "5152711",
+     "5152712",
+     "5152713"
+    ]
+   },
+   "TimeCreated": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z",
+     "2026-05-06T22:11:26.728Z",
+     "2026-05-06T22:11:26.292Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-05T23:26:19.970Z",
+     "2026-06-26T19:58:01.100Z",
+     "2026-05-21T22:13:38.330Z"
+    ]
+   },
+   "Weight": {
+    "present": 196,
+    "of": 196,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-14.06",
+     "14.06",
+     "-102.00"
+    ]
+   }
+  }
+ },
+ "purchases_detail": {
+  "path": "/purchases/79816",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "DueDate": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2025-02-25T00:00:00.000Z"
+    ]
+   },
+   "Freight": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "InvoiceDate": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-12T00:00:00.000Z"
+    ]
+   },
+   "LastCalcTime": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-07-27T15:34:36.000Z"
+    ]
+   },
+   "LastEditTime": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Memo": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Convert $ products to xT"
+    ]
+   },
+   "OtherCost": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "PONum": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato PO 79816"
+    ]
+   },
+   "PostDate": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PublicPDFLink": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://kivatest.encompass8.com/api?APIKeyID=17289&Get=4A5DF"
+    ]
+   },
+   "PurchaseGlobalID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PurchaseGlobalIDExportedAt": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PurchaseID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "79816"
+    ]
+   },
+   "PurchasePDFURLAPIKeyID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "17289"
+    ]
+   },
+   "ReceiveDate": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-12T00:00:00.000Z"
+    ]
+   },
+   "ReceivingNum": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "ShipmentID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "74519"
+    ]
+   },
+   "ShipmentNum": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Status": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Received"
+    ]
+   },
+   "Tax": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "TermID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "8"
+    ]
+   },
+   "Terms": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Interco Transfer"
+    ]
+   },
+   "TimeCreated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-04-30T18:23:11.449Z"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-05T23:26:14.370Z"
+    ]
+   },
+   "ToLocationID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3"
+    ]
+   },
+   "ToLocationName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Van Nuys"
+    ]
+   },
+   "Total": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "-6373.50"
+    ]
+   },
+   "TotalCases": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "0.00"
+    ]
+   },
+   "VendorID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "153"
+    ]
+   },
+   "VendorName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Urban Therapies, LLC (Gelato)"
+    ]
+   }
+  }
+ },
+ "locations_detail": {
+  "path": "/locations/1",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Address": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2300 N Loop Rd"
+    ]
+   },
+   "Address2": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Address3": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "N/A"
+    ]
+   },
+   "City": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Alameda"
+    ]
+   },
+   "DBA": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Kiva Sales & Service"
+    ]
+   },
+   "Location": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Alameda"
+    ]
+   },
+   "LocationID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "1"
+    ]
+   },
+   "PostalCode": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "94502"
+    ]
+   },
+   "State": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-20T02:08:40.944Z"
+    ]
+   }
+  }
+ },
+ "suppliers_detail": {
+  "path": "/suppliers/61",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Active": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "BrandAssetsURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Description": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "A step into normalcy. Forget about what cannabis was. Enjoy "
+    ]
+   },
+   "State": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "Supplier": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato"
+    ]
+   },
+   "SupplierID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "SupplierWebsiteURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2024-12-20T02:15:03.492Z"
+    ]
+   }
+  }
+ },
+ "users_detail": {
+  "path": "/users/81",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "CustomerIDs": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "[368]"
+    ]
+   },
+   "Department": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Email": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "geary.payments@urbananow.com"
+    ]
+   },
+   "FullName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Accounts Payable Urbana Geary"
+    ]
+   },
+   "JobTitle": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "AP"
+    ]
+   },
+   "KSSLiveAccess": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "LocationIDs": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "[1]"
+    ]
+   },
+   "PowerUser": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "Role": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Customer"
+    ]
+   },
+   "SiteUserID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "3065"
+    ]
+   },
+   "States": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "array"
+    ],
+    "examples": [
+     "['CA']"
+    ]
+   },
+   "SupplierIDs": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "UserActive": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "True"
+    ]
+   },
+   "UserID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "81"
+    ]
+   }
+  }
+ },
+ "products_detail": {
+  "path": "/products/11537",
+  "params": {},
+  "sampled": 1,
+  "http": [
+   200
+  ],
+  "has_next_after_sample": false,
+  "error_body": null,
+  "fields": {
+   "Blend": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Hybrid"
+    ]
+   },
+   "BrandFamily": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Neon Habits Flower"
+    ]
+   },
+   "BrandID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "6363"
+    ]
+   },
+   "BrandName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Neon Habits Flower Hybrid Purple Aurora"
+    ]
+   },
+   "BrandStyle": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Description": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Purple Aurora is a captivating cannabis strain that combines"
+    ]
+   },
+   "Flavor": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "hybrid purple aurora"
+    ]
+   },
+   "FullSizeImageURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/58611c92481d2b649e2ba19d5c50"
+    ]
+   },
+   "Ingredients": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "100% Cannabis Flower"
+    ]
+   },
+   "IsSample": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "boolean"
+    ],
+    "examples": [
+     "False"
+    ]
+   },
+   "KSSLiveCategoryID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "4"
+    ]
+   },
+   "KSSMenuCategory": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Flower"
+    ]
+   },
+   "PackageID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "327"
+    ]
+   },
+   "PackageName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "4/28g Pouch"
+    ]
+   },
+   "Potency": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "PotencyTHC": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "ProductGroupID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "12"
+    ]
+   },
+   "ProductID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "11537"
+    ]
+   },
+   "ProductName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Neon Habits Flower 28g Hybrid Purple Aurora"
+    ]
+   },
+   "ProductTypeID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "275"
+    ]
+   },
+   "ProductTypeName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Flower: Full Oz"
+    ]
+   },
+   "State": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "CA"
+    ]
+   },
+   "StatusID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "0"
+    ]
+   },
+   "StrainID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "StrainName": {
+    "present": 1,
+    "of": 1,
+    "nulls": 1,
+    "types": [
+     "null"
+    ],
+    "examples": []
+   },
+   "Supplier": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "Gelato"
+    ]
+   },
+   "SupplierID": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "61"
+    ]
+   },
+   "SupplierProductNumber": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "N/A"
+    ]
+   },
+   "ThumbnailImageURL": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "https://cdn.e8.co/Kiva/S3Images/58611c92481d2b649e2ba19d5c50"
+    ]
+   },
+   "TimeUpdated": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "2026-08-16T08:00:11.480Z"
+    ]
+   },
+   "UnitNetWeight": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "string"
+    ],
+    "examples": [
+     "28g"
+    ]
+   },
+   "WholesaleUnitsPerCase": {
+    "present": 1,
+    "of": 1,
+    "nulls": 0,
+    "types": [
+     "number"
+    ],
+    "examples": [
+     "4"
+    ]
+   }
+  }
+ }
+}
