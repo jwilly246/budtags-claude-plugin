@@ -204,3 +204,23 @@ historically; lab POTENCY fields exist only on /inventory/batches and remain har
   view, no special intercompany handling in v1.
 - Gelato-confirmation queue is now EMPTY. Remaining external gates: production KSS key (+ ask about
   supplier-key visibility of hidden customer fields), CA Metrc key, KSS ticket for /promotionsProducts 500.
+
+## Prefactoring research (create-plan Phase 0, 2026-08-19) - the machinery is source-parametric
+
+Three-agent sweep of main, load-bearing claims file-verified. Full details in KSS-INTEGRATION-PLAN.md; durable facts:
+- KssApi extends BaseMarketplaceApi (4 abstracts; Canix X-API-KEY auth shape; Distru pagination-loop shape
+  with HasNextPage + repeat-content hash guard). NEVER: override get_org_level_key (WU-06 bug), hand-roll
+  ->retry(), construct Guzzle handlers, cast numerics in the client. for_organization() mandatory in jobs.
+- Registration sites (no new job classes needed): IntegrationImportSpec in AppServiceProvider (queue
+  'kss-imports', KssImportUpdate event - names permanent), SyncRecentRegistry, SOURCE_KSS consts on
+  IntegrationImportJob + IntegrationCompanyMapping + MarketplaceOrder, secret-key:KSS routes + /missing-kss-key,
+  Kernel cron lane :10/:40 (free slot; :00/15/20/25/30/35/45/50/55 taken), Horizon kss-imports queue.
+- Key resolution is ORG-scoped (org + optional facility); SecretType::seed() from the integration migration.
+- Mirror pattern: updateOrCreate (org_id, kss_id) withTrashed; raw_payload verbatim; upstream created_at;
+  TracksIntegrationSync + $syncSource='kss'; deletion sweeps gated (full-backfill-only, 25% cap) - KSS uses
+  last_seen_at instead (no upstream tombstones).
+- Cron gate = active Secret presence (no feature flag on scheduled paths); manual gate = secret-key middleware.
+- products match key amended to dedicated products.kss_product_id column (house convention, not external_ids).
+- ETag/If-None-Match has NO precedent in BaseMarketplaceApi; 304 would trip fail_pagination - genuinely new surface.
+- The bridge->license->create adoption ladder exists TWICE (LeafLink + Distru CustomerImporters); KSS would be
+  the third copy -> extraction decision pending Jason.
