@@ -193,3 +193,14 @@ cdn.e8.co COA links OUTLIVE the batch listing: 2024-era invoices' COAs (batches 
 /inventory/batches) still serve PDFs (200, application/pdf, ~0.5MB). Store the URL; archiving PDFs is
 optional robustness. Bonus: /invoiceCOAs works for OLD invoices, so batch->COA mapping is recoverable
 historically; lab POTENCY fields exist only on /inventory/batches and remain harvest-or-lose.
+
+## Operating model + own-store rulings (Jason 2026-08-19)
+
+- Operating model surmised from data, no Gelato meeting needed: consignment-dominant (~90% via KSS) +
+  direct selling via Distru (~10%) - the reason for the dual integration. KSS inventory = PRIMARY view.
+- Own store determined from data: exactly one - 'Gelato Retail - Lake Elsinore', C10-0000920-LIC, 17
+  Distru orders/$94K per 90d, ALSO an active KSS customer under the same license -> license-first partner
+  resolution converges both sources to one partner row. Ruling: standard source badge on the combined
+  view, no special intercompany handling in v1.
+- Gelato-confirmation queue is now EMPTY. Remaining external gates: production KSS key (+ ask about
+  supplier-key visibility of hidden customer fields), CA Metrc key, KSS ticket for /promotionsProducts 500.
