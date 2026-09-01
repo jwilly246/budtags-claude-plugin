@@ -37,6 +37,9 @@ context window. Before writing code, the executor MUST:
 3. **UPDATE the `{FEATURE}/SHARED_CONTEXT.md` file** with any new discoveries (components, types, services, patterns) — updating the file is still your job even though reading it is not
 4. READ sibling files in the same directory as files being created
 5. NEVER recreate buttons, inputs, toggles, tables, badges, or any existing component
+6. HONOR the embedded "Reuse Verdicts" table (from the plan's Prefactoring Audit): a
+   verdict of REUSE or EXTEND means using/extending that existing artifact IS the task —
+   creating a parallel copy fails Orchestrator Review
 
 ---
 

@@ -149,6 +149,18 @@ const { data, setData, post, processing, errors } = useForm({...});
 
 ---
 
+## Reuse Verdicts (from plan Prefactoring Audit)
+
+**These are binding.** REUSE/EXTEND = use or extend the named existing artifact — never
+create a parallel copy. EXTRACT-THEN-BUILD / GENERALIZE = a prefactor WU created the
+shared artifact; build on it. The orchestrator's diff audit rejects reinvention.
+
+| Proposed Artifact | Verdict | Use/Extend This Instead | Notes |
+|-------------------|---------|-------------------------|-------|
+<!-- Pre-populated by decompose-plan from the plan's Prefactoring & Reuse Audit -->
+
+---
+
 ## Naming Conventions (Feature-Specific)
 
 | Domain | Pattern | Example | Set By |

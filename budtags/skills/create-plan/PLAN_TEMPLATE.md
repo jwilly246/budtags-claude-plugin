@@ -49,6 +49,43 @@ Use this template when writing the final plan document in Phase 10.
 
 ---
 
+## Prefactoring & Reuse Audit
+
+> Output of create-plan Phase 9.5. EVERY artifact this plan proposes to create has a
+> verdict backed by search evidence. decompose-plan turns the Prefactoring Tasks into
+> the FIRST work units, which all feature units depend on. A Create entry with no
+> verdict — or one that contradicts its verdict — is a plan defect.
+
+### Verdict Table
+
+| Proposed Artifact | Nearest Existing Thing | Verdict | Evidence (what was searched) | Notes |
+|-------------------|------------------------|---------|------------------------------|-------|
+| `{ProposedService}` | `app/Services/{Existing}.php` | EXTEND | grepped app/Services for {terms} | add {param} instead of a new class |
+| `{ProposedComponent}` | `resources/js/Components/{X}.tsx` | REUSE | listed Components/, Modals/ | removed from Create list |
+| `{ProposedHelper}` | copies in `{A}` and `{B}` | EXTRACT-THEN-BUILD | grepped {terms} | see PF-1 |
+| `{IntegrationLogic}` | `{OtherIntegration}` equivalent | GENERALIZE | swept each integration's services | shared core + per-integration adapters |
+| `{TrulyNewThing}` | none found | NEW | searched {terms} in {dirs} | {why nothing could be extended} |
+
+**Verdicts:** REUSE (exists, use it) / EXTEND (modify existing, no parallel copy) /
+EXTRACT-THEN-BUILD (2nd copy detected — extract shared core first) / GENERALIZE
+(2+ integrations share the shape — shared core + adapters) / NEW (nothing close;
+requires evidence + justification).
+
+### Prefactoring Tasks (Phase 1 of implementation — before ANY feature code)
+
+Behavior-preserving refactors. Existing tests must stay green after each. One commit each.
+
+- [ ] PF-1: Extract {shared core} from {file A} + {file B} into {destination}; re-point both call sites
+- [ ] PF-2: Generalize {existing thing} to accept {param} so this feature and {existing feature} share it
+
+### Duplicates Knowingly Left in Place (requires explicit user approval)
+
+| Duplicate | Why left | Approved by user on |
+|-----------|----------|---------------------|
+| {none} | | |
+
+---
+
 ## Package Dependencies
 
 ### Already Installed (use these)

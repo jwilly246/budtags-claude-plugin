@@ -340,6 +340,43 @@ grep -r "cannot.*other.*org\|Forbidden\|403" tests/
 
 ---
 
+## Phase 9.5: Prefactoring Audit
+
+**Timing:** After the design exists (Phases 1–9), before Synthesis. This research runs
+against the PROPOSED artifact list, which did not exist during Phase 0.
+
+### Duplicate Hunt Research
+
+For EVERY artifact the design proposes to create:
+
+```bash
+# 1. Search by what the artifact DOES, not what you plan to call it —
+#    the existing thing rarely shares your proposed name. Use synonyms.
+grep -ril "{job-verb}" app/Services/ app/Jobs/ app/Http/Controllers/
+grep -ril "{concept}" resources/js/Components/ resources/js/hooks/ resources/js/utils/
+
+# 2. Shape search: same signature or structure in sibling features
+grep -rn "function .*{similar_signature}" app/
+
+# 3. Cross-integration sweep: does ANY other integration already solve this job?
+#    (Metrc, Distru, LeafLink, Canix, QuickBooks, Unleashed)
+ls app/Services/
+grep -ril "{job}" app/Services/ app/Jobs/
+
+# 4. Near-duplicate frontend pieces
+ls resources/js/Components/ resources/js/hooks/
+```
+
+### What to Document
+
+- Per artifact: nearest existing candidates (file paths), or "none — searched: {terms} in {dirs}"
+- Near-copy PAIRS discovered (existing + existing, or existing + proposed) — these are
+  extraction candidates
+- Where shared abstractions already live — precedents for the destination of any
+  extraction (don't invent a new home when a shared layer exists)
+
+---
+
 ## Research Output Template
 
 After each phase's research, document findings:

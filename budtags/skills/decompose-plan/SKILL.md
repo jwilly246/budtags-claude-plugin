@@ -1,7 +1,7 @@
 ---
 name: decompose-plan
 description: Decomposes a plan file into context-window-sized work units with dependency tracking. FILE CREATION ONLY - does NOT implement or execute any code.
-version: 3.4.0
+version: 3.5.0
 category: workflow
 auto_activate:
   keywords:
@@ -79,6 +79,7 @@ Read the entire plan file to understand:
 - Integration work (external APIs, Metrc, QuickBooks)
 - What needs testing
 - **Phase 0 research** (component inventory, type inventory, service inventory, patterns)
+- **Prefactoring & Reuse Audit** (verdict table, Prefactoring Tasks, approved duplicates)
 
 ### Step 1.5: Extract Research into SHARED_CONTEXT.md
 
@@ -95,6 +96,7 @@ in Phase 0 if decompose didn't). Fill in these EXACT section headings from the t
 | Service inventory | `## Existing PHP Services (from create-plan)` |
 | Naming patterns | `## Naming Conventions (Feature-Specific)` |
 | Existing routes | `## Existing Routes (from create-plan)` |
+| Prefactoring & Reuse Audit verdict table | `## Reuse Verdicts (from plan Prefactoring Audit)` |
 
 Do NOT invent new section headings — run-plan's execute prompt and Orchestrator Review
 audit specific tables by name (PHP Services & Classes, TypeScript Types, Routes Added,
@@ -128,6 +130,30 @@ Determine which domains are needed (only create what's necessary):
 | Integration | Metrc sync, QuickBooks, LeafLink |
 
 **Skip domains not in the plan.** Don't create empty work units.
+
+### Step 2.5: Prefactoring Work Units Come FIRST
+
+If the plan has a **Prefactoring & Reuse Audit** section (create-plan Phase 9.5):
+
+1. Group its Prefactoring Tasks (PF-*) into one or more `WU-00-prefactor-{slug}` units
+   (use WU-00a/WU-00b if several are needed). These are behavior-preserving refactors
+   ONLY: extract shared cores, generalize near-copies, re-point EXISTING call sites.
+   No feature code. Existing tests staying green IS the primary verification.
+2. Every feature work unit that builds on an extracted/generalized artifact **depends on**
+   the prefactor unit — prefactor units sit at the root of the dependency graph.
+3. Copy the verdict table into SHARED_CONTEXT.md under
+   `## Reuse Verdicts (from plan Prefactoring Audit)` so every executor sees
+   "use THIS, do not create that" without re-discovering it.
+4. Cross-check every WU's `### Create` list against the verdict table: a Create entry
+   for an artifact the audit marked REUSE or EXTEND is a decomposition bug — fix the WU,
+   don't ship the contradiction to run-plan.
+
+If the plan has **NO** Prefactoring & Reuse Audit section: **STOP decomposing.** Run a
+mini-audit first — for each file the plan proposes to create, hunt for an existing
+near-duplicate (search by the job it does and its synonyms across `app/Services/`,
+`app/Jobs/`, `resources/js/Components/`, `resources/js/hooks/`, and every sibling
+integration). Report findings to the user and get verdicts before creating any work
+units. Decomposing an un-audited plan bakes reinvention into every WU downstream.
 
 ### Step 3: Size Work Units
 
@@ -176,6 +202,8 @@ Add `**Agent**:` and `**Skills**:` fields to each work unit's frontmatter.
 ### Step 4: Determine Dependencies
 
 Build dependency graph:
+- Prefactoring units (WU-00-*) have no dependencies; every unit that touches an
+  extracted/generalized artifact depends on them
 - Database work has no dependencies
 - Models depend on migrations
 - Controllers depend on models
@@ -319,10 +347,15 @@ commits belong to run-plan.
 ❌ Creating 4 rigid phases regardless of plan content
 ❌ Embedding 200-line checklists in each file
 ❌ Separating tests into their own work units
+❌ A WU `### Create` entry for an artifact the audit marked REUSE or EXTEND
+❌ Decomposing a plan that has no Prefactoring & Reuse Audit without running the mini-audit
+❌ Scheduling feature WUs before the prefactor WUs they build on
 
 ## Correct Behavior
 
 ✅ Create appropriately-sized work units (5-10 tasks each)
+✅ Prefactor units (WU-00-*) first; feature units depend on them
+✅ Copy the plan's reuse verdicts into SHARED_CONTEXT so executors inherit them
 ✅ Include tests WITH the code they test
 ✅ Only create work units for domains in the plan
 ✅ Reference patterns instead of embedding them

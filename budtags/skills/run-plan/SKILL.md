@@ -1,7 +1,7 @@
 ---
 name: run-plan
 description: Autonomously executes decomposed work units, committing after each successful verification, until complete or blocked. Orchestrator personally reviews each subagent's work (composer check + diff audit + SHARED_CONTEXT audit) before committing.
-version: 2.0.0
+version: 2.1.1
 category: workflow
 auto_activate:
   keywords:
@@ -243,7 +243,7 @@ decisions, scaffolding notes) instead of appending forever. Target: keep it unde
 
 Use the Agent tool with:
 - **prompt**: From `prompts/execute-unit.md`, with `{SHARED_CONTEXT_INLINE}` substituted for the actual SHARED_CONTEXT.md contents read in the pre-spawn step
-- **model**: OMIT — the subagent inherits the session model, which is the strongest available. Only pass a model if the user explicitly asks for an override. (Historical `"opus"` hard-code removed: it silently downgraded execution agents once newer session models shipped.)
+- **model**: OMIT — the subagent then runs on the model declared in its agent definition frontmatter (`model: opus` on every specialist in the 1.3 table). This split is deliberate (decided 2026-08-25): the session model (Fable-tier) is reserved for orchestration — spawning, diff review, gating, SHARED_CONTEXT curation — and is never spent on execution; Opus executes. Do NOT pass the session model explicitly to a spawn. If a WU ever maps to a built-in agent type with no frontmatter model (e.g. `general-purpose`), pass `model: "opus"` explicitly — built-ins otherwise inherit the session model. Only deviate if the user asks for an override.
 - **subagent_type**: From the agent type table in 1.3
 
 ### 1.5 Orchestrator Review (MANDATORY, runs in main context — do NOT delegate)
@@ -263,6 +263,7 @@ git diff
 | Does the diff actually implement the WU's tasks (not adjacent busywork)? | Mark BLOCKED, report drift |
 | Are all files in "Modify" actually modified (gate.sh only checks Create existence)? | Mark BLOCKED, report missing modifications |
 | Does the code match the pattern/style in sibling files? | If not, fix directly in main context |
+| Does the diff introduce a NEW helper/component/service/type that near-duplicates something existing, something an earlier WU created, or something the "Reuse Verdicts" table said to reuse/extend? | Fix in main context: swap to the existing/shared artifact; if a true extraction is needed, extract and re-point rather than accept the copy |
 | Do the tests actually assert behavior (not just "assertNotNull")? | Strengthen the tests in main context |
 
 **Step C: Audit SHARED_CONTEXT additions AND "Patterns Followed" substance**
@@ -567,6 +568,7 @@ Use this to:
 - Committing plan files (MANIFEST.md, WU-*.md, SHARED_CONTEXT.md, plan directory files)
 - Using `git add .` or `git add -A` (always stage specific files only)
 - Accepting incomplete implementations from agents
+- Accepting a diff that reinvents an existing component/service/helper instead of reusing or extending it (the Reuse Verdicts table in SHARED_CONTEXT says which — check it during Step B)
 - Trusting that SHARED_CONTEXT.md was updated without verifying the diff
 - **Spawning an execution subagent without embedding SHARED_CONTEXT inline** (since v1.9, the orchestrator MUST read the file in the pre-spawn step and substitute `{SHARED_CONTEXT_INLINE}` in the prompt; never rely on the subagent to Read it themselves)
 - **Telling the subagent to Read SHARED_CONTEXT.md** (since v1.9, the file is embedded in the prompt; asking the agent to Read it is wasted tool calls and signals the orchestrator skipped the pre-spawn step)
@@ -579,6 +581,7 @@ Use this to:
 - Create feature branch if on main
 - Execute one unit at a time in fresh context, serially — dispatch the next subagent only after the previous WU is reviewed and committed (parallel dispatch only on explicit user request)
 - **Run Orchestrator Review (1.5) BEFORE the WU's own verification** — diff audit, SHARED_CONTEXT audit, patterns-substance audit, task-list check
+- **Reject reinvention in Step B** — any new artifact duplicating an existing one (or violating a Reuse Verdict) gets swapped to the shared thing in main context before commit
 - **Run gate.sh for every WU** and fix ALL issues it reports in main context — not via subagent
 - **Populate SHARED_CONTEXT.md in main context** if the subagent left relevant tables empty
 - **Inject verified schema** into spawn prompts for DB-touching WUs (subagents fabricate columns)

@@ -1,7 +1,7 @@
 ---
 name: create-plan
 description: Thorough, question-driven feature planning. Asks questions you haven't thought of. Fills gaps with questions, not assumptions. Produces comprehensive plan documents ready for decomposition.
-version: 1.2.1
+version: 1.3.1
 category: workflow
 auto_activate:
   keywords:
@@ -16,7 +16,7 @@ auto_activate:
 
 **PURPOSE:** Transform a feature idea into a comprehensive, implementation-ready plan through active codebase research and thorough questioning.
 
-**PHILOSOPHY:** 5 hours planning, 1 hour coding. Research before asking. Ask questions you haven't thought of. Fill gaps with questions, not assumptions. Reuse before creating.
+**PHILOSOPHY:** 5 hours planning, 1 hour coding. Research before asking. Ask questions you haven't thought of. Fill gaps with questions, not assumptions. Reuse before creating. Extract and share before duplicating — the most expensive code in this codebase is the second copy of something.
 
 ---
 
@@ -29,6 +29,8 @@ auto_activate:
 ║                                                                   ║
 ║  ✅ DO: Research the codebase BEFORE asking questions            ║
 ║  ✅ DO: Identify reusable code, patterns, and components         ║
+║  ✅ DO: Audit EVERY proposed artifact for duplicates (Phase 9.5) ║
+║  ✅ DO: Plan extractions FIRST when near-copies exist            ║
 ║  ✅ DO: Check installed packages before suggesting new ones      ║
 ║  ✅ DO: Ask probing questions before making decisions            ║
 ║  ✅ DO: Challenge assumptions                                     ║
@@ -39,6 +41,7 @@ auto_activate:
 ║                                                                   ║
 ║  ❌ DO NOT: Make assumptions without asking                       ║
 ║  ❌ DO NOT: Skip codebase research                                ║
+║  ❌ DO NOT: Plan a NEW class/component when a near-copy exists   ║
 ║  ❌ DO NOT: Assume package versions - READ them                   ║
 ║  ❌ DO NOT: Install packages without explicit permission          ║
 ║  ❌ DO NOT: Skip domains (security, testing, edge cases)          ║
@@ -67,7 +70,7 @@ auto_activate:
 
 ## Workflow Overview
 
-The skill progresses through **11 phases**, starting with codebase research. Don't rush - each phase matters.
+The skill progresses through **12 phases**, starting with codebase research. Don't rush - each phase matters.
 
 ```
 Phase 0: Codebase Discovery → Research existing code, packages, patterns (MANDATORY)
@@ -80,10 +83,15 @@ Phase 6: Integration        → External APIs? Existing systems?
 Phase 7: Security           → Access control? Data protection?
 Phase 8: Performance        → Scale? Caching? Rate limiting?
 Phase 9: Testing Strategy   → What to test? How to verify?
+Phase 9.5: Prefactoring     → Audit the PROPOSED design vs existing code (MANDATORY)
 Phase 10: Synthesis         → Write the plan document
 ```
 
 **Phase 0 is MANDATORY:** Always research the codebase before asking questions.
+**Phase 9.5 is MANDATORY:** Every artifact the design proposes gets a reuse verdict
+(with search evidence) before the plan is written. Phase 0 researches BEFORE the design
+exists; Phase 9.5 audits the design AFTER it exists. Both are required — they catch
+different reinvention.
 **Between phases:** Summarize what was decided, confirm understanding, then proceed.
 
 ---
@@ -91,6 +99,8 @@ Phase 10: Synthesis         → Write the plan document
 ## Phase 0: Codebase Discovery (MANDATORY)
 
 **Goal:** Research the codebase before asking ANY user questions. Understand what exists, what can be reused, and what patterns to follow.
+
+**Model economy (2026-08-25):** The orchestrator (session model, Fable-tier) personally reads only the load-bearing artifacts — the 2-3 similar implementations (0.3) and the models/services the design will directly touch. Delegate the broad mechanical sweeps (0.1-0.2 inventories, wide find-all-usages greps, component/service cataloging in 0.4) to ONE `Explore` agent spawned with an explicit `model: "opus"` param (Explore is a built-in type with no frontmatter model, so without the param it inherits the session model and saves nothing). Ask it for a structured summary: files found, patterns observed, reuse candidates with paths. The judgment work — question selection, design, Phase 9.5 reuse verdicts — always stays in the main context.
 
 ### 0.1 Package Inventory
 
@@ -702,6 +712,128 @@ Vitest Component Tests:
 
 ---
 
+## Phase 9.5: Prefactoring Audit (MANDATORY)
+
+**Goal:** Prove the design reinvents NOTHING, and extract-and-share everything that can
+be shared BEFORE feature code is written on top of it. The plan may not be written until
+every proposed artifact has a verdict backed by search evidence.
+
+**Why "prefactoring":** refactoring done up front. Instead of building the feature and
+cleaning up duplication later (which never happens), reshape the ground first — extract
+the shared service, generalize the near-copy, widen the existing component — then build
+the feature ON the shared thing, not next to it. BudTags runs 6+ integrations (Metrc,
+Distru, LeafLink, Canix, QuickBooks, Unleashed), and near-copies of the same logic have
+repeatedly cost more than the features that introduced them: partner resolution reached
+FOUR independent copies before it was extracted into a shared resolver. Never plan the
+fifth copy of anything.
+
+**Timing:** After the design has crystallized (Phases 1–9), BEFORE Synthesis. Phase 0
+research cannot substitute for this phase — Phase 0 ran before the design existed and
+could not know what the design would propose.
+
+### 9.5.1 Build the Proposed-Artifact Inventory
+
+List EVERY artifact the design proposes to create or substantially modify. Nothing is
+exempt:
+
+- Models, traits, scopes, casts
+- Services, jobs, commands, notifications, events/listeners
+- Controllers, form requests, middleware, policies
+- React components, hooks, utility functions, TypeScript types
+- Migrations adding tables/columns conceptually similar to existing ones
+- Validation logic, mapping/translation logic, sync logic, ID-resolution logic
+
+If Phase 10 later adds an artifact that was never audited, return here and audit it
+before continuing.
+
+### 9.5.2 Hunt for Duplicates (search evidence REQUIRED)
+
+For each artifact, actively try to prove it already exists. A verdict without recorded
+search evidence is invalid — run the searches, note what was checked.
+
+**Search by what it DOES, not what you plan to call it** — the existing thing rarely
+shares your proposed name:
+
+```bash
+# Job/synonym search across backend and frontend
+grep -ril "{job-verb-and-synonyms}" app/Services/ app/Jobs/ app/Http/Controllers/
+grep -ril "{concept}" resources/js/Components/ resources/js/hooks/ resources/js/utils/
+
+# Shape search: same signature/structure in sibling features
+grep -rn "function .*{similar_signature}" app/
+
+# Cross-integration sweep: does ANY other integration already solve this job?
+ls app/Services/ | sort            # then read the candidates in each integration's area
+grep -ril "{job}" app/Services/ app/Jobs/
+```
+
+For each artifact record: nearest existing candidates found, or "none — searched:
+{terms and directories}".
+
+### 9.5.3 Assign a Verdict to EVERY Artifact
+
+| Verdict | When | Consequence in the plan |
+|---------|------|------------------------|
+| **REUSE** | An existing thing already does this | Reference it; remove the artifact from the Create list |
+| **EXTEND** | An existing thing does most of this | Modify it (new param, branch, prop) — NO parallel copy |
+| **EXTRACT-THEN-BUILD** | This feature would create the 2nd+ copy of a shape that already exists | Add a Prefactoring Task that extracts the shared core FIRST and re-points existing call sites; the feature builds on the extraction |
+| **GENERALIZE** | The artifact is integration-specific but the same shape exists (or predictably will) in another integration | Plan a shared core + thin per-integration adapters; wire the existing integration through it too when cheap |
+| **NEW** | Genuinely nothing close exists | Allowed ONLY with recorded search evidence plus a one-line "why nothing could be extended" |
+
+**The two-copy rule:** extraction triggers at TWO copies, not three. If this feature
+would create the second copy of anything, the verdict is EXTRACT-THEN-BUILD (or
+GENERALIZE) — never NEW, and never "duplicate now, clean up later."
+
+### 9.5.4 Integration Generalization Check
+
+Run this whenever the feature touches ANY integration:
+
+- What integration-specific code does this feature add? (sync, import/export, field
+  mapping, ID resolution, webhook handling, unit/price conversion, error
+  classification, retry policy)
+- For each piece: which OTHER integrations already have an equivalent today? Sweep each
+  integration's services — do not trust memory.
+- Which integrations will predictably need this shape within a year?
+- If 2+ integrations have it or need it: design the shared core with per-integration
+  adapters NOW, and say where it lives (follow existing shared-layer precedents in the
+  codebase rather than inventing a new home).
+- If the shared design is meaningfully more work, present both options to the user with
+  honest cost estimates — but the DEFAULT is the shared design.
+
+### 9.5.5 Present Findings and Get Sign-Off
+
+Before Synthesis, present to the user:
+
+1. Verdict counts (X REUSE, X EXTEND, X EXTRACT-THEN-BUILD, X GENERALIZE, X NEW)
+2. The planned extractions/generalizations — these widen the blast radius (they touch
+   shared code and other integrations' call sites), so the user confirms scope
+3. Any duplicate knowingly left in place — requires EXPLICIT user approval, recorded in
+   the plan with the reason
+
+### 9.5.6 Output (goes into the plan document verbatim)
+
+```markdown
+## Prefactoring & Reuse Audit
+
+### Verdict Table
+| Proposed Artifact | Nearest Existing Thing | Verdict | Evidence (what was searched) | Notes |
+|-------------------|------------------------|---------|------------------------------|-------|
+
+### Prefactoring Tasks (ALWAYS the first implementation phase)
+Behavior-preserving refactors — existing tests stay green, one commit each, land
+BEFORE any feature code.
+- [ ] PF-1: Extract {shared core} from {file A} + {file B} into {destination};
+      re-point both call sites; existing tests green
+- [ ] PF-2: Generalize {existing thing} to accept {param} so this feature and
+      {existing feature} share it
+
+### Duplicates Knowingly Left in Place (user-approved only)
+| Duplicate | Why left | Approved by user on |
+|-----------|----------|---------------------|
+```
+
+---
+
 ## Phase 10: Synthesis
 
 **Goal:** Compile everything into the plan document.
@@ -718,6 +850,10 @@ Vitest Component Tests:
 | Area | Requirements |
 |------|-------------|
 | ... | ... |
+
+## Prefactoring & Reuse Audit
+{Verdict table, Prefactoring Tasks, and approved-duplicates table from Phase 9.5 —
+copied verbatim. decompose-plan turns the Prefactoring Tasks into the FIRST work units.}
 
 ## Integration Domains
 
@@ -752,7 +888,8 @@ Identifies which specialist agents should handle different parts of the implemen
 {External APIs, existing code touchpoints}
 
 ## Implementation Phases
-{Ordered checklist of phases}
+{Ordered checklist of phases. Phase 1 is ALWAYS the Prefactoring Tasks when any exist —
+extractions and generalizations land before any feature code}
 
 ## Key Files to Create
 {File manifest}
@@ -770,6 +907,9 @@ Identifies which specialist agents should handle different parts of the implemen
 ### Final Questions Before Writing
 
 - Have we covered all user types?
+- Does EVERY proposed artifact have a Phase 9.5 verdict with search evidence?
+- Are all EXTRACT-THEN-BUILD / GENERALIZE verdicts reflected as Prefactoring Tasks in
+  the first implementation phase?
 - Have we identified all edge cases?
 - Have we addressed all security concerns?
 - Have we documented all decisions with rationale?
@@ -883,6 +1023,9 @@ After each phase:
 ## Anti-Patterns
 
 ❌ "I'll assume X for now..." - ASK INSTEAD
+❌ Marking an artifact NEW without running (and recording) the duplicate hunt
+❌ Planning the 2nd copy of anything "for now" — extraction triggers at two copies
+❌ Building integration-specific code without sweeping the other integrations first
 ❌ Skipping security questions because "it's internal"
 ❌ Accepting "same as feature Y" without documenting specifics
 ❌ Rushing through edge cases
@@ -906,6 +1049,9 @@ The planning is complete when:
 - [ ] Security concerns are documented
 - [ ] Integration points are mapped
 - [ ] Testing strategy is defined
+- [ ] Prefactoring audit complete — every proposed artifact has a verdict with search evidence
+- [ ] Prefactoring Tasks (extractions/generalizations) are the FIRST implementation phase
+- [ ] Any duplicate left in place has explicit user approval recorded
 - [ ] Plan document includes reusable code references
 - [ ] Plan document is comprehensive enough for `/decompose-plan`
 - [ ] User confirms the plan matches their vision

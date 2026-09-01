@@ -42,6 +42,7 @@ You will reference these embedded patterns in your Completion Report's "Patterns
 | Forms | Inertia `useForm` (never useState/axios for mutations) |
 | Types | No `any` in TypeScript |
 | Tests | PHPUnit (not Pest) |
+| Reuse first | Never create a helper/component/service/type that near-duplicates one in the embedded context or the codebase — use or extend the existing one. The embedded "Reuse Verdicts" table is binding |
 
 ## Code Quality
 
@@ -52,6 +53,7 @@ Every method must be fully implemented. No stubs.
 - Empty method bodies
 - `throw new Exception('Not implemented')`
 - `any` types
+- New code that duplicates an existing component/service/helper/type, or that creates a parallel copy of anything the embedded "Reuse Verdicts" table marked REUSE or EXTEND — the orchestrator's diff audit checks for this
 
 If something is unclear: implement your best judgment and document it in "Decisions Made" section.
 
