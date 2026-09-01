@@ -1,5 +1,8 @@
 # Pattern 24: BudTags Integration Examples
 
+> **⚠️ v9 note (2026-08-12):** BudTags `main` is still on v8, so these integration patterns remain current. The v9 migration (stable released 2026-08-04) is planned in repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md`; the wrapper, TableHelpers, and export button all change there, see `25-v9-stable.md` for the BudTags-specific migration facts.
+
+
 ## BudTags DataTable Component
 
 **File:** `resources/js/Components/DataTable.tsx`

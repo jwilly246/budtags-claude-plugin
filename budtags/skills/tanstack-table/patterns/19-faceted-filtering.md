@@ -1,5 +1,8 @@
 # Pattern 19: Faceted Filtering
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: faceting registers as `columnFacetingFeature` plus `facetedRowModel`/`facetedUniqueValues`/`facetedMinMaxValues` slots with no-arg `createFaceted*()` factories; `table._getFaceted*()` internals are removed. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## What is Faceted Filtering?
 
 Faceted filtering provides metadata about unique values in filtered columns, enabling dynamic filter UIs like checkboxes, range sliders, and counts.

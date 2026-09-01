@@ -1,5 +1,8 @@
 # Pattern 22: API Quick Reference
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: this reference is v8-only; the v9 surface is renamed and feature-gated throughout, do not answer v9 API questions from this file. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## Table Instance Methods
 
 ### Row Methods

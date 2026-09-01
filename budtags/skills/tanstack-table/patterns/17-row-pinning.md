@@ -1,5 +1,8 @@
 # Pattern 17: Row Pinning
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: table-level `enablePinning` splits into `enableColumnPinning`/`enableRowPinning`; row pinning positions stay top/bottom; `table._getPinnedRows()` is removed (use `getTopRows()`/`getCenterRows()`/`getBottomRows()`). For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## Enabling Row Pinning
 
 Row pinning splits rows into three sections: top-pinned, center (unpinned), and bottom-pinned.

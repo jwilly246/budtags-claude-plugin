@@ -1,7 +1,7 @@
 ---
 name: tanstack-table
-description: Use when working with TanStack Table for data tables, datagrids, sorting, filtering, pagination, row selection, column customization, or virtualization. Load specific pattern files based on the feature needed.
-version: 1.0.0
+description: Use when working with TanStack Table for data tables, datagrids, sorting, filtering, pagination, row selection, column customization, or virtualization. Version-aware - BudTags main is on v8; v9 went stable 2026-08-04 (see patterns/25-v9-stable.md). Load specific pattern files based on the feature needed.
+version: 2.0.0
 category: project
 agent: tanstack-specialist
 auto_activate:
@@ -30,13 +30,34 @@ auto_activate:
     - "flexRender"
     - "columnDef"
     - "ColumnDef"
+    - "useTable"
+    - "tableFeatures"
+    - "stockFeatures"
+    - "createTableHook"
+    - "useLegacyTable"
+    - "createSortedRowModel"
+    - "createFilteredRowModel"
+    - "columnFilteringFeature"
+    - "rowSortingFeature"
+    - "rowSelectionFeature"
+    - "table v9"
+    - "v9 migration"
 ---
 
 # TanStack Table Expert Skill
 
+## ⚠️ Version State (updated 2026-08-12), read this first
+
+**Two majors are in play. Pick the right one before writing any code:**
+
+- **BudTags `main` runs v8** (`@tanstack/react-table@^8.21.3`). All pattern files 01–24 document v8 and remain the operative guidance for day-to-day work on main.
+- **v9 went STABLE 2026-08-04** (latest 9.1.2 as of 2026-08-12). It is a ground-up rewrite: `useReactTable`→`useTable`, mandatory `tableFeatures({...})` registration, TanStack Store state, `table.getState()` removed, `sortingFn`→`sortFn`, pinning `left`/`right`→`start`/`end`, row-selection semantics changed, ESM-only. **Read `patterns/25-v9-stable.md`**, the verified v9 fact sheet, before any v9 work.
+- **The migration is planned, not done:** repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md` (re-verified for stable 2026-08-12). Branch: `tanstack-table-v9`.
+- **Once v9 is installed**, the package itself ships version-pinned first-party skills (`node_modules/@tanstack/react-table/skills/`, `node_modules/@tanstack/table-core/skills/`, including a complete `migrate-v8-to-v9` audit checklist). Prefer those over this skill's pattern files for v9 API detail; this skill stays the authority on BudTags-specific patterns (DataTable wrapper, TableHelpers, export button, virtualization config).
+
 ## What This Skill Provides
 
-You are an expert in **TanStack Table v8+**, the headless UI library for building powerful, flexible data tables and datagrids. This skill provides comprehensive documentation, patterns, and BudTags/BobLink-specific examples for implementing table functionality.
+You are an expert in **TanStack Table** (v8 today on BudTags; v9 stable exists, see Version State above), the headless UI library for building powerful, flexible data tables and datagrids. This skill provides comprehensive documentation, patterns, and BudTags/BobLink-specific examples for implementing table functionality.
 
 ## Your Capabilities
 
@@ -77,22 +98,28 @@ When this skill is active, you can:
 - `patterns/13-column-sizing.md` (~180 lines) - Resizable columns, min/max widths
 - `patterns/14-column-pinning.md` (~150 lines) - Pin left/right, sticky columns
 - `patterns/15-row-expansion.md` (~190 lines) - Expandable rows, sub-rows, nested data
-- `patterns/16-row-grouping.md` (~200 lines) - Group by column, group headers
-- `patterns/17-aggregation.md` (~180 lines) - Aggregate functions, grouped aggregation
-- `patterns/18-row-pinning.md` (~140 lines) - Pin rows to top/bottom
-- `patterns/19-virtualization.md` (~200 lines) - Virtual scrolling, large datasets
-- `patterns/20-faceted-filtering.md` (~170 lines) - Faceted search, filter counts
+- `patterns/16-row-grouping-aggregation.md` - Group by column, group headers, aggregate functions
+- `patterns/17-row-pinning.md` - Pin rows to top/bottom
+- `patterns/18-virtualization.md` - Virtual scrolling, large datasets
+- `patterns/19-faceted-filtering.md` - Faceted search, filter counts
 
 ### Advanced Topics
 
-- `patterns/21-custom-features.md` (~180 lines) - Plugin system, custom features
-- `patterns/22-typescript.md` (~160 lines) - Type safety, generics, type inference
-- `patterns/23-performance.md` (~190 lines) - Optimization tips, memoization
-- `patterns/24-api-reference.md` (~300 lines) - Complete API listing
+- `patterns/20-typescript.md` - Type safety, generics, type inference
+- `patterns/21-performance.md` - Optimization tips, memoization
+- `patterns/22-api-reference.md` - Complete API listing (v8)
+- `patterns/23-custom-features.md` - Plugin system, custom features
+- `patterns/24-budtags-integration.md` - BudTags DataTable wrapper integration
 
-**Total**: ~4,480 lines of progressive disclosure documentation
+### Version Migration
+
+- `patterns/25-v9-stable.md` - **v9 stable verified fact sheet** (2026-08-12): architecture, complete rename map, behavior changes, state model, first-party skill locations, BudTags migration facts
+
+(File names above match disk as of 2026-08-12, an earlier version of this list had drifted.)
 
 ## Quick Start Guide
+
+*(v8 API below, the version on BudTags `main`. For the v9 equivalent, see `patterns/25-v9-stable.md`.)*
 
 ### Installation
 
@@ -213,12 +240,13 @@ const table = useReactTable({
 
 1. **Basic Table** → Load patterns 01-06 (setup, columns, rendering)
 2. **Add Sorting** → Load pattern 07
-3. **Add Filtering** → Load patterns 08, 20 (filtering, faceted)
+3. **Add Filtering** → Load patterns 08, 19 (filtering, faceted)
 4. **Add Pagination** → Load pattern 09
 5. **Add Selection** → Load pattern 10
 6. **Customize Columns** → Load patterns 11-14 (visibility, ordering, sizing, pinning)
-7. **Large Datasets** → Load pattern 19 (virtualization)
-8. **Advanced Features** → Load patterns 15-18, 21 (expansion, grouping, custom features)
+7. **Large Datasets** → Load pattern 18 (virtualization)
+8. **Advanced Features** → Load patterns 15-17, 23 (expansion, grouping, row pinning, custom features)
+9. **Anything v9 / migration** → Load pattern 25 FIRST, then the package's first-party skills if v9 is installed
 
 ## Key Patterns from BudTags
 
@@ -253,7 +281,7 @@ export function DataTable<TData>({
 
 ### Pattern 2: Checkbox Column Helper
 
-**From TableHelpers.tsx:**
+**From TableHelpers.tsx:** *(v8 semantics, in v9, `getIsSomeRowsSelected()` means "at least one" and stays `true` at full selection; indeterminate must become `getIsSomeRowsSelected() && !getIsAllRowsSelected()`. See pattern 25.)*
 ```typescript
 export function createCheckboxColumn<TData>(
   options?: {

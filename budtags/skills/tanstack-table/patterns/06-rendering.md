@@ -1,5 +1,8 @@
 # Pattern 06: Rendering
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: `flexRender()` still works, but the `<FlexRender />` / `<table.FlexRender />` component form is now the documented preference. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## flexRender Utility
 
 Use `flexRender` to render dynamic content (strings, functions, or components):

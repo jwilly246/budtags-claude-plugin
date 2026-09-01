@@ -1,5 +1,8 @@
 # Pattern 23: Custom Features
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: the custom-feature/plugin API is rewritten, features are explicit objects composed via `tableFeatures({...})`. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## Custom Table Options
 
 Add custom options to your table configuration:

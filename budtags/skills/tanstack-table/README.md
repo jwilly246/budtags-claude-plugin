@@ -2,7 +2,9 @@
 
 ## What's Included
 
-This skill provides comprehensive documentation for **TanStack Table v8+**, sourced directly from the official documentation at https://tanstack.com/table/latest
+This skill provides comprehensive documentation for **TanStack Table**, sourced from the official documentation at https://tanstack.com/table/latest
+
+**Version state (2026-08-12):** pattern files 01–24 document **v8**, the version installed on BudTags `main` (`^8.21.3`). **v9 went stable 2026-08-04** (latest 9.1.2); `patterns/25-v9-stable.md` is the verified v9 fact sheet, and the repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md` in BudTags tracks the migration. v9 packages ship their own version-pinned agent skills at `node_modules/@tanstack/{react-table,table-core}/skills/`, prefer those for v9 API detail once v9 is installed.
 
 **Coverage:**
 - Complete API reference for all table features
@@ -47,15 +49,16 @@ tanstack-table/
     ├── 13-column-sizing.md            # Resizable columns
     ├── 14-column-pinning.md           # Sticky columns
     ├── 15-row-expansion.md            # Expandable rows
-    ├── 16-row-grouping.md             # Group rows
-    ├── 17-aggregation.md              # Aggregate functions
-    ├── 18-row-pinning.md              # Pin rows
-    ├── 19-virtualization.md           # Virtual scrolling
-    ├── 20-faceted-filtering.md        # Faceted search
-    ├── 21-custom-features.md          # Plugin system
-    ├── 22-typescript.md               # Type safety
-    ├── 23-performance.md              # Optimization
-    └── 24-api-reference.md            # Complete API
+    ├── 16-row-grouping-aggregation.md # Group rows + aggregate functions
+    ├── 17-row-pinning.md              # Pin rows
+    ├── 18-virtualization.md           # Virtual scrolling
+    ├── 19-faceted-filtering.md        # Faceted search
+    ├── 20-typescript.md               # Type safety
+    ├── 21-performance.md              # Optimization
+    ├── 22-api-reference.md            # Complete API (v8)
+    ├── 23-custom-features.md          # Plugin system
+    ├── 24-budtags-integration.md      # BudTags DataTable integration
+    └── 25-v9-stable.md                # v9 stable verified fact sheet (2026-08-12)
 ```
 
 ## Quick Start
@@ -138,10 +141,11 @@ The skill uses progressive disclosure - load only the pattern files you need:
 
 **For Basic Tables:** Load patterns 01-06
 **For Sorting:** Add pattern 07
-**For Filtering:** Add patterns 08, 20
+**For Filtering:** Add patterns 08, 19
 **For Selection:** Add pattern 10
-**For Large Data:** Add pattern 19
-**For Everything:** Load all 24 patterns (not recommended - high token usage)
+**For Large Data:** Add pattern 18
+**For v9 / migration:** Load pattern 25 first
+**For Everything:** Load all 25 patterns (not recommended - high token usage)
 
 ## Key Features Covered
 
@@ -181,7 +185,7 @@ This skill is based on the official TanStack Table documentation:
 
 **Website:** https://tanstack.com/table/latest
 **GitHub:** https://github.com/TanStack/table
-**Version:** v8+ (latest)
+**Version:** patterns 01-24 = v8; pattern 25 = v9 stable (9.1.2, verified 2026-08-12)
 
 All content is sourced from official docs and adapted for progressive disclosure to optimize Claude Code token usage.
 

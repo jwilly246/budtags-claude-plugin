@@ -1,5 +1,8 @@
 # Pattern 10: Row Selection
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: `getIsSomeRowsSelected()` now means "at least one" and stays `true` at full selection (indeterminate logic must add `&& !getIsAllRowsSelected()`), and `getToggleSelectedHandler()` performs built-in shift-range selection by default (`enableRowRangeSelection: false` to opt out). For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## Enabling Row Selection
 
 Row selection is enabled by default, but you need to manage the state:

@@ -1,5 +1,8 @@
 # Pattern 14: Column Pinning
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: pinning is logical now, every `left`/`right` state value, argument, and getter becomes `start`/`end` (`getLeftVisibleLeafColumns()`→`getStartVisibleLeafColumns()`); `getCenter*` getters keep their names; table-level `enablePinning` splits into `enableColumnPinning`/`enableRowPinning`; use logical CSS (`inset-inline-start`) for sticky layouts. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## Column Pinning State
 
 Column pinning splits columns into three groups: left (pinned left), center (unpinned), and right (pinned right).

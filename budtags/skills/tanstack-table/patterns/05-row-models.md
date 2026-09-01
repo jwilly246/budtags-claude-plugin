@@ -1,5 +1,8 @@
 # Pattern 05: Row Models
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: `get*RowModel()` table options are removed, no-arg `create*RowModel()` factories register as named slots inside `tableFeatures({...})`, and the core row model is automatic. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## What Are Row Models?
 
 Row models are functions that process your data through a pipeline. Each row model adds a specific feature to your table.

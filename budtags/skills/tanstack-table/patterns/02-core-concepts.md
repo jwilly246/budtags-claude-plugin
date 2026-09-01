@@ -1,5 +1,8 @@
 # Pattern 02: Core Concepts
 
+> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: `table.getState()` and top-level `onStateChange` are removed, state lives in TanStack Store (`table.state` / `table.store` / `table.atoms.<slice>`), and instance methods move to shared prototypes (never destructure them). For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+
+
 ## Headless UI Philosophy
 
 TanStack Table is a **headless** UI library - it provides logic, state, and API without any markup or styles.
