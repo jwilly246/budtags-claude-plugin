@@ -9,7 +9,7 @@ The Distru CRM domain unifies customers AND vendors under a single `Company` mod
 | Method | Path | Operation | Notes |
 |--------|------|-----------|-------|
 | GET | `/public/v1/companies` | List companies | Page size **5,000**. |
-| GET | `/public/v1/companies/{id}` | Get one company | Same shape as list. |
+| GET | `/public/v1/companies/{id}` | Get one company | Same shape as list. **Live-verified 2026-08-18 (HTTP 200)** — a BudTags in-code comment (`SyncMarketplaceCustomerToDistru.php` D6) claiming detail GETs 404 for companies is WRONG; response includes `updated_datetime`, so pre-write refresh/version checks ARE possible. |
 | POST | `/public/v1/companies` | Create or update | UPSERT. `id` optional. |
 | GET | `/public/v1/contacts` | List contacts | Page size **1,000**. Per-company filter via `company_id`. |
 | GET | `/public/v1/contacts/{id}` | Get one contact | Same shape. |
@@ -54,15 +54,23 @@ The Distru CRM domain unifies customers AND vendors under a single `Company` mod
       "license_id": "<uuid|null>"                         // SCALAR UUID — NOT a nested object
     }
   ],
-  "licenses": [                                           // ARRAY of {id, license_number} only
+  "licenses": [                                           // RICHER than previously documented (live-verified 2026-08-18)
     {
       "id": "<uuid>",
-      "license_number": "<string>"
+      "license_number": "<string>",
+      "active": true,
+      "license_type": "<string|null>",                    // e.g. "Processor"
+      "expiry_datetime": "<iso|null>",
+      "issue_datetime": "<iso|null>"
     }
   ],
   "custom_data": [ /* see custom_data shape inversion below */ ],
+  "inserted_datetime": "<iso>",                           // ADDED after 2026-05-25 — 830/830 live Evo companies (2026-09-01); BudTags ranks it first for business_partners.created_at
   "updated_datetime": "<iso>",
   "deleted_at": "<iso|null>"                              // Present when `deleted=include` is passed
+  // Also observed on the 2026-09-01 wire, not in the shape above and population not audited:
+  //   `tasks`, `outstanding_balance`, `default_payment_term`, `qb_customer_id`, `qb_vendor_id`,
+  //   `leaflink_customer_id`, `leaflink_brand_id`
 }
 ```
 
@@ -75,8 +83,8 @@ The following fields were previously listed in this skill but **never appear in 
 - `emails`, `billing_email`, `shipping_email`, `primary_email`, `additional_emails`, `phone`, `additional_phones`
 - `credit_limit`
 - `tags`
-- `inserted_datetime`
-- `licenses[].license_type`, `licenses[].license_expiration_date`, `licenses[].metrc_facility_license`
+- ~~`inserted_datetime`~~ — CORRECTION 2026-09-01: now emitted on every company (830/830 live Evo)
+- `licenses[].license_expiration_date`, `licenses[].metrc_facility_license` (but NOTE 2026-08-18: `licenses[].license_type`, `licenses[].active`, `licenses[].expiry_datetime`, `licenses[].issue_datetime` DO appear in the live wire now — see entity shape above)
 - `locations[].is_shipping`, `locations[].is_billing`, `locations[].is_archived`, `locations[].license` (nested object)
 
 ### What's still NOT here (compared to docs that hint at it)
@@ -111,13 +119,17 @@ The following fields were previously listed in this skill but **never appear in 
   "driver_license_number": "<string|null>",
   "driver_license_issuing_state": "<string|null>",
   "custom_data": [ /* see shape inversion below */ ],
+  "inserted_datetime": "<iso>",                           // ADDED after 2026-05-25 — 454/454 live Evo contacts (2026-09-01)
+  "updated_datetime": "<iso>",                            // ADDED — same probe
   "deleted_at": "<iso|null>"                              // With `deleted=include`
+  // Also observed 2026-09-01: `tasks`
 }
 ```
 
 ### Contact fields NOT in the wire (removed 2026-05-25)
 
-- `department`, `notes`, `birthdate`, `anniversary_date`, `tags`, `inserted_datetime`, `updated_datetime` — none of these appeared in live responses for this tenant. Treat any sighting in the wild as tenant-extension or stale doc.
+- `department`, `notes`, `birthdate`, `anniversary_date`, `tags` — none of these appeared in live responses for this tenant. Treat any sighting in the wild as tenant-extension or stale doc.
+- ~~`inserted_datetime`, `updated_datetime`~~ — CORRECTION 2026-09-01: BOTH are now emitted on every contact (454/454 live Evo). `updated_datetime` makes incremental contact sync possible.
 
 ## Location entity shape
 

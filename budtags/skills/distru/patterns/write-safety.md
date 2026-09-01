@@ -84,7 +84,7 @@ Catalogued in detail in `categories/products.md`. Key examples:
 | `brand: { id, name, ... }` | `brand_id: <uuid>` |
 | `product_category: { id, name, ... }` | `product_category_id: <uuid>` |
 | `is_active: true` | `is_inactive: false` (INVERTED BOOLEAN) |
-| `custom_data: [{id, name, type, value}]` | `custom_data: [{id, value}]` (omit name+type) |
+| `custom_data: [{id, name, type, value}]` | `custom_data: {"<field id>": value}` — a MAP, never a list (a list 400s in prod; see checklist + 2026-09-01 addendum) |
 
 The writeback mapper must translate both directions of the shape.
 
@@ -142,8 +142,8 @@ Before any POST is dispatched:
 - [ ] Have read-shape embeds been flattened to write-shape ids (vendor → vendor_id, etc.)?
 - [ ] Is the entity in an editable state (e.g., purchase still `Pending`)?
 - [ ] Is the `full_name` field stripped from contact writes?
-- [ ] Has `custom_data[]` been reshaped from `{id, name, type, value}` → `{id, value}`?
-- [ ] Is `outstanding_balance_threshold` on Company in INTEGER CENTS, not decimal dollars?
+- [ ] Has `custom_data` been reshaped from the read LIST `[{id, name, type, value}]` to the write MAP `{"<field id>": value}`? (NEVER a list of `{id, value}` — that 400s in prod; see 2026-09-01 addendum below. Omit the key entirely when not writing custom fields; sending it replaces the WHOLE map and clears omitted fields.)
+- [ ] `outstanding_balance_threshold` UNITS ARE CONTESTED (2026-09-01): the live spec prose says positive integer in MAJOR units (whole dollars), while this checklist historically said integer cents and CompanyExporter sent credit_limit*100 — a potential 100x. OMIT the field from writes until one live push verifies the unit; never convert on guesswork.
 - [ ] Is local intent-id stored so a retry can reconcile?
 
 ## Cross-references
@@ -152,3 +152,27 @@ Before any POST is dispatched:
 - Error handling on writes: `patterns/error-handling.md`
 - Custom field handling: mapping doc Decision #20
 - Cost field preservation on writeback: mapping doc Section 7
+
+## Addendum 2026-09-01: sparse updates changed the rules
+
+Distru's 2026-08-24 changelog: **"All POST endpoints now support sparse
+updates."** Verified against the live spec (`schemas/openapi-full-2026-09-01.json`).
+This supersedes the non-sparse guidance above for TOP-LEVEL fields:
+
+- Top-level fields you omit on an id-matched POST keep their current value.
+- The ARRAY-level danger remains: nested arrays (items, charges) that you DO
+  send are replaced wholesale, and id-matched ITEM entries are field-sparse
+  (verified live 2026-08-26, `OrderItemRequest`). Omitting a line from a sent
+  array still deletes it.
+- `custom_data` is a WRITE MAP `{"<field id>": value}` keyed by numeric field
+  id (get ids from `GET /custom-fields?parent_object=<type>`). Per the spec:
+  sending it "replaces the whole custom-field map — any field you omit from
+  the map is cleared". So: omit the key when you have nothing to write; when
+  you write, send every field you want kept. An empty PHP array encodes `[]`
+  and 400s ("custom_data is invalid", with `context.id` = the RESOURCE id,
+  not a field id).
+- Purchases can now be created at ANY status (2026-08-19) and matched to a
+  compliance transfer — the "cannot edit past Pending" rule above predates
+  this; re-verify before relying on it.
+- `inserted_at` → `inserted_datetime` rename (2026-08-03) on /adjustments,
+  /returns, /product-pos-mappings; read both names defensively.

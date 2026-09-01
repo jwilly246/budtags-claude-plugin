@@ -279,7 +279,10 @@ export interface DistruPurchaseLineItem {
 }
 
 /**
- * Purchase — 12 top-level fields. NO creator/owner/payments (docs claim them but live omits).
+ * Purchase — 12 top-level fields at the 2026-05-26 probe. NO creator/owner/payments then.
+ * 2026-09-01 CORRECTION (live re-probe, Evo, 500 records): 25 keys — creator (500/500, DistruUser),
+ * owner (495/500), payments, billing_location, supplier_location, location, metrc_transfer_id,
+ * biotrack_id, qb_bill_id, paid, payment_status, description, tasks are now emitted.
  * Cannot update PO past Pending status — Distru returns 400.
  */
 export interface DistruPurchase {
@@ -295,7 +298,9 @@ export interface DistruPurchase {
     items: DistruPurchaseLineItem[];
     charges: DistruCharge[];
     custom_data: DistruCustomFieldValue[];
-    // NO creator/owner/payments — docs claim them but live omits
+    // 2026-09-01: creator/owner/payments (and more) ARE emitted now — see the interface docblock
+    creator?: DistruUser;
+    owner?: DistruUser | null;
 }
 
 /**
@@ -362,11 +367,14 @@ export interface DistruCompany {
     licenses: Array<{ id: DistruId; license_number: string }>;
     custom_data: DistruCustomFieldValue[];
     deleted_at: DistruTimestamp | null;
+    inserted_datetime: DistruTimestamp;    // ADDED after 2026-05-25 — 830/830 live Evo companies (2026-09-01)
     updated_datetime: DistruTimestamp;
+    // Also on the 2026-09-01 wire (population not audited): tasks, outstanding_balance,
+    // default_payment_term, qb_customer_id, qb_vendor_id, leaflink_customer_id, leaflink_brand_id
 }
 
 /**
- * Contact — 15 fields. Has BOTH first_name AND last_name AND full_name (3 separate name fields).
+ * Contact — 15 fields (17 as of 2026-09-01: inserted_datetime + updated_datetime now emitted). Has BOTH first_name AND last_name AND full_name (3 separate name fields).
  * full_name is SERVER-DERIVED from first+last — write only accepts first/last; full_name in response only.
  *
  * Company and owner are REDUCED to {id} only in API responses (no embedded user details).
@@ -390,6 +398,8 @@ export interface DistruContact {
     owner: { id: DistruId };               // REDUCED to just id
     custom_data: DistruCustomFieldValue[];
     deleted_at: DistruTimestamp | null;
+    inserted_datetime: DistruTimestamp;    // ADDED after 2026-05-25 — 454/454 live Evo contacts (2026-09-01)
+    updated_datetime: DistruTimestamp;     // ADDED — same probe
 }
 
 /**
@@ -470,8 +480,11 @@ export interface DistruImage {
  *
  * Read shape on `is_active: boolean`. Write expects `is_inactive: boolean` (NEGATED) — semantic inversion.
  *
- * Write-only fields not exposed in GET: is_featured, wholesale_unit_price, total_thc, total_cbd,
+ * Write-only fields not exposed in GET (as of 2026-05-25): is_featured, wholesale_unit_price, total_thc, total_cbd,
  * quantity_available_threshold_min/max, tags[], upc, menu_visibility, inventory_tracking_method, etc.
+ * 2026-09-01 CORRECTION: every one of those IS emitted on GET now, plus inserted_datetime, creator, owner,
+ * leaflink_product_id, quantity_* rollups, tasks, gross_weight(_unit_type), total_cannabinoid_unit,
+ * treez_wholesale_price — 49 top-level keys, live-verified on Evo. See categories/products.md.
  */
 export interface DistruProduct {
     id: DistruId;
@@ -500,6 +513,30 @@ export interface DistruProduct {
     vendor: { id: DistruId; name: string; updated_datetime: DistruTimestamp } | null;  // Distru docs say "company"
     updated_datetime: DistruTimestamp;
     deleted_at: DistruTimestamp | null;
+    // ── ADDED after 2026-05-25, live-verified 2026-09-01 (population on 4,495 active Evo products) ──
+    inserted_datetime: DistruTimestamp;    // 4,495/4,495 — true creation stamp
+    creator: DistruUser;                   // 4,495/4,495
+    owner: DistruUser;                     // 4,495/4,495
+    inventory_tracking_method: string;     // 4,495/4,495, e.g. "PRODUCT"
+    is_featured: boolean;
+    menu_visibility: 'DO_NOT_INCLUDE' | 'INCLUDE_IN_ALL' | 'INCLUDE_IN_SELECT';
+    quantity_available: DistruDecimalString;
+    quantity_active: DistruDecimalString;
+    quantity_reserved: DistruDecimalString;
+    quantity_active_by_location: unknown[];          // 1,140/4,495 non-empty
+    quantity_available_threshold_min: DistruDecimalString | null;  // 445/4,495
+    quantity_available_threshold_max: DistruDecimalString | null;  // always null on Evo
+    wholesale_unit_price: number | null;   // JSON NUMBER, not a decimal-string — 452/4,495
+    treez_wholesale_price: unknown | null; // always null on Evo
+    leaflink_product_id: number | null;    // 240/4,495
+    tags: string[];                        // 25/4,495 non-empty
+    upc: string | null;                    // always null on Evo
+    tasks: unknown | null;                 // always null on Evo
+    gross_weight: unknown | null;          // always null on Evo
+    gross_weight_unit_type: unknown | null;
+    total_thc: DistruDecimalString | null; // 1/4,495
+    total_cbd: DistruDecimalString | null; // 1/4,495
+    total_cannabinoid_unit: string | null; // 3/4,495, e.g. "PERCENT"
 }
 
 /**
@@ -532,7 +569,9 @@ export interface DistruTestResult {
     package_id: DistruId | null;           // MUTEX with batch_id
     batch_id: DistruId | null;             // MUTEX with package_id
     additional_test_results: Record<string, DistruDecimalString>;  // open object map — ~100 keys typical
+    inserted_datetime: DistruTimestamp;    // ADDED after 2026-05-25 — 4,297/4,297 live Evo results (2026-09-01)
     updated_datetime: DistruTimestamp;
+    // Also on the 2026-09-01 wire (population not audited): coa_url, metrc_id, biotrack_id
 }
 
 /**

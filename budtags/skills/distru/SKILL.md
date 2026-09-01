@@ -102,7 +102,18 @@ When the user asks about Distru integration, you can:
 
 ## Available Resources
 
-7 category files, 5 scenario templates, 7 pattern files, 8 OpenAPI schema files, 2 coverage audits:
+8 category files, 5 scenario templates, 7 pattern files, 9 OpenAPI schema files, 2 coverage audits:
+
+> **UPSTREAM DRIFT WARNING (2026-09-01):** Distru shipped a major API expansion
+> June–Sept 2026 (39 audited paths → 113 live). The per-category docs and
+> per-category schema stubs below were audited 2026-05 and do NOT cover the new
+> surface. Consult `UPSTREAM-CHANGELOG.md` (verbatim upstream changelog) and
+> `schemas/openapi-full-2026-09-01.json` (complete live spec) for anything
+> recent. Known stale claims: purchases CAN now be created at any status and
+> matched to Metrc transfers; ALL POSTs are now sparse (see the 2026-09-01
+> addendum in `patterns/write-safety.md`); `inserted_at` was renamed
+> `inserted_datetime` on /adjustments, /returns, /product-pos-mappings
+> (2026-08-03); GET `/packages/{id}` and POST `/locations` were removed.
 
 ### Category Files (one per API domain)
 
@@ -113,6 +124,7 @@ When the user asks about Distru integration, you can:
 - `categories/inventory.md` — Batches, Packages, Adjustments, Inventory snapshot endpoint
 - `categories/manufacturing.md` — Assemblies (3-level nesting; scalar creation_source filter)
 - `categories/system.md` — Locations, Users, Menus, PaymentMethods, Strains, CustomFields, FileAttachments
+- `categories/webhooks.md` — Webhook wire contract (payload shape, nested-entity triggers, HMAC signing, ordering/retries; captured 2026-09-01; NOT in the OpenAPI spec)
 
 ### Pattern Files
 
@@ -141,7 +153,8 @@ These are **BudTags-app-specific** docs: which fields *our* importers persist to
 
 ### Full Documentation
 
-- `schemas/` — 8 OpenAPI JSON specs (mostly stubs; expanded as Phase B importers transcribe live samples)
+- `schemas/` — 8 curated per-category OpenAPI stubs (May 2026 audit) + `openapi-full-2026-09-01.json`, the complete live spec (113 paths, authoritative for anything the stubs lack)
+- `UPSTREAM-CHANGELOG.md` — Distru's own API changelog, verbatim (2024-10 → 2026-09-01)
 - `ENTITY_TYPES.md` — TypeScript type reference
 
 ---

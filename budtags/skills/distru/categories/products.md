@@ -21,7 +21,9 @@ The Distru Products domain covers the catalog model: Products with rich relation
 
 > No `/brands`, `/categories`, `/subcategories`, `/product-lines`, or `/units` endpoints exist. Reference data for these is only available embedded inside Product responses — extract via product scan.
 
-## Product entity shape — actual wire (26 top-level keys)
+## Product entity shape — actual wire (49 top-level keys as of 2026-09-01; 26 when first reconciled 2026-05-25)
+
+**Wire expansion, live-verified 2026-09-01 against Evo Pharms (4,563 products incl. 68 deleted):** Distru has added 23 keys since the 2026-05-25 reconciliation. The important ones: `inserted_datetime` (true creation stamp, 4,563/4,563), `creator` and `owner` (full `DistruUser` objects, 4,563/4,563). The rest are inventory rollups and sparse write-side echoes — listed at the bottom of the block with their observed population. BudTags now ranks `inserted_datetime` first for `products.created_at` / `non_metrc_items.created_at` (earlier-only), with `updated_datetime` as the fallback. Distru's own dates (see `UPSTREAM-CHANGELOG.md`): `owner` as a full user object 2026-07-29 (read/write parity pass), `inserted_datetime` on product objects 2026-08-18, `quantity_*` rollups 2026-08-24, `tasks` 2026-08-26. The spec snapshot `schemas/openapi-full-2026-09-01.json` lists 52 `Product` properties.
 
 ```jsonc
 {
@@ -78,7 +80,30 @@ The Distru Products domain covers the catalog model: Products with rich relation
     "name": "..."
   } | null,
   "images": [ /* array of image refs */ ],
-  "updated_datetime": "<iso>"
+  "updated_datetime": "<iso>",
+  // ── keys ADDED after 2026-05-25 (population = non-empty on 4,495 active Evo products, 2026-09-01) ──
+  "inserted_datetime": "<iso>",                                  // 4,495/4,495 — Distru record create; BudTags ranks it first for created_at
+  "creator": { /* DistruUser: id, email, role{id,name}, full_name, deleted_at, banned, inserted_datetime */ },  // 4,495/4,495 — who created the product
+  "owner": { /* DistruUser, same shape */ },                     // 4,495/4,495 — assigned owner
+  "inventory_tracking_method": "PRODUCT|...",                    // 4,495/4,495
+  "is_featured": <boolean>,                                      // 4,495/4,495
+  "quantity_available": "<decimal-string>",                      // 4,495/4,495 — inventory rollups; Metrc stays authoritative in BudTags
+  "quantity_active": "<decimal-string>",                         // 4,495/4,495
+  "quantity_reserved": "<decimal-string>",                       // 4,495/4,495
+  "quantity_active_by_location": [ /* per-location rows */ ],   // 1,140/4,495 non-empty
+  "quantity_available_threshold_min": "<decimal-string|null>",   // 445/4,495
+  "quantity_available_threshold_max": "<decimal-string|null>",   // 0/4,495 — key present, always null
+  "wholesale_unit_price": <number|null>,                         // 452/4,495 — a JSON NUMBER, not a decimal-string
+  "treez_wholesale_price": null,                                 // 0/4,495
+  "leaflink_product_id": <integer|null>,                         // 240/4,495
+  "tags": [ /* strings */ ],                                     // 25/4,495 non-empty
+  "upc": "<string|null>",                                        // 0/4,495 — key present, always null on this tenant
+  "tasks": null,                                                 // 0/4,495
+  "gross_weight": null,                                          // 0/4,495
+  "gross_weight_unit_type": null,                                // 0/4,495
+  "total_thc": "<decimal-string|null>",                          // 1/4,495
+  "total_cbd": "<decimal-string|null>",                          // 1/4,495
+  "total_cannabinoid_unit": "PERCENT|...|null"                   // 3/4,495
 }
 ```
 
@@ -86,16 +111,18 @@ The Distru Products domain covers the catalog model: Products with rich relation
 
 The following fields were previously listed in this skill but **never appear in live API responses** (verified across 3,915 products / 26 categories on a production tenant). They've been removed; treat any future sighting as a tenant extension or stale doc:
 
-- `upc`
+> **2026-09-01 correction:** `upc`, `tags` and `inserted_datetime` were on this list and HAVE since appeared on the wire (see the ADDED keys in the shape above). They are struck here, not deleted, so the history stays legible.
+
+- ~~`upc`~~ — ON THE WIRE since 2026 (null on every Evo product, but the key is emitted)
 - `is_inactive` — read direction only; this is the WRITE field name (skill confused itself by listing both)
 - `is_archived`
-- `tags` (array)
+- ~~`tags` (array)~~ — ON THE WIRE since 2026 (sparse)
 - `primary_test_result` — embedded; only on `/packages` endpoint, NOT `/products`
 - `compliance_type` (METRC|BIOTRACK|NONE) — **NOT EMITTED.** Previously documented as required; not in wire. Cannot be used to route cannabis-vs-non-cannabis classification; use a category allowlist instead.
 - `metrc_item_name` — NOT EMITTED. Distru does not expose the Metrc-item name hint on /products.
 - `metrc_item_category` — NOT EMITTED. Same.
 - `internal_notes`
-- `inserted_datetime`
+- ~~`inserted_datetime`~~ — ON THE WIRE since 2026 (4,563/4,563 live Evo products, 2026-09-01)
 - `image_urls` — wire key is `images`, NOT `image_urls`
 - `wholesale_price` — wire key is `unit_price`
 - `case_quantity` — wire key is `units_per_case`
@@ -112,8 +139,8 @@ The following fields were previously listed in this skill but **never appear in 
 | `product_group` (full embed) | `group_id` (UUID) | Note: `group_id`, NOT `product_group_id` |
 | `is_active` | `is_inactive` | INVERTED BOOLEAN on write |
 | `brand` (full embed) | `brand_id` (UUID) | |
-| `category` (full embed) | `product_category_id` (UUID) | |
-| `subcategory` (full embed) | `product_subcategory_id` (UUID) | |
+| `category` (full embed) | `category_id` (UUID) | CORRECTED 2026-09-01: live spec says `category_id` (REQUIRED on create), NOT `product_category_id`. The old name 400s and caused a real exporter bug (ProductExporter RELATION_INVERSIONS). |
+| `subcategory` (full embed) | `subcategory_id` (UUID) | CORRECTED 2026-09-01: `subcategory_id`, NOT `product_subcategory_id` (that name appears nowhere in the live spec). |
 | `strain` (full embed) | `strain_id` (UUID) | |
 
 The mapping doc Section 10 documents the writeback translation.
@@ -191,7 +218,9 @@ NO `tags[]` filter (no `tags` field exists). NO `upc` filter. NO `compliance_typ
     "toluene_ug_per_g": "<decimal-string>"
     // ... ~100 more keys per record
   },
+  "inserted_datetime": "<iso>",                                  // ADDED after 2026-05-25 — 4,297/4,297 live Evo results (2026-09-01); BudTags ranks it after release_date for created_at
   "updated_datetime": "<iso>"
+  // Also observed on the 2026-09-01 wire, population not audited: `coa_url`, `metrc_id`, `biotrack_id`
 }
 ```
 
@@ -203,7 +232,7 @@ NO `tags[]` filter (no `tags` field exists). NO `upc` filter. NO `compliance_typ
 - `metrc_lab_test_id` — NOT EMITTED
 - `product_id` — NOT EMITTED (test results reference `package_id` OR `batch_id`, not product directly)
 - `sample_id`, `expiration_datetime`, `passed_test`, `test_status`, `moisture_content`, `water_activity` — NOT EMITTED
-- `inserted_datetime` — NOT EMITTED
+- ~~`inserted_datetime` — NOT EMITTED~~ — CORRECTION 2026-09-01: now emitted on every result (4,297/4,297 live Evo)
 
 ## Product POS Mappings shape
 

@@ -1,6 +1,6 @@
 # Purchasing Domain — Purchases
 
-The Distru Purchasing domain covers supplier-facing purchase orders. Purchases follow a tight 5-value lifecycle and exhibit the same UPPERCASE-response casing convention as Invoices, but unlike Orders/Invoices the wire payload is markedly leaner — no creator/owner, no billing/shipping locations, no per-line cost columns.
+The Distru Purchasing domain covers supplier-facing purchase orders. Purchases follow a tight 5-value lifecycle and exhibit the same UPPERCASE-response casing convention as Invoices, but unlike Orders/Invoices the wire payload was markedly leaner at the 2026-05-26 probe — no creator/owner, no billing/shipping locations, no per-line cost columns. **Re-probed 2026-09-01 (Evo, 500 records): the payload has grown to 25 top-level keys** — see "2026-09-01 wire growth" below before trusting the 12-field shape.
 
 **Phase 0.5 audited 2026-05-21.** **Re-probed against live API 2026-05-26 (563 records / 16,837 line items)** — that probe overturned several documented fields the original audit had wrong; see "Probe corrections" below.
 
@@ -15,7 +15,11 @@ Mapping doc: `/Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md`.
 | POST | `/public/v1/purchases` | Create or update purchase | UPSERT. **Cannot edit status past `Pending`** (Distru server-side rule — returns HTTP 400 on attempt). |
 | POST | `/public/v1/purchases/{id}/payments` | Insert payment | **WRITE-ONLY** — payment ledger not exposed via GET. |
 
-## Purchase entity shape (12 top-level fields — all 563/563 records populate every field)
+### 2026-09-01 wire growth (live re-probe, Evo Pharms, 500 records)
+
+The 12-field shape below is still correct for the keys it lists, but the wire now carries **25 top-level keys**. Newly present (all previously documented as absent): `creator` (500/500, full `DistruUser`), `owner` (495/500, `DistruUser`), `payments`, `billing_location`, `supplier_location`, `location`, `metrc_transfer_id`, `biotrack_id`, `qb_bill_id`, `paid`, `payment_status`, `description`, `tasks` (`[]`). Population of the non-user keys was not audited. Distru's changelog dates `owner` (full user object) on purchases to the 2026-07-29 parity pass and `tasks` to 2026-08-26; the 2026-09-01 spec snapshot lists 25 `Purchase` properties. Still absent: `shipping_location`, `purchase_datetime`, `delivery_datetime`, `completion_datetime`, `notes`. The endpoint table's "payment ledger not exposed via GET" claim needs re-checking now that a `payments` key is emitted.
+
+## Purchase entity shape (12 top-level fields — all 563/563 records populate every field; SEE 2026-09-01 growth note above)
 
 ```jsonc
 {
@@ -35,10 +39,13 @@ Mapping doc: `/Users/budtags/Desktop/budtags/DISTRU-INTEGRATION-MAPPING.md`.
   "items":      [ /* PurchaseLineItem[] inline — 11 fields each */ ],
   "charges":    [ /* Charge[] inline — typically empty (~96.5% of records) */ ],
   "custom_data": []                                 // tenant custom fields
-  // FIELDS THAT DO NOT EXIST on /purchases (despite earlier doc claims — see "Probe corrections"):
+  // FIELDS THAT DID NOT EXIST on /purchases at the 2026-05-26 probe (see "Probe corrections"):
   //   creator, owner, payments, billing_location, shipping_location,
   //   purchase_datetime, delivery_datetime, completion_datetime, notes,
   //   metrc_transfer_id
+  // 2026-09-01 CORRECTION: creator, owner, payments, billing_location and metrc_transfer_id
+  //   ARE emitted now — see the wire-growth note above. Only shipping_location,
+  //   purchase_datetime, delivery_datetime, completion_datetime and notes remain absent.
 }
 ```
 

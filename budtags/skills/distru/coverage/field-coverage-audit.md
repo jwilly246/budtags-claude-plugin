@@ -304,7 +304,7 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 | `data[].primary_shipping_location` | object | opt | Y | **U** | — | raw_payload only | **GAP** |
 | `data[].primary_license_holder` | string | opt | Y | **U** | — | raw_payload only | **GAP** |
 | `data[].tags` | array<string> | opt | Y | **U** | — | raw_payload only | **GAP** — tag taxonomy lost |
-| `data[].inserted_datetime` | iso | req | Y | U | — | raw_payload only | Not used as sync watermark |
+| `data[].inserted_datetime` | iso | req | Y | M | `business_partners.created_at` | column + raw_payload | Ranked FIRST for `created_at` (earlier-only) since 2026-09-01; live 830/830 Evo companies carry it. Still not a sync watermark |
 | `data[].updated_datetime` | iso | req | Y | U | — | raw_payload only | No incremental filter sent |
 | `data[].deleted_at` | iso | opt | N | M | `customers/vendors.deleted_at` | column | line 1267 |
 | `data[].licenses[]` | array<object> | opt | Y | P | first → `license_number`; full array stashed | external_ids | line 749, 928, 1213 |
@@ -375,7 +375,7 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 | `data[].owner` | object | opt | N | P | only id read | external_ids | line 1473 |
 | `data[].owner.id` | uuid | opt | N | M | `external_ids->distru_owner_id` | external_ids | line 1476 |
 | `data[].tags` | array<string> | opt | Y | **U** | — | raw_payload only | **GAP** |
-| `data[].inserted_datetime` | iso | req | Y | U | — | raw_payload only | Not used as watermark |
+| `data[].inserted_datetime` | iso | req | Y | U | — | raw_payload only | Not used as watermark. Live 2026-09-01: 454/454 Evo contacts carry it (and `updated_datetime`) |
 | `data[].updated_datetime` | iso | req | Y | U | — | raw_payload only | No incremental |
 | `data[].deleted_at` | iso | opt | N | M | `customer_contacts.deleted_at` | column | line 1509 |
 | `data[].custom_data[]` | array<object> | opt | Y | P | array preserved; definitions recorded | external_ids + sighting table | line 1425, 1477 |
@@ -413,7 +413,9 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 | `data[].tags` | string[] | opt | Y | **U** | — | raw_payload only | **GAP** — tag taxonomy lost |
 | `data[].deleted_at` | iso | opt | N | M | `products/non_metrc_items.deleted_at` (SoftDeletes) | column | line 422, 456 |
 | `data[].updated_datetime` | iso | req | Y | M | `updated_at` | column | line 423, 455 |
-| `data[].inserted_datetime` | iso | req | Y | D | — | raw_payload | `created_at` set to `now()` instead |
+| `data[].inserted_datetime` | iso | req | Y | M | `products/non_metrc_items.created_at` | column + raw_payload | Ranked FIRST for `created_at` (earlier-only), `updated_datetime` fallback — fixed 2026-09-01; live 4,563/4,563 Evo products carry it |
+| `data[].creator` | DistruUser | req | N (added 2026) | D | — | raw_payload | Who created the product — live 2026-09-01 4,563/4,563; not yet surfaced natively |
+| `data[].owner` | DistruUser | req | N (added 2026) | D | — | raw_payload | Assigned owner — same probe |
 | `data[].vendor.id` | uuid | opt | Y | M | `vendors.external_ids->distru_company_id` / `non_metrc_items.preferred_vendor_id` | external_ids/column | line 961, 998 |
 | `data[].vendor.name` | string | opt | Y | M | `vendors.name` / `non_metrc_items.vendor` | column | line 526, 577 |
 | `data[].vendor.updated_datetime` | iso | opt | (impl) | D | — | raw_payload | |
@@ -453,7 +455,8 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 | `data[].description` | string | opt | Y | M | `description` | column | line 563, 842 |
 | `data[].internal_notes` | string | opt | Y | **U** | — | raw_payload only | **GAP** — No native column |
 | `data[].quantities.*` | object | opt | Y | D | — | raw_payload | Intentional — Metrc-authoritative |
-| `data[].menus` | array of `{menu_id,menu_name}` | opt | Y | R | `external_ids->'distru_menus'` | external_ids | line 1304; audit-only, not surfaced in UI |
+| `data[].menus` | array of `{menu_id,menu_name}` | opt | Y | R | `external_ids->'distru_menus'` | external_ids | line 1304; feeds storefront Distru-menu visibility (apply + post-import refresh) |
+| `data[].menu_visibility` | string enum | opt | Y | M | `external_ids->'distru_menu_visibility'` | external_ids | DO_NOT_INCLUDE / INCLUDE_IN_ALL / INCLUDE_IN_SELECT; PRESENT ON READS (live probe 2026-08-31 vs Evo — earlier audit passes missed it); INCLUDE_IN_ALL means `menus[]` is not authoritative |
 | `data[].custom_data` | array | opt | Y | R | `distru_custom_field_definitions` (sightings) | `external_ids->'distru_custom_fields'` | line 409, 1321 |
 
 ### Gaps
@@ -466,7 +469,8 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 - `primary_test_result` (U) — Decide whether to populate `primary_test_result_*` columns
 - `product_line` (U) — Verify against Phase 1; if exists, route to native or merge with product_group
 - Field-naming drift: skill `wholesale_price`/`case_quantity`/`unit_size` vs wire `unit_price`/`units_per_case`/`unit_net_weight` — update skill
-- `inserted_datetime` should write to `created_at` instead of `now()`
+- ~~`inserted_datetime` should write to `created_at` instead of `now()`~~ DONE 2026-09-01 (ranked first, earlier-only, in both ProductImporter arms)
+- `creator` / `owner` (D) — now on the wire; a `created_by` surface for Distru-sourced products is possible
 - `*.updated_datetime` on brand/category/subcategory/product_group — add `external_modified_at` columns
 
 ---
@@ -517,7 +521,7 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 | `data[].test_status` | string | opt | Y | **U** | — | raw_payload only | **GAP** — Same |
 | `data[].additional_test_results` | object (open map, ~300 keys) | opt | Y | M | `additional_test_results` JSON | column + raw_payload | line 241, 379; values stay STRING decimals; terpenes/pesticides/heavy metals preserved |
 | `data[].updated_datetime` | iso | req | Y | M | `distru_updated_datetime` | column + raw_payload | line 243 |
-| `data[].inserted_datetime` | iso | req | Y | D | — | raw_payload | `created_at = now()` instead |
+| `data[].inserted_datetime` | iso | req | Y | M | `distru_test_results.created_at` | column + raw_payload | Second-ranked after `release_date` (earlier-only) since 2026-09-01; live 4,297/4,297 Evo results carry it |
 
 ### Gaps
 - `metrc_lab_test_id` (U) — Promote to indexed column for Metrc COA reconciliation
@@ -525,7 +529,7 @@ Grouped by domain: System → CRM → Products → Inventory → Sales → Purch
 - `sample_id` + `expiration_datetime` (U) — Useful for COA expiry UI
 - `passed_test` + `test_status` (U) — Primary use case for COAs; promote to boolean + string columns
 - `moisture_content` + `water_activity` (U) — Mirror the THC/CBD column pattern
-- `inserted_datetime` should write to `created_at`
+- ~~`inserted_datetime` should write to `created_at`~~ DONE 2026-09-01 (after `release_date`, before the `updated_datetime` proxy)
 - Skill drift: `license_number`/`result_datetime`/`potency_*` (skill) vs `lab_license_number`/`release_date`/granular set (wire) — update skill
 
 ---
