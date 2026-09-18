@@ -445,6 +445,45 @@ Jobs have no HTTP context. `request()->user()` returns null. Jobs MUST:
 
 ---
 
+## Pattern 11: A Caught Failure on a Scheduled Run Is Reported (CRITICAL)
+
+**Rule:** In a scheduled command or job, a `catch` that logs and continues MUST also `report($throwable)` (the exception handler's staff email, throttled) or raise `IntegrationFailureAlert::fire_once()` with a remedy. A `LogService::store()` row alone is invisible.
+
+> **Source:** Evo 2026-09-17. `marketplace:sync-product-quantities` caught a TypeError per licence, wrote a `MarketplaceQuantitySync` log row, and exited 0 three times a day from 09-01 to 09-17. No email, no Error row, 1,882 sold-out products stayed on the menu until a customer wrote in.
+
+### ✅ CORRECT
+
+```php
+} catch (\Throwable $throwable) {
+    report($throwable);
+    LogService::store('Quantity Sync Failed', "Org {$org->name}: {$throwable->getMessage()}", $org);
+    $failed++;
+}
+// ...and the run exits non-zero when anything failed
+return $failed === 0 ? Command::SUCCESS : Command::FAILURE;
+```
+
+```php
+// An operational failure with a known remedy: the alert, once per key per week
+IntegrationFailureAlert::fire_once("qbo-invoice-sync-auth", 'QuickBooks', null, $what_broke, $what_to_do, "/dev/logs/{$log->id}");
+```
+
+### ❌ WRONG
+
+```php
+} catch (\Throwable $throwable) {
+    LogService::store('Quantity Sync Failed', $throwable->getMessage());  // nobody reads this
+}
+return Command::SUCCESS;  // and the scheduler thinks it worked
+```
+
+### Exceptions
+
+- A guard the code itself raised as an expected outcome (cold cache, lock busy, unparseable option) is not a defect: log it, fail the run, do not report.
+- A dead Metrc key on a high-cadence job: the key-health alert owns it (`MetrcKeyHealth::is_auth_error()`), and 48 trace emails a day would only burn `budtags.error_email_daily_cap`.
+
+---
+
 ## Verification Checklist
 
 When reviewing backend code, verify:
@@ -466,6 +505,7 @@ When reviewing backend code, verify:
 - [ ] NEVER uses `Log::` facade or `\Log::`
 - [ ] Log messages descriptive (action + details)
 - [ ] Related model passed to `LogService::store()`
+- [ ] A scheduled command/job `catch` that continues also `report()`s (or fires `IntegrationFailureAlert`) and the run exits non-zero
 
 ### Access Patterns
 - [ ] Uses `active_org_id` property (not loading relationship for ID)
