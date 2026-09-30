@@ -74,11 +74,11 @@ post('/metrc/packages/create');
 ```typescript
 // ❌ WRONG - Requires full page reload for refresh
 const { invoices } = usePage<PageProps>().props;
-<button onClick={() => router.reload()}>Refresh</button>
+<Button lil secondary onClick={() => router.reload()}>Refresh</Button>
 
 // ✅ FIX - Use React Query
 const { data: invoices, refetch } = useQuickBooksInvoices();
-<button onClick={() => refetch()}>Refresh</button>
+<Button lil secondary onClick={() => refetch()}>Refresh</Button>
 ```
 
 ### ❌ Inconsistent Query Key Syntax
@@ -193,7 +193,7 @@ grep -r "invalidateQueries(\[" resources/js --include="*.tsx"
 const { invoices, items, isLoading, refetch } = useQuickBooksData();
 
 // Fast refresh without page reload
-<button onClick={() => refetch()}>Refresh</button>
+<Button lil secondary onClick={() => refetch()}>Refresh</Button>
 ```
 
 ### Good: Package Creation (Inertia)

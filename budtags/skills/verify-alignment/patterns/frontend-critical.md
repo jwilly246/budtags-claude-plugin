@@ -502,6 +502,17 @@ Use `Button` component. NO raw `<button>` elements.
 <button onClick={handleSubmit} className="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
 ```
 
+**`primary` submits by default.** A `primary` Button without `href` renders `type="submit"`, so inside a `<form>` it submits the form. When a primary button must NOT submit, pass `type="button"` at that call site:
+
+```typescript
+// ✅ CORRECT - opt out at the call site
+<Button primary type="button" onClick={openMapping}>Map item</Button>
+
+// ❌ WRONG - changing Button.tsx's default to fix one screen
+```
+
+**Never change a shared component's default behaviour to fix one caller.** Every other screen relies on it. Use an existing prop, or add a new opt-in prop/variant that defaults to today's behaviour.
+
 ### 8c: Lucide React Icons
 
 Use Lucide React icons. NO inline `<svg>` elements.
@@ -592,7 +603,7 @@ const hasDevFeatures = user?.active_org?.features?.some(f => f.name === 'dev-fea
 ```typescript
 // ❌ Assumes window.Laravel exists (doesn't in BudTags!)
 {(window as any).Laravel?.features?.includes('dev-features') && (
-    <button>Admin Only</button>
+    <Button lil>Admin Only</Button>
 )}
 
 // ❌ Wrong method - features is array of objects, not strings
@@ -833,6 +844,8 @@ grep -rn "\.push(" resources/js --include="*.tsx" --include="*.ts" | head -20
 - [ ] Uses Lucide React icons, not inline `<svg>` elements
 - [ ] Uses semantic CSS tokens, not inline `dark:` classes
 - [ ] Buttons use correct variants (`primary`, `secondary`, `link`, `danger`, `lil`)
+- [ ] A `primary` Button inside a `<form>` that should not submit passes `type="button"`
+- [ ] No shared component (`Button`, `Input*`, modals) had its default behaviour changed; new behaviour is an opt-in prop
 
 ### Modal Components
 - [ ] Self-contained (handles own form state and submission)

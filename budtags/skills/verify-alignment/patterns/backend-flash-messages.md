@@ -187,9 +187,9 @@ onSuccess: (page) => {
         toast.error(
             <div>
                 <div>Failed to deduct {flash.recipe_failures.length} recipes</div>
-                <button onClick={() => retryDeduction(flash.recipe_failures)}>
+                <Button lil secondary onClick={() => retryDeduction(flash.recipe_failures)}>
                     Retry
-                </button>
+                </Button>
             </div>,
             { autoClose: false }
         );
