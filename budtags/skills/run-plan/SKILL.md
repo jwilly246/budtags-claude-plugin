@@ -217,6 +217,13 @@ denial.
 
 If `{directory}/SHARED_CONTEXT.md` doesn't exist, create from template.
 
+### 0.2b Where the run lives
+
+A run holds its tree for hours. Run it in an isolated worktree (`worktree` skill), never
+the shared main tree, unless the user explicitly says no worktree. At the end, remove
+finished worktrees you created and confirm with `git worktree list` that the main tree is
+free and still on the branch the user left it on.
+
 ### 0.3 Working tree hygiene
 
 `git status --short`. Any pre-existing uncommitted change to a tracked file that belongs to
@@ -523,8 +530,8 @@ Phases 3-5 do the domain review of the branch diff against main.
 - If a gate fails: fix EVERYTHING it surfaces in main context (also pre-existing issues
   it trips over; if one looks like intentional WIP, surface it to the user instead),
   commit the fixes (whole files, imperative subjects), and re-run review-branch.
-- If the report says NEEDS FIXES: fix the CRITICAL and HIGH findings in main context,
-  commit, re-run. MEDIUM/SUGGESTION findings go into the completion report for the user.
+- If the report says NEEDS FIXES: fix EVERY finding, all severities, in main context,
+  commit, re-run. Never park MEDIUM/SUGGESTION findings in the report for later.
 - Stop when the verdict is READY TO MERGE, or when a finding needs a decision only the
   user can make (report it, do not guess).
 - Worktree: prefix with the worktree's `DB_DATABASE=budtags_<slug>_test`.

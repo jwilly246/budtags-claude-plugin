@@ -28,6 +28,8 @@ You are investigating a problem, NOT fixing it. The deliverable is a diagnosis t
 
 **Gather evidence first, hypothesize second:**
 
+- Customer, order, item or package questions are about PROD (access recipe: `triage` skill, Phase 1). The `laravel-boost` MCP tools below read the LOCAL database, a stale copy. If a prod read is blocked, run the identical read-only script on staging (`make ssh ENV=linode-staging`), label the answer as staging, and flag rows newer than staging's last refresh. Ask for prod only when staging cannot answer.
+
 - `mcp__laravel-boost__last-error` / `read-log-entries` — what actually failed, with the real stack trace
 - `mcp__laravel-boost__database-query` — verify actual data state; never assume what a table contains
 - `mcp__laravel-boost__browser-logs` — frontend console errors

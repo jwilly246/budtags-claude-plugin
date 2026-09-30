@@ -77,6 +77,8 @@ Report the domains detected before proceeding.
 
 Run quality gates. If any fail, report failures and STOP — no point in AI review if the basics don't pass.
 
+Never run this in the shared main tree while the user or another agent is working there: it holds the tree for minutes. Use an isolated worktree (the `worktree` skill), one gauntlet at a time. Exception: the user says no worktree, then run it in the main tree and check `git reflog` afterwards.
+
 ```bash
 composer check
 ```
@@ -90,7 +92,7 @@ This runs in order (see `composer.json` `scripts.check`):
 4. PHP abbreviation check (`scripts/check-php-abbreviations.php`)
 5. PHPStan level 10 (static analysis)
 6. npm test (Vitest)
-7. PHPUnit (parallel, 8 processes)
+7. PHPUnit (parallel, 14 processes)
 
 **If any gate fails:**
 - Report which gate failed and the error output
@@ -98,7 +100,7 @@ This runs in order (see `composer.json` `scripts.check`):
 - Invoked by run-plan (end of a `/run-plan` run): the orchestrator fixes EVERYTHING surfaced in main context (pre-existing issues included; intentional WIP gets surfaced to the user instead), commits the fixes with whole-file commits and imperative subjects, and re-runs this skill from Phase 1
 - Invoked by a human: STOP here — do not proceed to Phase 3 until the gates pass
 
-Known non-code failure: PHPStan's result cache goes stale across branch switches and reports phantom `method.notFound` / `property.notFound` on trait-provided members in files the branch never touched. Run `vendor/bin/phpstan clear-result-cache` and re-run before treating those as defects.
+Known non-code failure: PHPStan's result cache goes stale across branch switches AND after merging main into a branch and reports phantom `method.notFound` / `property.notFound` on trait-provided members in files the branch never touched. Run `vendor/bin/phpstan clear-result-cache` and re-run before treating those as defects.
 
 **If all gates pass:** Proceed to Phase 3.
 
@@ -260,7 +262,7 @@ Generate a structured report. Use this exact format:
 
 ## After the Report
 
-1. If NEEDS FIXES: Offer to fix the critical and high issues directly
+1. If NEEDS FIXES: fix EVERY finding, all severities (CRITICAL through SUGGESTION), in one pass. Never trim the list to "confirmed damage" or ask which ones to fix. Only a finding that needs a business decision goes back to the user, with a recommended answer
 2. If READY TO MERGE: Confirm the branch is clean and ready
 3. Always note: "Run `/review-branch` again after fixes to verify"
 

@@ -12,7 +12,7 @@
 #   - Copies .env and .env.testing (gitignored, so a fresh worktree has neither).
 #   - Rewrites the worktree's .env.testing DB_DATABASE to budtags_<slug>_test,
 #     creates that base database, and migrates it. Parallel workers derive
-#     <base>_1..8 automatically (auto-created + migrated on first test run).
+#     <base>_1..14 automatically (auto-created + migrated on first test run).
 #   - APFS-clones vendor and public/build (cp -Rc: instant, copy-on-write) and
 #     symlinks node_modules. Never symlink vendor (breaks the PHP autoloader).
 set -euo pipefail
@@ -74,7 +74,7 @@ cat <<SUMMARY
 Worktree ready.
   path:      $worktree
   branch:    $branch (from $base_ref, --no-track)
-  test DB:   $test_db  (workers ${test_db}_1..8 auto-provision on first run)
+  test DB:   $test_db  (workers ${test_db}_1..14 auto-provision on first run)
 
 Run tests from the worktree as:
   DB_DATABASE=$test_db composer check
@@ -83,5 +83,5 @@ Cleanup after merge (from the main tree):
   rm "$worktree/node_modules"            # symlink — rm, NEVER rm -rf
   git worktree remove "$worktree"        # back up untracked plan files FIRST
   sed -i '' '\\|^/$dir_name/\$|d' .git/info/exclude
-  mysql: DROP DATABASE ${test_db}; plus its _1..8 workers
+  mysql: DROP DATABASE ${test_db}; plus its _1..14 workers
 SUMMARY
