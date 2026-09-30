@@ -1187,3 +1187,34 @@ of the specified transporters.
     
   
 
+
+## 2026-09-15 snapshot (schemas/openapi-full-2026-09-15.json) vs 2026-09-01
+
+19 endpoints added, none removed. Pulled from https://apidocs.distru.dev/openapi.json on 2026-09-15 after the Evo live verification.
+
+- DELETE `/public/v1/charge-presets/{id}` — Delete a charge preset
+- GET `/public/v1/charge-presets` — Get charge presets
+- GET `/public/v1/charge-presets/{id}` — Get a charge preset
+- GET `/public/v1/license-types` — Get license types
+- GET `/public/v1/licenses` — Get licenses
+- GET `/public/v1/licenses/{id}` — Get a license
+- GET `/public/v1/metrc/lab-test-batches` — Get Metrc lab test batches
+- GET `/public/v1/metrc/locations` — Get Metrc locations
+- GET `/public/v1/metrc/packages` — Get Metrc packages
+- GET `/public/v1/metrc/packages/{label}` — Get a Metrc package
+- GET `/public/v1/metrc/strains` — Get Metrc strains
+- GET `/public/v1/metrc/transfers` — Get Metrc transfers
+- GET `/public/v1/metrc/transfers/{manifest_number}` — Get a Metrc transfer
+- POST `/public/v1/assemblies/create_test_sample` — Create a test sample
+- POST `/public/v1/charge-presets` — Upsert a charge preset
+- POST `/public/v1/companies/{id}/licenses` — Upsert a company's license
+- POST `/public/v1/companies/{id}/locations` — Upsert a company's location
+- POST `/public/v1/locations` — Upsert a location
+- POST `/public/v1/packages/import` — Import packages
+
+Notes verified live on Evo's Distru 2026-09-15 (order SO-0002818, cancelled):
+- `POST /public/v1/packages/import`: Distru NEVER auto-imports Metrc packages; this endpoint (or the UI import screen) is the only way a new Metrc package becomes a Distru package. By `compliance_label` or `metrc_package_id`, optional `product_id` (recommended) and `location_id` (defaults to the licence intake location), 1-300 per request, same licence, all-or-nothing, already-imported/transferred/discontinued rejected.
+- `GET /public/v1/metrc/packages?label=<tag>`: read-only Metrc cache; `package` is the Distru package (null when not imported); `is_importable=true` lists what can be imported.
+- Order items (unchanged wording, wrong in practice): `items[].location_id` is REQUIRED on create for every item (400 `Please choose a source to take stock from`); a package-tracked item takes the WHOLE package: `quantity` = `compliance_quantity` = the package's Metrc quantity (400 otherwise); order-level `owner_id` satisfies the `items[].user_id` validation; a client `order_number` is ignored (Distru numbers the order); client item `id`s are honoured on create and update, even at READY_TO_SHIP; omitting `items` on update leaves lines untouched, sending `items` replaces the set; a deleted item id re-sent is recreated with that id.
+- `GET /public/v1/packages/{id}` returned an empty body through our client; use `GET /public/v1/packages?compliance_labels[]=<tag>` (works, 1 row).
+- `POST /public/v1/packages/import` exercised live 2026-09-15 (Evo, tag …106679 with explicit `product_id` + `location_id`): HTTP 200, `data` = list of `PackageFull` for the created packages (owner = the API key's user); `GET /metrc/packages?label=` shows `package.id` immediately. Always send `product_id`: Metrc item names differ from Distru product names ("Red Raspberry 25mg" vs "Red Raspberry ENERGY 25mg") and every product has a "WIP |" twin, so inference can land wrong.

@@ -23,7 +23,7 @@ Distru's write surface is small but has sharp edges. POST is **UPSERT** with **n
 | `/public/v1/custom-fields` | POST | CREATE custom field definition (no GET) |
 | `/public/v1/file-attachments` | POST | Upload file (HTTP 422 on quota exceeded; no GET) |
 
-> No write endpoints for: `/batches`, `/packages`, `/adjustments`, `/inventory`, `/assemblies`, `/users`, `/menus`, `/payment-methods`, `/test-results`. These are read-only via the public API. (Inventory primitives are side-effects of order/purchase/assembly completion.)
+> STALE (corrected 2026-09-15): packages and assemblies now have writes — `POST /packages/import`, `/packages/move`, `/packages/finish`, `/packages/{id}`, `/packages/add-costs`, `/assemblies/split_package`, `/assemblies/create_test_sample`. Still read-only: `/batches`, `/adjustments`, `/inventory`, `/users`, `/menus`, `/payment-methods`, `/test-results`. See UPSTREAM-CHANGELOG.md 2026-09-15.
 
 ## UPSERT semantics
 
@@ -143,7 +143,7 @@ Before any POST is dispatched:
 - [ ] Is the entity in an editable state (e.g., purchase still `Pending`)?
 - [ ] Is the `full_name` field stripped from contact writes?
 - [ ] Has `custom_data` been reshaped from the read LIST `[{id, name, type, value}]` to the write MAP `{"<field id>": value}`? (NEVER a list of `{id, value}` — that 400s in prod; see 2026-09-01 addendum below. Omit the key entirely when not writing custom fields; sending it replaces the WHOLE map and clears omitted fields.)
-- [ ] `outstanding_balance_threshold` UNITS ARE CONTESTED (2026-09-01): the live spec prose says positive integer in MAJOR units (whole dollars), while this checklist historically said integer cents and CompanyExporter sent credit_limit*100 — a potential 100x. OMIT the field from writes until one live push verifies the unit; never convert on guesswork.
+- [ ] `outstanding_balance_threshold` is in WHOLE DOLLARS (RESOLVED 2026-09-01 by live probe: three companies' `outstanding_balance` reads matched mirrored AR to the penny). The old cents guidance (credit_limit*100) was 100x wrong. Reads are dollars too. When re-enabling the write, send whole dollars.
 - [ ] Is local intent-id stored so a retry can reconcile?
 
 ## Cross-references
