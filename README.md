@@ -84,8 +84,8 @@ Domain-specific knowledge that Claude can reference during development.
 | Skill | Version | Description |
 |-------|---------|-------------|
 | **Create Plan** | 1.2.0 | Research-driven feature planning with codebase discovery |
-| **Decompose Plan** | 3.3.0 | Break plans into context-window-sized work units |
-| **Run Plan** | 1.7.0 | Autonomously execute decomposed work units |
+| **Decompose Plan** | 4.0.0 | Break plans into branch-sized work units (one review boundary each; every task = one commit) |
+| **Run Plan** | 3.0.0 | Execute decomposed work units: builder commits per task, orchestrator reviews per unit, ONE composer check per branch via review-branch |
 
 ### Label Printing
 | Skill | Version | Description |
@@ -165,8 +165,8 @@ Slash commands available via `/budtags:<command>`.
 ### Planning Workflow
 | Command | Description |
 |---------|-------------|
-| `decompose-plan` | Break a plan into context-window-sized work units |
-| `run-plan` | Execute decomposed work units autonomously |
+| `decompose-plan` | Break a plan into branch-sized work units (task = commit) |
+| `run-plan` | Execute decomposed work units autonomously; review-branch closes the branch |
 | `create-prompt` | Create a new prompt file |
 | `run-prompt` | Execute a prompt file |
 

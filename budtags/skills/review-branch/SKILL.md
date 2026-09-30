@@ -1,7 +1,7 @@
 ---
 name: review-branch
 description: Pre-merge branch review. Invoke before merging any branch to main. Auto-detects what changed, runs deterministic quality gates, then performs domain-specific code review using BudTags patterns. Replaces manual review checklists.
-version: 1.0.0
+version: 1.1.0
 category: project
 auto_activate:
   keywords:
@@ -22,6 +22,8 @@ auto_activate:
 You are conducting a comprehensive pre-merge review of the current branch. This skill replaces long typed review messages with a structured, repeatable process.
 
 **Philosophy**: Deterministic gates first (cheap, fast, pass/fail), then AI-powered review (targeted to what actually changed).
+
+**Role in the workflow**: this skill is THE end-of-branch gate. The repo's pre-commit hook covers each commit (Pint + PHPStan on the staged PHP files) and run-plan's `gate.sh` covers each unit (scope, stubs, patterns, targeted tests); neither runs the full gauntlet. Phase 2 below is the ONE `composer check` a branch gets, so it is never skipped here and never duplicated earlier. run-plan invokes this skill automatically after its last unit; a human invokes it before any merge to main.
 
 ---
 
@@ -79,17 +81,24 @@ Run quality gates. If any fail, report failures and STOP — no point in AI revi
 composer check
 ```
 
-This runs in order:
+(Inside a git worktree prefix it with that worktree's database: `DB_DATABASE=budtags_<slug>_test composer check`. Never pipe it through `| tail`; the exit code is the result.)
+
+This runs in order (see `composer.json` `scripts.check`):
 1. Pint (PHP formatting)
 2. npm lint (ESLint)
-3. PHPStan level 10 (static analysis)
-4. npm test (Vitest)
-5. PHPUnit (parallel, 8 processes)
+3. npm type-check (tsc)
+4. PHP abbreviation check (`scripts/check-php-abbreviations.php`)
+5. PHPStan level 10 (static analysis)
+6. npm test (Vitest)
+7. PHPUnit (parallel, 8 processes)
 
 **If any gate fails:**
 - Report which gate failed and the error output
 - List the specific files/lines that need fixing
-- STOP here — do not proceed to Phase 3
+- Invoked by run-plan (end of a `/run-plan` run): the orchestrator fixes EVERYTHING surfaced in main context (pre-existing issues included; intentional WIP gets surfaced to the user instead), commits the fixes with whole-file commits and imperative subjects, and re-runs this skill from Phase 1
+- Invoked by a human: STOP here — do not proceed to Phase 3 until the gates pass
+
+Known non-code failure: PHPStan's result cache goes stale across branch switches and reports phantom `method.notFound` / `property.notFound` on trait-provided members in files the branch never touched. Run `vendor/bin/phpstan clear-result-cache` and re-run before treating those as defects.
 
 **If all gates pass:** Proceed to Phase 3.
 
@@ -140,7 +149,10 @@ For each domain detected in Phase 1, load the relevant verify-alignment patterns
 **Check:**
 - [ ] Forms use Inertia `useForm` — never `useState` for form fields, never `axios`/`fetch`
 - [ ] Modals are self-contained (own form state, own submit handler)
-- [ ] Types defined in `Types/` files — never inline in hooks, never re-exported
+- [ ] Types defined in `Types/` files — never inline in hooks or components, never re-exported. **HIGH**, not medium: every `export type|interface|enum` the branch adds outside `resources/js/Types/` must move to its domain type file before merge. Scan:
+  ```bash
+  git diff main...HEAD -- resources/js ':!resources/js/Types' ':!**/__tests__/**' ':!resources/js/testing/**' | grep -nE '^\+export (type|interface|enum) '
+  ```
 - [ ] No `as any` or `: any` type assertions
 - [ ] No `useEffect` for syncing refs/values — reorganize code instead
 - [ ] Functional style: `map`/`filter`/`reduce`/`flatMap`/`Object.fromEntries`, never `for`/`forEach` + `push` to build data
@@ -240,7 +252,7 @@ Generate a structured report. Use this exact format:
 
 **Severity guidelines:**
 - **CRITICAL**: Security issues (missing org scoping, auth bypass), data corruption risks, broken functionality
-- **HIGH**: Pattern violations that affect maintainability (wrong method names, Log facade instead of LogService, imperative style: foreach/forEach+push building data, if/else assignment instead of ternary/match, nested if pyramids instead of guard clauses)
+- **HIGH**: Pattern violations that affect maintainability (wrong method names, Log facade instead of LogService, imperative style: foreach/forEach+push building data, if/else assignment instead of ternary/match, nested if pyramids instead of guard clauses, an exported TypeScript type declared outside `resources/js/Types/`)
 - **MEDIUM**: Style issues, missing test edge cases, minor type safety gaps
 - **SUGGESTION**: Opportunities for improvement, not blocking
 

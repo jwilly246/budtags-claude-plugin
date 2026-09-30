@@ -4,7 +4,7 @@ Execute work units from a decomposed plan autonomously.
 
 ## Purpose
 
-**AUTONOMOUS EXECUTION.** This command reads a MANIFEST, executes READY work units via Agent-tool subagents, runs verification gates, and commits after each successful unit—all without manual intervention.
+**AUTONOMOUS EXECUTION.** This command reads a MANIFEST, executes READY work units via Agent-tool subagents (the builder commits once per task), reviews each unit's commit range, and runs the ONE full quality gauntlet at the end of the branch through review-branch—all without manual intervention. It never runs `composer check` in between.
 
 ## Usage
 
@@ -26,17 +26,18 @@ Execute work units from a decomposed plan autonomously.
 3. **Execution Loop** (for each READY unit — serial by default: one dispatch at a time, review + commit before the next; parallel dispatch only on explicit user request):
    - Updates MANIFEST: PENDING → IN PROGRESS
    - **Reads SHARED_CONTEXT.md and embeds its full contents inline into the spawned prompt** (v1.9 gating change — replaces the old "tell the subagent to Read it" model)
-   - Spawns subagent via the Agent tool (per-unit `**Agent**:` field; OMIT the model param — inherit session model) in fresh context
-   - Agent reads ONLY the WU file (SHARED_CONTEXT is already in its context window), implements all tasks, returns a Completion Report including a mandatory "Patterns Followed from Embedded Shared Context" section
+   - Records the unit start (`git rev-parse HEAD`)
+   - Spawns subagent via the Agent tool (per-unit `**Agent**:` field; OMIT the model param — the specialist's frontmatter says Opus) in fresh context
+   - Agent reads ONLY the WU file (SHARED_CONTEXT is already in its context window), implements the tasks and **commits after each task** (subject = the task line; the repo's pre-commit hook runs Pint + PHPStan on the staged PHP files; the builder runs touched-dir vitest + eslint before TS commits), returns a Completion Report including a mandatory "Patterns Followed from Embedded Shared Context" section
    - **Orchestrator quality review (MANDATORY — runs in main context, NOT a subagent)**:
-     - Run `composer check` — fix **all** issues found, not just ones from this WU's changes
-     - Read `git diff` of the subagent's work — verify they stayed on track per the WU's task list and Files section
-     - Verify `SHARED_CONTEXT.md` was actually updated — if the subagent skipped it, populate it directly before committing
-     - Confirm no surprise files touched, no stubs, no half-done work
-   - Run verification commands from the WU file (stub detection, phpstan, pint, tests)
-   - On success: stage only listed WU files, commit, mark DONE, move to next
-   - On failure: mark BLOCKED, stop, report what failed
-4. **Completion Report**: Lists commits created (local only)
+     - Read `git diff <unit start>..HEAD` — verify the builder stayed on track per the WU's task list and Files section, one commit per task
+     - Verify `SHARED_CONTEXT.md` was actually updated — if the subagent skipped it, populate it directly
+     - Run `gate.sh <WU> --since <unit start>` — Create files exist, scope audit of every committed file, stubs, frontend patterns. **No composer check.**
+     - Run the WU's targeted Verification commands (filtered tests, per-file phpstan, type-check)
+   - On success: mark DONE with the branch tip, move to next
+   - On failure: fix in main context or one bounded retry; else mark BLOCKED, stop, report what failed
+4. **End of branch**: invokes `review-branch` — its `composer check` is the run's only full gauntlet; fixes everything it surfaces, re-runs until READY TO MERGE
+5. **Completion Report**: Lists commits created per unit (local only) and the review verdict
 
 ## Key Behaviors
 
@@ -46,7 +47,7 @@ Execute work units from a decomposed plan autonomously.
 | On failure | Stops immediately, preserves state |
 | Context | Fresh agent context per work unit |
 | Continuity | SHARED_CONTEXT.md maintains naming/patterns across agents |
-| Verification | Gate check with PHPStan/tests/Pint |
+| Verification | Per commit: pre-commit hook (Pint + PHPStan on staged PHP) + targeted tests. Per unit: gate.sh --since + the WU's targeted commands. Per branch: review-branch (the one `composer check`) |
 
 ## Shared Context (v1.9)
 
@@ -104,7 +105,7 @@ Run after the subagent returns, before the mechanical gate:
 "$HOME/.claude/plugins/marketplaces/budtags-claude-plugin/budtags/skills/run-plan/scripts/gate.sh" {directory}/WU-{N}-{slug}.md
 ```
 
-One command: Create-files exist → scope audit vs the WU's Files section → stub detection → frontend pattern check → full `composer check`. Exit 0 = pass; exit 1 = fix every reported issue in main context and re-run; exit 2 = harness malfunction (report to user, don't mark BLOCKED). Then run the WU's own `## Verification` commands that gate.sh doesn't subsume (test --filter, migrate/rollback, etc.).
+One command: Create-files exist → scope audit vs the WU's Files section → stub detection → frontend pattern check. **No composer check** (the gauntlet runs once per branch inside review-branch). Pass `--since <unit start>` so the committed range is audited, not just the working tree. Exit 0 = pass; exit 1 = fix every reported issue in main context and re-run; exit 2 = harness malfunction (report to user, don't mark BLOCKED). Then run the WU's own `## Verification` commands that gate.sh doesn't subsume (test --filter, migrate/rollback, etc.).
 
 After committing a migration WU: `composer migrate-test-dbs` (parallel test DBs go stale and the next WU's tests fail confusingly otherwise).
 
@@ -144,25 +145,24 @@ Body = 2-3 line summary of what was actually implemented.
 ### WU-01: database-models
 ⏳ Spawning agent...
 ✅ Agent complete
-⏳ Running verification...
-   ✅ phpstan: PASS
-   ✅ tests: PASS
-   ✅ pint: PASS
-✅ Committed: abc1234
+⏳ Reviewing 3 commits (9f22def..abc1234)...
+   ✅ gate.sh --since: scope clean, no stubs
+   ✅ MetrcItemCreateService|MetrcItemCreateWithProduct: 14 passed
+✅ DONE (tip abc1234, 3 commits)
 
 ### WU-02: admin-controller
 ⏳ Spawning agent...
 ✅ Agent complete
-⏳ Running verification...
-   ❌ phpstan: FAIL (3 errors)
+⏳ Reviewing 2 commits (abc1234..def5678)...
+   ❌ ProductMetrcItemCreateEndpointTest: 1 failed (403 case)
 
 🛑 BLOCKED at WU-02
 
 ## Summary
-- Completed: 1 work unit
-- Commits: abc1234
-- Status: BLOCKED (WU-02 failed verification)
+- Completed: 1 work unit (3 commits, tip abc1234)
+- Status: BLOCKED (WU-02 failed verification; 2 of 5 tasks committed, tip def5678)
 - Remaining: 4 work units
+- review-branch not run (branch incomplete)
 
 Commits are local. When ready: git push -u origin advertising-feature
 ```
@@ -174,4 +174,5 @@ Commits are local. When ready: git push -u origin advertising-feature
 - `SKILL.md` - Full orchestration logic
 - `prompts/execute-unit.md` - Execution subagent prompt template
 - `prompts/shared-context-template.md` - SHARED_CONTEXT template
-- `scripts/detect-stubs.sh`, `scripts/detect-wrong-patterns.sh` - verification scripts
+- `scripts/gate.sh` - the per-unit mechanical gate (`--since <unit start>`; no composer check)
+- `scripts/detect-stubs.sh`, `scripts/detect-wrong-patterns.sh` - detectors gate.sh runs

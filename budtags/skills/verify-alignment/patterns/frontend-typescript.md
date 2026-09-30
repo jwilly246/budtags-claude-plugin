@@ -309,7 +309,7 @@ const data = someFunction();
 1. **Single Source of Truth**: Each type has exactly ONE export location
 2. **Domain Organization**: Types grouped by integration/domain
 3. **No Exported Types in Components**: Components may have local interfaces but MUST NOT export types
-4. **Reuse Threshold**: Types used in 2+ files MUST be in a type file
+4. **Exported = shared**: ANY exported type belongs in a type file, whether or not a second importer exists yet. A type used by one component only stays LOCAL (not exported) in that component
 
 ### Where to Add New Types
 
@@ -428,11 +428,16 @@ grep -rn "^type \w\+ =" resources/js/Pages resources/js/Components --include="*.
 
 ### Type Organization Thresholds (Pattern 9)
 
-| Status | Exported Types Outside `Types/` | Duplicate Type Names | Action |
-|--------|--------------------------------|---------------------|--------|
-| ✅ **EXCELLENT** | 0-5 (local props OK) | 0 | None |
-| ⚠️ **ACCEPTABLE** | 6-15 | 1-2 (document why) | Move shared types to `Types/` |
-| ❌ **CRITICAL** | >15 | >2 | **Immediate consolidation required** |
+| Status | Exported Types Outside `Types/` ADDED by the branch | Duplicate Type Names | Action |
+|--------|-----------------------------------------------------|---------------------|--------|
+| ✅ **PASS** | 0 (local, NON-exported props types are fine) | 0 | None |
+| ❌ **HIGH** | 1 or more | 1 or more | **Move each to its domain type file before merge** |
+
+There is no acceptable band for NEW exports (ruling 2026-09-03: a mislocated type is not a
+medium-level infraction). run-plan's `gate.sh` fails a unit on any `export type|interface|enum`
+it adds to a ts/tsx file outside `resources/js/Types/` (only added lines are judged, so the
+94 pre-existing offenders on main do not block unrelated work; migrate those when a unit
+touches them). review-branch rates the same finding HIGH.
 
 ---
 
