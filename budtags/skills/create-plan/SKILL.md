@@ -510,6 +510,22 @@ Before asking integration questions, map existing integrations:
 - Are there webhooks involved?
 - What's the retry strategy for failures?
 
+**Data Ownership (MANDATORY when any external system reads or writes the same data):**
+The most expensive rework on this codebase came from building the wrong ownership model (LeafLink two-way sync, Distru costs, cost vs price fields). Settle it here, in writing, before Phase 7:
+- For EACH synced field: which system is the source of truth? (Budtags, LeafLink, Distru, Metrc, QBO, KSS)
+- When one side is blank and the other is not: fill, skip, or clear? (Default rule: a sync never clears the other side's non-empty value.)
+- When both sides have different non-empty values: which wins, and is the loser overwritten or reported?
+- Which records are in scope, and which look in scope but are not? (service invoices, archived listings, transfer-locked orders)
+- Does any existing prod data already violate the model? (plan the backfill with the `backfill` skill)
+
+### Output: Field Ownership Matrix
+
+| Field | Owner | Other side blank | Both set, different | Writes to |
+|-------|-------|------------------|---------------------|-----------|
+| {field} | {system} | {fill / skip} | {owner wins / report} | {systems} |
+
+Show the matrix to the user and get an explicit OK before continuing. Every row becomes at least one test scenario in Phase 9.
+
 **MetrcApi User Context (CRITICAL if Metrc integration involved):**
 - Every controller method using MetrcApi MUST call `$api->set_user(request()->user())` before any API interaction
 - Queue jobs MUST accept User via constructor and call `$api->set_user($this->user)` in `handle()`
