@@ -60,6 +60,14 @@ db_pass="$(sed -n 's/^DB_PASSWORD=//p' "$main_root/.env.testing")"
 mysql -h "${db_host:-127.0.0.1}" -u "${db_user:-root}" -p"$db_pass" \
     -e "CREATE DATABASE IF NOT EXISTS \`$test_db\`"
 
+# Its own Redis test DB pair, so a gate here never FLUSHDBs another
+# worktree's keys mid-run (see assign-redis-db.sh).
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$script_dir/assign-redis-db.sh" "$worktree" > /dev/null
+redis_db="$(sed -n 's/^REDIS_DB=//p' "$worktree/.env.testing")"
+redis_cache_db="$(sed -n 's/^REDIS_CACHE_DB=//p' "$worktree/.env.testing")"
+test_env="DB_DATABASE=$test_db REDIS_DB=$redis_db REDIS_CACHE_DB=$redis_cache_db"
+
 cp -Rc "$main_root/vendor" "$worktree/vendor"
 if [ -d "$main_root/public/build" ]; then
     mkdir -p "$worktree/public"
@@ -67,7 +75,7 @@ if [ -d "$main_root/public/build" ]; then
 fi
 ln -s "$main_root/node_modules" "$worktree/node_modules"
 
-(cd "$worktree" && DB_DATABASE="$test_db" php -d memory_limit=2G artisan migrate --env=testing --force)
+(cd "$worktree" && env DB_DATABASE="$test_db" REDIS_DB="$redis_db" REDIS_CACHE_DB="$redis_cache_db" php -d memory_limit=2G artisan migrate --env=testing --force)
 
 cat <<SUMMARY
 
@@ -75,13 +83,15 @@ Worktree ready.
   path:      $worktree
   branch:    $branch (from $base_ref, --no-track)
   test DB:   $test_db  (workers ${test_db}_1..14 auto-provision on first run)
+  Redis:     DB $redis_db (default) / DB $redis_cache_db (cache), this worktree only
 
 Run tests from the worktree as:
-  DB_DATABASE=$test_db composer check
+  $test_env composer check
 
 Cleanup after merge (from the main tree):
   rm "$worktree/node_modules"            # symlink — rm, NEVER rm -rf
   git worktree remove "$worktree"        # back up untracked plan files FIRST
   sed -i '' '\\|^/$dir_name/\$|d' .git/info/exclude
   mysql: DROP DATABASE ${test_db}; plus its _1..14 workers
+  redis: freed with the worktree (the next assign-redis-db.sh run empties it)
 SUMMARY
