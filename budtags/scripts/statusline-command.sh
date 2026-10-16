@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Budtags status line: directory, branch, diff stats, model, and context /
-# 5-hour / weekly usage. Bundled with the plugin so it travels across machines.
+# Budtags status line on two lines: session, directory, branch and diff stats;
+# then model + effort, context, 5-hour / weekly usage and session cost.
+# Bundled with the plugin so it travels across machines.
 input=$(cat)
 
 # Extract status fields in a single python3 pass. python3 is used instead of
@@ -29,9 +30,16 @@ def get(*keys):
 fields = [
     ("cwd", ("workspace", "current_dir")),
     ("model", ("model", "display_name")),
+    ("effort", ("effort", "level")),
     ("used", ("context_window", "used_percentage")),
     ("rate_5h", ("rate_limits", "five_hour", "used_percentage")),
     ("rate_7d", ("rate_limits", "seven_day", "used_percentage")),
+    ("reset_5h", ("rate_limits", "five_hour", "resets_at")),
+    ("reset_7d", ("rate_limits", "seven_day", "resets_at")),
+    ("session_name", ("session_name",)),
+    ("wt_name", ("worktree", "name")),
+    ("wt_branch", ("worktree", "branch")),
+    ("cost", ("cost", "total_cost_usd")),
 ]
 for name, path in fields:
     print("%s=%s" % (name, shlex.quote(get(*path))))
@@ -52,6 +60,20 @@ color_pct() {
     color='\033[0;32m'
   fi
   printf "${color}%s:%s%%\033[0m" "$label" "$val_int"
+}
+
+# Time left until a unix-seconds reset, e.g. "25m", "1h40m", "3d4h"
+time_until() {
+  local secs=$(( ${1%.*} - $(date +%s) ))
+  [ "$secs" -le 0 ] 2>/dev/null && return
+  local d=$((secs / 86400)) h=$((secs % 86400 / 3600)) m=$((secs % 3600 / 60))
+  if [ "$d" -gt 0 ]; then
+    echo "${d}d${h}h"
+  elif [ "$h" -gt 0 ]; then
+    echo "${h}h${m}m"
+  else
+    echo "${m}m"
+  fi
 }
 
 # Parse insertions/deletions from git shortstat output
@@ -90,8 +112,9 @@ model="${model#Claude }"
 # Strip context size suffix like " (1M context)"
 model=$(echo "$model" | sed 's/ ([^)]*context)$//')
 
-# Git info with 5-second file cache
-CACHE_FILE="/tmp/statusline-git-cache"
+# Git info with 5-second file cache, one file per directory so terminals in
+# different worktrees never show each other's branch
+CACHE_FILE="/tmp/statusline-git-cache-$(printf '%s' "$cwd" | cksum | cut -d' ' -f1)"
 CACHE_MAX_AGE=5
 
 cache_is_stale() {
@@ -106,7 +129,8 @@ today_ins=0
 today_del=0
 last_commit=""
 
-if [ -n "$cwd" ] && [ -d "$cwd/.git" ]; then
+# -e, not -d: in a worktree .git is a file pointing at the main repo
+if [ -n "$cwd" ] && [ -e "$cwd/.git" ]; then
   if cache_is_stale; then
     _branch=$(git -C "$cwd" --no-optional-locks branch --show-current 2>/dev/null)
 
@@ -141,12 +165,23 @@ fi
 # Build status line
 parts=()
 
+# Session name from /rename (bold white), so terminals are told apart
+if [ -n "$session_name" ]; then
+  parts+=("$(printf '\033[1;37m[%s]\033[0m' "$session_name")")
+fi
+
 # Directory (blue)
 if [ -n "$cwd" ]; then
   parts+=("$(printf '\033[0;34m%s\033[0m' "$(basename "$cwd")")")
 fi
 
-# Branch (magenta)
+# Worktree the session runs in (yellow)
+if [ -n "$wt_name" ]; then
+  parts+=("$(printf '\033[0;33mwt:%s\033[0m' "$wt_name")")
+fi
+
+# Branch (magenta); the worktree's own branch when git gave none
+[ -z "$branch" ] && branch="$wt_branch"
 if [ -n "$branch" ]; then
   parts+=("$(printf '\033[0;35m(%s)\033[0m' "$branch")")
 fi
@@ -176,9 +211,17 @@ if [ -n "$last_commit" ]; then
   parts+=("$(printf '\033[0;90m%s\033[0m' "$(shorten_age "$last_commit")")")
 fi
 
-# Model (cyan)
+# Line 2: what Claude is using. The two lines together never run off the side.
+line1=("${parts[@]}")
+parts=()
+
+# Model (cyan) with effort level (dim), e.g. "Opus 5.5 · high"
 if [ -n "$model" ]; then
-  parts+=("$(printf '\033[0;36m%s\033[0m' "$model")")
+  if [ -n "$effort" ]; then
+    parts+=("$(printf '\033[0;36m%s\033[0;90m · %s\033[0m' "$model" "$effort")")
+  else
+    parts+=("$(printf '\033[0;36m%s\033[0m' "$model")")
+  fi
 fi
 
 # Context usage (green / yellow / red)
@@ -187,15 +230,26 @@ if [ -n "$used" ]; then
   [ -n "$ctx_str" ] && parts+=("$ctx_str")
 fi
 
-# Rate limits (green / yellow / red, hidden when 0%)
+# Rate limits (green / yellow / red, hidden when 0%) with time to reset (dim)
 if [ -n "$rate_5h" ]; then
   r5_str=$(color_pct "5h" "$rate_5h")
+  r5_left=$(time_until "$reset_5h")
+  [ -n "$r5_str" ] && [ -n "$r5_left" ] && r5_str="$r5_str$(printf '\033[0;90m ↻%s\033[0m' "$r5_left")"
   [ -n "$r5_str" ] && parts+=("$r5_str")
 fi
 
 if [ -n "$rate_7d" ]; then
   r7_str=$(color_pct "7d" "$rate_7d")
+  r7_left=$(time_until "$reset_7d")
+  [ -n "$r7_str" ] && [ -n "$r7_left" ] && r7_str="$r7_str$(printf '\033[0;90m ↻%s\033[0m' "$r7_left")"
   [ -n "$r7_str" ] && parts+=("$r7_str")
 fi
 
-printf '%s' "${parts[*]}"
+# Estimated session cost at API prices (dim yellow), hidden under a cent
+if [ -n "$cost" ]; then
+  cost_str=$(awk -v c="$cost" 'BEGIN { if (c >= 0.01) printf "$%.2f", c }')
+  [ -n "$cost_str" ] && parts+=("$(printf '\033[0;33m%s\033[0m' "$cost_str")")
+fi
+
+printf '%s' "${line1[*]}"
+[ ${#parts[@]} -gt 0 ] && printf '\n%s' "${parts[*]}"
