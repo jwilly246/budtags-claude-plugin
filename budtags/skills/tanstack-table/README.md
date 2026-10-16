@@ -4,7 +4,7 @@
 
 This skill provides comprehensive documentation for **TanStack Table**, sourced from the official documentation at https://tanstack.com/table/latest
 
-**Version state (2026-08-12):** pattern files 01–24 document **v8**, the version installed on BudTags `main` (`^8.21.3`). **v9 went stable 2026-08-04** (latest 9.1.2); `patterns/25-v9-stable.md` is the verified v9 fact sheet, and the repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md` in BudTags tracks the migration. v9 packages ship their own version-pinned agent skills at `node_modules/@tanstack/{react-table,table-core}/skills/`, prefer those for v9 API detail once v9 is installed.
+**Version state (2026-10-07):** pattern files 01–24 document **v8**, the version installed on BudTags `main` (`^8.21.3`). **v9 went stable 2026-08-04** (latest **9.2.6**, 2026-10-04; no public API change since 9.1.2); `patterns/25-v9-stable.md` is the verified v9 fact sheet, and the repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md` in BudTags tracks the migration. v9 packages ship version-pinned agent skills (9.2.6 layout: 8 entry points with `references/`) at `node_modules/@tanstack/{react-table,table-core}/skills/`; load them with `npx @tanstack/intent@latest load <package>#<skill>` and prefer them for v9 API detail once v9 is installed.
 
 **Coverage:**
 - Complete API reference for all table features
@@ -58,7 +58,7 @@ tanstack-table/
     ├── 22-api-reference.md            # Complete API (v8)
     ├── 23-custom-features.md          # Plugin system
     ├── 24-budtags-integration.md      # BudTags DataTable integration
-    └── 25-v9-stable.md                # v9 stable verified fact sheet (2026-08-12)
+    └── 25-v9-stable.md                # v9 stable verified fact sheet (9.2.6, 2026-10-07)
 ```
 
 ## Quick Start
@@ -185,7 +185,7 @@ This skill is based on the official TanStack Table documentation:
 
 **Website:** https://tanstack.com/table/latest
 **GitHub:** https://github.com/TanStack/table
-**Version:** patterns 01-24 = v8; pattern 25 = v9 stable (9.1.2, verified 2026-08-12)
+**Version:** patterns 01-24 = v8; pattern 25 = v9 stable (9.2.6, verified 2026-10-07)
 
 All content is sourced from official docs and adapted for progressive disclosure to optimize Claude Code token usage.
 

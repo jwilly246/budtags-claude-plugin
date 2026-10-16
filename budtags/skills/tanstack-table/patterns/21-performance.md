@@ -1,6 +1,6 @@
 # Pattern 21: Performance Optimization
 
-> **⚠️ v9 note (2026-08-12):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04) changes this area: the perf model changes entirely, per-slice atom state, narrow re-renders via a `useTable` selector / `<table.Subscribe>` / `useSelector(table.atoms.<slice>)`, shared prototypes for row/cell APIs, and v8's "use no memo" React Compiler opt-outs become unnecessary. For v9 work read `25-v9-stable.md` first; once v9 is installed, prefer the first-party skills in `node_modules/@tanstack/react-table/skills/`.
+> **⚠️ v9 note (2026-10-07):** This file documents **v8**, the version installed on BudTags `main`. TanStack Table v9 (stable 2026-08-04, latest 9.2.6) changes the perf model: per-slice atom state, narrow re-renders via a `useTable` selector / `<table.Subscribe>` / `useSelector(table.atoms.<slice>)`, shared prototypes for row/cell APIs. Components that call `useTable` become React-Compiler-compatible, **but `"use no memo"` removal is not automatic**: nested components that receive stable `row`/`cell`/`column`/`header` objects and read state through methods go stale under the compiler unless they put a `Subscribe` inside (official React Compiler guide; pattern 25). TanStack's benchmark shows the compiler mainly helps unrelated parent re-renders, not sort/filter. Reference: `react-table/skills/table-state/references/reactivity.md`. For v9 work read `25-v9-stable.md` first; once v9 (9.2.6) is installed, load the bundled skills (`npx @tanstack/intent@latest load <package>#<skill>`; feature detail lives under `node_modules/@tanstack/table-core/skills/table-features/references/`).
 
 
 ## Memoization Essentials
@@ -498,15 +498,17 @@ const InlineEditInput = memo(function InlineEditInput({
 
 ### React Compiler Compatibility
 
-TanStack Table cells are incompatible with React Compiler's automatic memoization. Add the directive:
+In v8, components that call `useReactTable` or read table state through table/row/column methods are incompatible with React Compiler's automatic memoization (v8's interior mutability). BudTags opts them out with the `"use no memo"` directive and a reason comment (the older `"use no forget"` spelling is not used in this repo):
 
 ```typescript
-const InlineEditInput = memo(function InlineEditInput(props) {
-  "use no forget"; // Disable React Compiler for this component
+export function TableFilter<TData>({ column }: { column: Column<TData, unknown> }): ReactElement {
+  "use no memo"; // TanStack Table incompatible with React Compiler
 
   // ... component code
-});
+}
 ```
+
+v9 changes this (see the banner at the top and pattern 25): the owner of `useTable` can compile, nested components need `Subscribe` boundaries before their directive is removed.
 
 ### Tab Navigation with Mutations
 
@@ -550,7 +552,7 @@ When experiencing unexpected re-renders in TanStack Table:
 2. **Check mutation dependencies** - are you depending on `useMutation()` result?
 3. **Check props dependencies** - are parent callbacks stable?
 4. **Check for inline literals** - `[]`, `{}`, `() => {}` in deps
-5. **Verify `"use no forget"`** - is React Compiler interfering?
+5. **Verify `"use no memo"`** - is React Compiler interfering? (v8: required on TanStack components; v9: check for missing `Subscribe` boundaries instead)
 6. **Check data stability** - is the data array reference changing?
 
 ### Files Reference (BudTags)

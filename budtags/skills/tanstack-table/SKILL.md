@@ -1,7 +1,7 @@
 ---
 name: tanstack-table
-description: Use when working with TanStack Table for data tables, datagrids, sorting, filtering, pagination, row selection, column customization, or virtualization. Version-aware - BudTags main is on v8; v9 went stable 2026-08-04 (see patterns/25-v9-stable.md). Load specific pattern files based on the feature needed.
-version: 2.0.0
+description: Use when working with TanStack Table for data tables, datagrids, sorting, filtering, pagination, row selection, column customization, or virtualization. Version-aware - BudTags main is on v8; v9 is stable (latest 9.2.6, see patterns/25-v9-stable.md). Load specific pattern files based on the feature needed.
+version: 2.1.0
 category: project
 agent: tanstack-specialist
 auto_activate:
@@ -42,18 +42,22 @@ auto_activate:
     - "rowSelectionFeature"
     - "table v9"
     - "v9 migration"
+    - "table.Subscribe"
+    - "createAppColumnHelper"
+    - "use no memo"
 ---
 
 # TanStack Table Expert Skill
 
-## ⚠️ Version State (updated 2026-08-12), read this first
+## ⚠️ Version State (updated 2026-10-07), read this first
 
 **Two majors are in play. Pick the right one before writing any code:**
 
-- **BudTags `main` runs v8** (`@tanstack/react-table@^8.21.3`). All pattern files 01–24 document v8 and remain the operative guidance for day-to-day work on main.
-- **v9 went STABLE 2026-08-04** (latest 9.1.2 as of 2026-08-12). It is a ground-up rewrite: `useReactTable`→`useTable`, mandatory `tableFeatures({...})` registration, TanStack Store state, `table.getState()` removed, `sortingFn`→`sortFn`, pinning `left`/`right`→`start`/`end`, row-selection semantics changed, ESM-only. **Read `patterns/25-v9-stable.md`**, the verified v9 fact sheet, before any v9 work.
-- **The migration is planned, not done:** repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md` (re-verified for stable 2026-08-12). Branch: `tanstack-table-v9`.
-- **Once v9 is installed**, the package itself ships version-pinned first-party skills (`node_modules/@tanstack/react-table/skills/`, `node_modules/@tanstack/table-core/skills/`, including a complete `migrate-v8-to-v9` audit checklist). Prefer those over this skill's pattern files for v9 API detail; this skill stays the authority on BudTags-specific patterns (DataTable wrapper, TableHelpers, export button, virtualization config).
+- **BudTags `main` runs v8** (`@tanstack/react-table@^8.21.3`). All pattern files 01-24 document v8 and remain the operative guidance for day-to-day work on main.
+- **v9 is STABLE** (9.0.0 on 2026-08-04; **latest 9.2.6**, 2026-10-04; no public API change since 9.1.2). It is a ground-up rewrite: `useReactTable`→`useTable`, mandatory `tableFeatures({...})` registration, TanStack Store state, `table.getState()` removed, `sortingFn`→`sortFn`, pinning `left`/`right`→`start`/`end`, row-selection semantics changed, `'auto'` fns resolve only registered names, ESM-only. **Read `patterns/25-v9-stable.md`**, the verified v9 fact sheet, before any v9 work.
+- **React Compiler is not a free win in v9:** components that call `useTable` compile, but nested components receiving stable `row`/`cell`/`column`/`header` objects go stale unless they put a `Subscribe` inside. Never delete a TanStack `"use no memo"` without that audit (pattern 25, "React Compiler").
+- **The migration is planned, not done:** repo-root `TANSTACK_TABLE_V9_UPGRADE_PLAN.md` (re-verified for 9.2.6 on 2026-10-07). Branch: `tanstack-table-v9`, cut after `chore/dependency-upgrades` merges. Pin exact `9.2.6`.
+- **Once v9 is installed**, the package ships version-pinned skills in a **9.2.6 layout**: entry points `node_modules/@tanstack/table-core/skills/{core,table-features,table-state,custom-features,migrate-v8-to-v9}/SKILL.md` and `node_modules/@tanstack/react-table/skills/{getting-started,table-state,migrate-v8-to-v9}/SKILL.md`, with per-feature and per-topic detail under each entry point's `references/` (e.g. `table-features/references/row-selection.md`, `react-table/skills/table-state/references/reactivity.md`, `getting-started/references/create-table-hook.md`). Load with `npx @tanstack/intent@latest load <package>#<skill>`. Prefer those over this skill's pattern files for v9 API detail; this skill stays the authority on BudTags-specific patterns (DataTable wrapper, TableHelpers, export button, virtualization config).
 
 ## What This Skill Provides
 
@@ -113,9 +117,9 @@ When this skill is active, you can:
 
 ### Version Migration
 
-- `patterns/25-v9-stable.md` - **v9 stable verified fact sheet** (2026-08-12): architecture, complete rename map, behavior changes, state model, first-party skill locations, BudTags migration facts
+- `patterns/25-v9-stable.md` - **v9 stable verified fact sheet** (9.2.6, 2026-10-07): architecture, auto-fn registration, complete rename map, behavior changes, state model, React Compiler boundaries, bundled-skill locations (9.2.6 layout), BudTags migration facts
 
-(File names above match disk as of 2026-08-12, an earlier version of this list had drifted.)
+(File names above match disk as of 2026-10-07.)
 
 ## Quick Start Guide
 
@@ -252,65 +256,67 @@ const table = useReactTable({
 
 ### Pattern 1: Reusable DataTable Component
 
-**BudTags Implementation:**
+**BudTags Implementation (v8, abridged from `resources/js/Components/DataTable.tsx`):** controlled state for filters/selection/visibility/sorting, manual pagination (no pagination row model), sorting/filtering switchable to server mode, faceting always on.
 ```typescript
-// resources/js/Components/DataTable.tsx
-export function DataTable<TData>({
-  data,
-  columns,
-  enableSorting = true,
-  enableFiltering = true,
-  enablePagination = true,
-}: DataTableProps<TData>) {
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: enableSorting ? getSortedRowModel() : undefined,
-    getFilteredRowModel: enableFiltering ? getFilteredRowModel() : undefined,
-    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
-  })
+function DataTable<TData>({ data, columns, manualSorting, manualFiltering, enableRowSelection, getRowId, meta, ... }: DataTableProps<TData>) {
+  "use no memo"; // TanStack Table incompatible with React Compiler (v8 only)
 
-  return (
-    <BoxMain>
-      {/* Render table */}
-    </BoxMain>
-  )
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(initialColumnFilters);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialColumnVisibility);
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting);
+
+  const table = useReactTable({
+    columns: effectiveColumns, // checkbox column injected when bulk actions need it
+    data,
+    getRowId,
+    meta,
+    state: { columnFilters, rowSelection, columnVisibility, sorting },
+    onColumnFiltersChange: handleColumnFiltersChange,
+    onRowSelectionChange: handleRowSelectionChange,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onSortingChange: handleSortingChange,
+    enableRowSelection,
+    manualSorting,
+    manualFiltering,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+  });
+  // ... header filters (TableFilter), ColumnVisibilityToggle, TableExportButton,
+  // customToolbarSlot(table), virtualized rows, mobile cards
 }
 ```
+*(v9: this block becomes `useAppTable`/`useTable` with an app-level `tableFeatures` registry; see pattern 25 and the upgrade plan.)*
 
 ### Pattern 2: Checkbox Column Helper
 
-**From TableHelpers.tsx:** *(v8 semantics, in v9, `getIsSomeRowsSelected()` means "at least one" and stays `true` at full selection; indeterminate must become `getIsSomeRowsSelected() && !getIsAllRowsSelected()`. See pattern 25.)*
+**From `TableHelpers.tsx` (`createCheckboxColumn`, v8, abridged):** page-level select-all header; per-row checkbox with a capture-phase Shift-click range handler.
 ```typescript
-export function createCheckboxColumn<TData>(
-  options?: {
-    enableSelectAll?: boolean
-  }
-): ColumnDef<TData> {
-  return {
+export const createCheckboxColumn = <T,>(columnHelper: ColumnHelper<T>, disabledTitle?: string, rowLabel?: (row: T) => string) =>
+  columnHelper.display({
     id: 'select',
+    size: 36,
     header: ({ table }) => (
-      options?.enableSelectAll ? (
-        <input
-          type="checkbox"
-          checked={table.getIsAllRowsSelected()}
-          indeterminate={table.getIsSomeRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-        />
-      ) : null
-    ),
-    cell: ({ row }) => (
-      <input
-        type="checkbox"
-        checked={row.getIsSelected()}
-        disabled={!row.getCanSelect()}
-        onChange={row.getToggleSelectedHandler()}
+      <InputCheckbox
+        ariaLabel="Select every row on this page"
+        checked={table.getIsAllPageRowsSelected()}
+        indeterminate={table.getIsSomePageRowsSelected()}
+        onChange={table.getToggleAllPageRowsSelectedHandler()}
       />
     ),
-  }
-}
+    cell: ({ row, table }) => (
+      <div onClickCapture={(e) => { if (e.shiftKey && row.getCanSelect()) { e.stopPropagation(); e.preventDefault(); /* custom range from last selected key */ } }}>
+        <InputCheckbox checked={row.getIsSelected()} disabled={!row.getCanSelect()} onChange={row.getToggleSelectedHandler()} />
+      </div>
+    ),
+    enableColumnFilter: false,
+    enableSorting: false,
+  });
 ```
+*(v9: `getIsSomePageRowsSelected()` means "at least one" and stays `true` at full selection, so indeterminate becomes `getIsSomePageRowsSelected() && !getIsAllPageRowsSelected()`; the Shift handler's `table.getState().rowSelection` becomes `table.atoms.rowSelection.get()`; once `"use no memo"` is gone the header and cell need a `Subscribe` on `rowSelection` (pattern 25, "React Compiler"). The v8 range handler also lacks a guard for an anchor missing from the current rows.)*
 
 ### Pattern 3: Filter Button Cells
 
@@ -355,7 +361,7 @@ export function createDateSortingFn() {
 
 ### Use Case 1: Metrc Package Tables
 
-**Files:** `TablePackages.tsx`, `TablePackagesActive.tsx`
+**Files:** `features/metrc/components/TablePackages.tsx`
 
 **Features Used:**
 - ✅ Column definitions (Tag, Product, Quantity, Location, etc.)
@@ -363,12 +369,13 @@ export function createDateSortingFn() {
 - ✅ Filtering (by status, location, product type)
 - ✅ Row selection (for bulk label creation)
 - ✅ Column visibility (show/hide based on user preference)
-- ⚠️ Missing: Virtualization (needed for 1000+ packages)
-- ⚠️ Missing: Faceted filtering (for better filter UX)
+- ✅ Virtualization (`virtualize` prop)
+- ✅ Faceted header filters (DataTable `TableFilter`)
+- ✅ Saved-filter chips (hidden synthetic column with a custom `filterFn`)
 
 ### Use Case 2: Order Tables
 
-**Files:** `TableOrdersLeaflink.tsx`
+**Files:** `TableOrdersLeaflink` (see `Pages/Org/OrdersLeaflink.tsx`)
 
 **Features Used:**
 - ✅ Column definitions
@@ -379,7 +386,7 @@ export function createDateSortingFn() {
 
 ### Use Case 3: Plant Tables
 
-**Files:** `TablePlants.tsx`
+**Files:** `features/metrc/components/TablePlants.tsx`
 
 **Features Used:**
 - ✅ Basic table setup
@@ -420,6 +427,8 @@ const columns = useMemo(() => [
   columnHelper.accessor('Tag', { ... }),
 ], [])
 ```
+
+*(v8 tables run under `"use no memo"`, so manual memoization is the only stabilizer. In v9 a compiled component usually doesn't need it, but stable `data`/`columns` references still matter; keep existing memos unless you know why they exist.)*
 
 ### ❌ DON'T: Recreate columns on every render
 
@@ -495,7 +504,7 @@ getSortedRowModel: getSortedRowModel() // For sorting to work
 **Solution:** Use virtualization
 ```typescript
 import { useVirtualizer } from '@tanstack/react-virtual'
-// See pattern 19 for full implementation
+// See pattern 18 for full implementation
 ```
 
 ## Integration with Other TanStack Products
