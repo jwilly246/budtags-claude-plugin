@@ -3432,7 +3432,7 @@
           },
           "tax_type": {
             "title": "Tax type",
-            "description": "Type of tax: % or $",
+            "description": "Type of tax: %",
             "type": "string",
             "minLength": 1
           },
@@ -3943,7 +3943,7 @@
           },
           "tax_type": {
             "title": "Tax type",
-            "description": "Type of tax: % or $",
+            "description": "Type of tax: %",
             "type": "string",
             "minLength": 1
           },
@@ -4084,7 +4084,7 @@
           },
           "tax_type": {
             "title": "Tax type",
-            "description": "Type of tax: % or $",
+            "description": "Type of tax: %",
             "type": "string",
             "minLength": 1
           },
@@ -4158,7 +4158,7 @@
           },
           "payment_due_date": {
             "title": "Payment Due Date",
-            "description": "Date that the Payment is due",
+            "description": "Date that the Payment is due. It is best practice to include a time (e.g. 2024-01-15T17:00:00Z). If a time is not provided, it will default to the server's time zone which is UTC.",
             "type": "string",
             "format": "date-time",
             "nullable": true

@@ -1,362 +1,155 @@
 # LeafLink Date & Time Formats
 
-ISO 8601 date formatting requirements and common date fields for LeafLink Marketplace V2 API.
+ISO 8601 dates, the real LeafLink date fields, and the time-zone rules that move a date by a day.
+
+Lines marked "verified 2026-10-16 (sandbox, file)" cite raw files in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`. "Spec" = the official OpenAPI (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`).
 
 ---
 
-## Standard Format: ISO 8601
+## The three rules
 
-LeafLink uses **ISO 8601** format for all dates and timestamps.
+1. **LeafLink returns datetimes in Mountain time** (`-06:00` / `-07:00`), e.g. `2026-10-20T11:00:00-06:00`. Verified 2026-10-16 (sandbox, w_f_dates.txt).
+2. **Send a day-only value (`ship_date`, `payment_due_date`) as `YYYY-MM-DDT17:00:00Z`.** The spec says: "It is best practice to include a time (e.g. 2024-01-15T17:00:00Z)."
+3. **Never take the calendar day from a Mountain timestamp without choosing the zone.** Midnight in Detroit is 22:00 the previous day in Mountain.
+
+### What a write reads back as
+
+Verified 2026-10-16 (sandbox, w_f_dates.txt):
+
+| Sent | Read back | Day |
+|------|-----------|-----|
+| `2026-10-20T17:00:00Z` | `2026-10-20T11:00:00-06:00` | right (F1, F4) |
+| `2026-10-21` (date only) | `2026-10-21T00:00:00-06:00` | right (F2, F5) |
+| `2026-10-22T00:00:00-04:00` (midnight Detroit) | `2026-10-21T22:00:00-06:00` | **previous day** (F3) |
+
+The spec says a date without a time "will default to the server's time zone which is UTC"; the sandbox stored it as midnight Mountain. Sending `T17:00:00Z` avoids both.
 
 ---
 
 ## Accepted Formats
 
-### Date Only
+| Format | Example | Use for |
+|--------|---------|---------|
+| Date only | `2026-10-16` | `paid_date`, `next_contact_date` (date fields) |
+| UTC datetime | `2026-10-16T17:00:00Z` | `ship_date`, `payment_due_date`, `payment_date`, filters |
+| Offset datetime | `2026-10-16T11:00:00-06:00` | What LeafLink returns |
 
-```
-YYYY-MM-DD
-```
-
-**Examples:**
-```
-2025-01-15
-2024-12-31
-2025-06-01
-```
-
-**Use for:**
-- Order dates
-- Delivery dates
-- Date range filters
-
-### Date with Time (UTC)
-
-```
-YYYY-MM-DDTHH:MM:SSZ
-```
-
-**Examples:**
-```
-2025-01-15T10:30:00Z
-2024-12-31T23:59:59Z
-2025-06-01T00:00:00Z
-```
-
-**Use for:**
-- Created/modified timestamps
-- Precise time tracking
-- Event logging
-
-### Date with Timezone
-
-```
-YYYY-MM-DDTHH:MM:SS+HH:MM
-```
-
-**Examples:**
-```
-2025-01-15T10:30:00-07:00  // Mountain Time
-2025-01-15T10:30:00-08:00  // Pacific Time
-2025-01-15T10:30:00+00:00  // UTC
-```
-
-**Use for:**
-- Timezone-specific operations
-- Regional time conversions
+`paid_date` is a plain date. A datetime gives 400 `"Date has wrong format. Use one of these formats instead: MM/DD/YYYY, YYYY-MM-DD."` Verified 2026-10-16 (sandbox, w_e_payments.txt E3). (`paid` itself cannot be PATCHed; a full payment sets both.)
 
 ---
 
-## Common Date Fields
+## Common Date Fields (spec)
+
+There is no `created_date` field on any LeafLink object. It is `created_on`.
 
 ### Orders
 
-| Field | Type | Description | Format |
-|-------|------|-------------|--------|
-| `created_date` | datetime | When order was created | ISO 8601 with time |
-| `modified` | datetime | Last update timestamp | ISO 8601 with time |
-| `order_date` | date | Order placed date | YYYY-MM-DD |
-| `delivery_date` | date | Requested delivery | YYYY-MM-DD |
-| `shipped_date` | date | When order shipped | YYYY-MM-DD |
+| Field | Type | Notes |
+|-------|------|-------|
+| `created_on` | datetime | When the order was created |
+| `modified` | datetime | Last modified |
+| `ship_date` | datetime | Send `T17:00:00Z`; cleared by Shipped -> Rejected (sandbox, r3_i_reject_shipped_paid.txt) |
+| `payment_due_date` | datetime | Send `T17:00:00Z`; cleared by Shipped -> Rejected (sandbox, r3_i_reject_shipped_paid.txt) |
+| `paid_date` | date | Set by LeafLink when a payment settles the balance (sandbox, w_e_payments.txt E5) |
+
+There is no `order_date`, `delivery_date` or `shipped_date` field.
+
+### Payments
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `payment_date` | datetime | Send `T17:00:00Z`; reads back `T11:00:00-06:00` (sandbox, w_e_payments.txt E6) |
+| `created_on`, `modified` | datetime | |
 
 ### Products
 
-| Field | Type | Description | Format |
-|-------|------|-------------|--------|
-| `created_date` | datetime | Product created | ISO 8601 with time |
-| `modified` | datetime | Last product update | ISO 8601 with time |
+| Field | Type | Notes |
+|-------|------|-------|
+| `created_on` | datetime | |
+| `modified` | datetime | "last modified"; moves on API price and quantity edits, NOT on order-driven quantity/reservation changes (sandbox, w_c_units.txt, w_b_inventory.txt) |
+| `last_edit` | datetime | "last edited by a user"; moves on API price and quantity edits (sandbox, w_c_units.txt, r2_t4_inventory_mgmt.txt) |
+| `drop_date`, `dropped` | datetime | Scheduled / actual move to Available |
 
-### Customers
+### Customers and contacts
 
-| Field | Type | Description | Format |
-|-------|------|-------------|--------|
-| `created_date` | datetime | Customer created | ISO 8601 with time |
-| `modified` | datetime | Last update | ISO 8601 with time |
-| `last_order_date` | date | Most recent order | YYYY-MM-DD |
+| Field | Type |
+|-------|------|
+| `created_on`, `modified` | datetime |
+| `next_contact_date` (customer) | date |
 
 ---
 
 ## Laravel/PHP Date Formatting
 
-### Converting Laravel Dates to ISO 8601
-
 ```php
 use Carbon\Carbon;
 
-// Date only
-$dateOnly = now()->toDateString();
-// Output: "2025-01-15"
+// Day-only field going TO LeafLink (ship_date, payment_due_date, payment_date)
+$due = $order->payment_due_date->format('Y-m-d') . 'T17:00:00Z';
 
-// Date with time (UTC)
-$dateTime = now()->toIso8601String();
-// Output: "2025-01-15T10:30:00Z"
+// Date field (paid_date)
+$paid = $date->toDateString(); // "2026-10-16"
 
-// Specific date
-$specificDate = Carbon::parse('2025-01-15')->toDateString();
-// Output: "2025-01-15"
+// Filter boundary in Zulu
+$since = now()->subDay()->utc()->format('Y-m-d\TH:i:s\Z');
 
-// Start of day
-$startOfDay = now()->startOfDay()->toIso8601String();
-// Output: "2025-01-15T00:00:00Z"
-
-// End of day
-$endOfDay = now()->endOfDay()->toIso8601String();
-// Output: "2025-01-15T23:59:59Z"
+// Day FROM a LeafLink datetime: convert to the org's zone first
+$day = Carbon::parse('2026-10-21T22:00:00-06:00')->setTimezone('America/Detroit')->toDateString();
+// "2026-10-22"
 ```
+
+Never send `$date->toIso8601String()` for a `date`-cast column: that is local midnight (e.g. Detroit `-04:00`), which LeafLink stores as the previous day.
 
 ### Date Range Filters
 
 ```php
-// Today's orders
+// Orders created in October 2026 (UTC bounds)
 $response = $api->get('/orders-received/', [
-    'created_date__gte' => now()->startOfDay()->toIso8601String(),
-    'created_date__lte' => now()->endOfDay()->toIso8601String()
+    'created_on__gte' => '2026-10-01T00:00:00Z',
+    'created_on__lt' => '2026-11-01T00:00:00Z',
 ]);
 
-// Last 30 days
+// Changed since the last sync
 $response = $api->get('/orders-received/', [
-    'created_date__gte' => now()->subDays(30)->toDateString()
-]);
-
-// Specific month (January 2025)
-$response = $api->get('/orders-received/', [
-    'created_date__gte' => '2025-01-01',
-    'created_date__lt' => '2025-02-01'  // Exclusive upper bound
-]);
-
-// Last 7 days
-$response = $api->get('/orders-received/', [
-    'created_date__gte' => now()->subDays(7)->toDateString(),
-    'created_date__lte' => now()->toDateString()
-]);
-
-// This year
-$response = $api->get('/orders-received/', [
-    'created_date__gte' => now()->startOfYear()->toDateString()
-]);
-
-// Custom date range from request
-$response = $api->get('/orders-received/', [
-    'created_date__gte' => Carbon::parse($request->date_from)->toDateString(),
-    'created_date__lte' => Carbon::parse($request->date_to)->toDateString()
+    'modified__gte' => $last_sync->utc()->format('Y-m-d\TH:i:s\Z'),
+    'ordering' => 'id',
 ]);
 ```
+
+Honoured date filters per endpoint: `filtering.md`. (`/order-payments/` and `/order-event-logs/` ignore `modified__gte`.)
 
 ---
 
 ## Frontend Date Handling (React/TypeScript)
 
-### Display Formatting
-
 ```typescript
-// Format for display
-const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-};
-
-// Example: "2025-01-15T10:30:00Z" → "Jan 15, 2025"
-```
-
-### Form Input Formatting
-
-```typescript
-// Convert to ISO 8601 for API
-const dateInput = document.querySelector('input[type="date"]').value;
-// dateInput: "2025-01-15"
-
-// Send as-is to API (already in YYYY-MM-DD format)
-const response = await fetch('/api/orders/', {
-    method: 'POST',
-    body: JSON.stringify({
-        order_date: dateInput
-    })
-});
-```
-
----
-
-## Common Patterns
-
-### 1. Date Range Picker
-
-```php
-// Controller
-public function index(Request $request) {
-    $filters = [];
-
-    if ($request->has('date_from')) {
-        $filters['created_date__gte'] = Carbon::parse($request->date_from)
-            ->startOfDay()
-            ->toIso8601String();
-    }
-
-    if ($request->has('date_to')) {
-        $filters['created_date__lte'] = Carbon::parse($request->date_to)
-            ->endOfDay()
-            ->toIso8601String();
-    }
-
-    $orders = $api->get('/orders-received/', $filters);
-
-    return response()->json($orders->json());
-}
-```
-
-### 2. Relative Date Filters
-
-```php
-// Helper function
-public function getDateRange(string $range): array {
-    return match($range) {
-        'today' => [
-            'created_date__gte' => now()->startOfDay()->toIso8601String(),
-            'created_date__lte' => now()->endOfDay()->toIso8601String()
-        ],
-        'yesterday' => [
-            'created_date__gte' => now()->subDay()->startOfDay()->toIso8601String(),
-            'created_date__lte' => now()->subDay()->endOfDay()->toIso8601String()
-        ],
-        'last_7_days' => [
-            'created_date__gte' => now()->subDays(7)->startOfDay()->toIso8601String()
-        ],
-        'last_30_days' => [
-            'created_date__gte' => now()->subDays(30)->startOfDay()->toIso8601String()
-        ],
-        'this_month' => [
-            'created_date__gte' => now()->startOfMonth()->toIso8601String()
-        ],
-        'last_month' => [
-            'created_date__gte' => now()->subMonth()->startOfMonth()->toIso8601String(),
-            'created_date__lt' => now()->startOfMonth()->toIso8601String()
-        ],
-        default => []
-    };
-}
-
-// Usage
-$filters = $this->getDateRange($request->range);
-$orders = $api->get('/orders-received/', $filters);
-```
-
----
-
-## Validation
-
-### Request Validation
-
-```php
-$validated = $request->validate([
-    'order_date' => 'required|date|date_format:Y-m-d',
-    'delivery_date' => 'nullable|date|date_format:Y-m-d|after:order_date',
-    'date_from' => 'nullable|date',
-    'date_to' => 'nullable|date|after_or_equal:date_from'
-]);
+// Display in the org's zone, not the browser's or Mountain
+const formatDate = (iso: string, timeZone: string): string =>
+    new Date(iso).toLocaleDateString('en-US', { timeZone, year: 'numeric', month: 'short', day: 'numeric' });
 ```
 
 ---
 
 ## Common Errors
 
-### Invalid Date Format
-
-**Error:**
-```
-400 Bad Request: "Enter a valid date/time."
-```
-
-**Cause:**
-- Using format like `01/15/2025` instead of `2025-01-15`
-- Missing leading zeros: `2025-1-5` instead of `2025-01-05`
-- Using non-ISO format
-
-**Solution:**
-```php
-// ❌ Wrong
-'order_date' => '01/15/2025'
-'order_date' => '2025-1-5'
-
-// ✅ Correct
-'order_date' => '2025-01-15'
-'order_date' => now()->toDateString()
-```
-
-### Timezone Issues
-
-**Problem:** Dates off by one day due to timezone conversion
-
-**Solution:** Use `startOfDay()` and `endOfDay()` for UTC:
-```php
-// ❌ May have timezone issues
-'created_date__gte' => '2025-01-15'
-
-// ✅ Explicit UTC boundaries
-'created_date__gte' => '2025-01-15T00:00:00Z',
-'created_date__lte' => '2025-01-15T23:59:59Z'
-```
-
----
-
-## Best Practices
-
-✅ **Do:**
-- Always use ISO 8601 format
-- Include leading zeros (2025-01-05, not 2025-1-5)
-- Use Laravel Carbon for date manipulation
-- Validate date formats before API calls
-- Use `startOfDay()`/`endOfDay()` for precise ranges
-
-❌ **Don't:**
-- Use US format (01/15/2025)
-- Use European format (15/01/2025)
-- Forget timezone considerations
-- Hardcode date strings (use Carbon)
-- Mix date formats within same application
+| Error | Cause | Fix |
+|-------|-------|-----|
+| Date one day early | Sent local midnight, or took the day from a Mountain offset | Send `T17:00:00Z`; convert before taking the day |
+| `paid_date` 400 "Date has wrong format" | Sent a datetime | Plain `YYYY-MM-DD` (and `paid` cannot be PATCHed anyway) |
+| Filter returns everything | Filter is ignored on that endpoint | Check `filtering.md` |
 
 ---
 
 ## Quick Reference
 
 ```php
-// Date only
-now()->toDateString()                    // "2025-01-15"
+// To LeafLink, day-only datetime fields
+$day->format('Y-m-d') . 'T17:00:00Z'      // "2026-10-16T17:00:00Z"
 
-// Date with time (UTC)
-now()->toIso8601String()                 // "2025-01-15T10:30:00Z"
+// To LeafLink, date fields
+$day->toDateString()                       // "2026-10-16"
 
-// Date ranges
-now()->startOfDay()->toIso8601String()   // "2025-01-15T00:00:00Z"
-now()->endOfDay()->toIso8601String()     // "2025-01-15T23:59:59Z"
-
-// Relative dates
-now()->subDays(7)->toDateString()        // 7 days ago
-now()->subMonths(1)->toDateString()      // 1 month ago
-now()->startOfMonth()->toDateString()    // First day of month
-
-// Parsing
-Carbon::parse('2025-01-15')->toDateString()
-Carbon::parse($request->date)->toIso8601String()
+// Filters
+'created_on__gte' => '2026-10-01T00:00:00Z'
+'modified__gte'   => '2026-10-16T15:00:00Z'
 ```

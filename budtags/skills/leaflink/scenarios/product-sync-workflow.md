@@ -1,462 +1,215 @@
 # LeafLink Product Sync Workflow
 
-Complete guide for syncing product catalog from LeafLink to BudTags.
+Guide for syncing the product catalog (listings) between LeafLink and BudTags. Fields are the real ProductResponse fields from the official spec; behaviour lines verified 2026-10-16 on the sandbox (raw files in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`). On write behaviour, `patterns/verified-behavior.md` wins.
 
 ## Overview
 
 This workflow covers:
-- Fetching product catalog from LeafLink
-- Enriching products with metadata (brands, categories, etc.)
-- Syncing products to local database
-- Managing product images
-- Handling batches and COA data
-- Cache management
+- Fetching the product catalog from LeafLink
+- Storing every field you will ever push back, losslessly
+- Product images, batches and COA documents
+- Metadata (brands, categories)
+- Incremental sync
+- Pushing changes back without damaging LeafLink data
+
+**Golden rule:** never push a field you import lossily. A field stored in a normal form (a unit word, the first strain only, a reformatted phone) and pushed back overwrites LeafLink with the damaged value.
 
 ---
 
 ## Step 1: Fetch Product Catalog
 
-### Basic Product Fetch
+### Full Walk
 
 ```php
 use App\Services\Api\LeafLinkApi;
 
 $api = new LeafLinkApi();
 
-// Fetch all products (auto-paginated)
-$products = $api->get_inventory_items();
+$listings = [];
+$offset = 0;
+$limit = 500;   // max 500 (1000 -> 400)
 
-echo "Fetched " . count($products) . " products\n";
+do {
+    $response = $api->get('/products/', [
+        'limit' => $limit,
+        'offset' => $offset,
+        'include_children' => 'strains',
+    ]);
 
-foreach ($products as $product) {
-    echo "{$product['display_name']} - SKU: {$product['sku']}\n";
-    echo "Price: \${$product['unit_price']}\n";
-    echo "Stock: {$product['inventory_quantity']}\n";
+    foreach ($response->json('results') as $p) {
+        $listings[$p['id']] = $p;   // dedupe by id
+    }
+
+    $offset += $limit;
+} while ($response->json('next') !== null);
+
+// /products/ ignores ordering and id__gt, so pages are not in a stable order.
+if (count($listings) < $response->json('count')) {
+    // a row moved between pages: walk again or fill the gap by modified__gte
 }
 ```
 
-### Enriched Product Fetch (With Metadata)
+`ordering`, `id__gt`, `id__gte` and `id__in` are IGNORED on `/products/` (whole list, same order). Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt, r2_t9_pagination.txt)
 
-```php
-$orgId = request()->user()->active_org->id;
+### Fields That Matter
 
-// Get products with brand, category, subcategory, and product line names
-$enrichedProducts = $api->get_inventory_items_enriched($orgId);
-
-foreach ($enrichedProducts as $product) {
-    echo "{$product['display_name']}\n";
-    echo "Brand: {$product['brand_name']}\n";
-    echo "Category: {$product['category_name']}\n";
-    echo "Subcategory: {$product['subcategory_name']}\n";
-    echo "Line: {$product['product_line_name']}\n";
-    echo "---\n";
-}
-```
-
-**Note:** Enriched fetch is cached for 5 minutes by default.
+| Field | Shape |
+|-------|-------|
+| `unit_of_measure` | Milligram / Gram / Kilogram / Ounce / Pound / Unit / Liter / Milliliter |
+| `unit_denomination` | read: `{id, value, name, label}`; write: integer id |
+| `unit_multiplier` | units per case (integer) |
+| `sell_in_unit_of_measure` | `"Case"` or `null` |
+| `base_units_per_unit` | decimal string |
+| `quantity`, `reserved_qty`, `available_inventory` | listing units |
+| `wholesale_price`, `sale_price`, `retail_price` | `{amount, currency}`; per case when multiplier > 1 |
+| `strains` | ids on write; objects with `include_children=strains` |
+| `product_data_items` | `[{spec_type, dosage_unit, decimal_value, max_decimal_value, text_value}]` |
+| `listing_state` | Available / Archived / Sample / Backorder / Internal / Unavailable |
+| `inventory_management` | 1 Managed, 2 Unlimited, 3 Inherited |
+| `threshold_value`, `threshold_action`, `reverse_threshold_value`, `reverse_threshold_action` | auto-flip of `listing_state` |
+| `modified`, `last_edit` | both move on API price/qty edits |
 
 ---
 
 ## Step 2: Sync Products to Database
 
-### Basic Sync
-
 ```php
-public function sync_products()
-{
-    $api = new LeafLinkApi();
-    $orgId = request()->user()->active_org->id;
+foreach ($listings as $p) {
+    $local = $org->listings()->firstOrNew(['leaflink_product_id' => $p['id']]);
 
-    try {
-        // Fetch products from LeafLink
-        $leaflinkProducts = $api->get_inventory_items_enriched($orgId);
+    $local->fill([
+        'name' => $p['name'],
+        'sku' => $p['sku'],
+        'wholesale_price' => $p['wholesale_price']['amount'],
+        'sale_price' => $p['sale_price']['amount'],
+        'quantity' => $p['quantity'],                         // listing units
+        'unit_of_measure' => $p['unit_of_measure'],           // the word
+        'unit_denomination_id' => $p['unit_denomination']['id'], // the id, separately
+        'unit_multiplier' => $p['unit_multiplier'],
+        'sell_in_unit_of_measure' => $p['sell_in_unit_of_measure'],
+        'strain_ids' => array_column($p['strains'] ?? [], 'id'),  // the WHOLE list
+        'listing_state' => $p['listing_state'],
+        'inventory_management' => $p['inventory_management'],
+        'leaflink_modified' => $p['modified'],
+        'leaflink_last_edit' => $p['last_edit'],
+    ]);
 
-        $synced = 0;
-        $updated = 0;
-        $failed = 0;
-
-        foreach ($leaflinkProducts as $product) {
-            try {
-                $wasUpdated = \App\Models\LeafLinkProduct::updateOrCreate(
-                    [
-                        'leaflink_id' => $product['id'],
-                        'org_id' => $orgId
-                    ],
-                    [
-                        'name' => $product['display_name'],
-                        'sku' => $product['sku'],
-                        'price' => $product['unit_price'],
-                        'quantity' => $product['inventory_quantity'],
-                        'unit_denomination' => $product['unit_denomination'] ?? 'each',
-                        'brand_name' => $product['brand_name'],
-                        'category_name' => $product['category_name'],
-                        'subcategory_name' => $product['subcategory_name'],
-                        'product_line_name' => $product['product_line_name'],
-                        'description' => $product['description'] ?? null,
-                        'active' => $product['active'] ?? true,
-                        'last_synced_at' => now()
-                    ]
-                );
-
-                if ($wasUpdated->wasRecentlyCreated) {
-                    $synced++;
-                } else {
-                    $updated++;
-                }
-
-            } catch (Exception $e) {
-                $failed++;
-                LogService::store(
-                    'LeafLink Product Sync Error',
-                    "Product: {$product['display_name']}\nError: {$e->getMessage()}"
-                );
-            }
-        }
-
-        // Clear cache after sync
-        $api->clearCache($orgId);
-
-        LogService::store(
-            'LeafLink Product Sync Complete',
-            "Created: {$synced}\nUpdated: {$updated}\nFailed: {$failed}"
-        );
-
-        return redirect()->back()->with('message', "Synced {$synced} new products, updated {$updated}");
-
-    } catch (Exception $e) {
-        LogService::store('LeafLink Sync Error', $e->getMessage());
-        return redirect()->back()->with('error', 'Sync failed: ' . $e->getMessage());
-    }
+    $local->save();
 }
 ```
+
+- `unit_of_measure` and `unit_denomination` are two fields. Storing only the word (or defaulting the denomination to "each") later sends id 1 ("One") on a push. Verified 2026-10-16 (sandbox, w_c_units.txt: words and strings are rejected, only ids work)
+- Keep the full strain list: `strains` is a whole-list replace on PATCH, so pushing one id drops the others. Verified 2026-10-16 (sandbox, w_h_strains.txt)
 
 ---
 
 ## Step 3: Sync Product Images
 
-### Fetch and Store Images
-
 ```php
-public function sync_product_images(int $leaflinkProductId)
-{
-    $api = new LeafLinkApi();
+$images = $api->get('/product-images/', [
+    'product' => $leaflinkProductId,   // honoured
+])->json('results');
 
-    // Get product images from LeafLink
-    $response = $api->get('/product-images/', [
-        'product' => $leaflinkProductId,
-        'limit' => 50
-    ]);
-
-    if (!$response->successful()) {
-        return;
-    }
-
-    $images = $response->json('results');
-
-    foreach ($images as $image) {
-        \App\Models\LeafLinkProductImage::updateOrCreate(
-            [
-                'leaflink_image_id' => $image['id'],
-                'leaflink_product_id' => $leaflinkProductId
-            ],
-            [
-                'image_url' => $image['image_url'],
-                'thumbnail_url' => $image['thumbnail_url'] ?? null,
-                'is_primary' => $image['is_primary'] ?? false,
-                'display_order' => $image['display_order'] ?? 0
-            ]
-        );
-    }
-
-    LogService::store(
-        'LeafLink Images Synced',
-        "Product #{$leaflinkProductId}: " . count($images) . " images"
+foreach ($images as $image) {
+    // fields: id, image (URL), product, position
+    $local->images()->updateOrCreate(
+        ['leaflink_image_id' => $image['id']],
+        ['url' => $image['image'], 'position' => $image['position']]
     );
 }
 ```
 
-### Download Images Locally (Optional)
-
-```php
-use Illuminate\Support\Facades\Storage;
-
-public function download_product_images(int $productId)
-{
-    $images = \App\Models\LeafLinkProductImage::where('leaflink_product_id', $productId)->get();
-
-    foreach ($images as $image) {
-        try {
-            // Download image content
-            $imageContent = file_get_contents($image->image_url);
-
-            // Generate filename
-            $filename = "leaflink/products/{$productId}/" . basename($image->image_url);
-
-            // Store in local storage
-            Storage::disk('public')->put($filename, $imageContent);
-
-            // Update local path
-            $image->update(['local_path' => $filename]);
-
-        } catch (Exception $e) {
-            LogService::store(
-                'Image Download Error',
-                "Image ID: {$image->id}\nURL: {$image->image_url}\nError: {$e->getMessage()}"
-            );
-        }
-    }
-}
-```
+Up to 5 images per product [spec]. `product` filter on `/product-images/` is honoured. Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
 
 ---
 
 ## Step 4: Sync Product Batches & COA Data
 
-### Fetch Batches for Product
-
 ```php
-public function sync_product_batches(int $leaflinkProductId)
-{
-    $api = new LeafLinkApi();
+// 1. Product <-> batch assignments (fields: id, product, batch).
+//    The spec lists only limit/offset for this endpoint, so filter on our side.
+$assignments = collect($api->get('/product-batches/', ['limit' => 500])->json('results'))
+    ->where('product', $leaflinkProductId);
 
-    $response = $api->get('/product-batches/', [
-        'product' => $leaflinkProductId,
-        'limit' => 100
-    ]);
+foreach ($assignments as $a) {
+    // 2. The batch itself: production_batch_number, batch_date, thc, cbd, total_cannabinoids,
+    //    cannabinoid_unit, testing_source, documents (no quantity on a batch)
+    $batch = $api->get("/batches/{$a['batch']}/")->json();
 
-    if (!$response->successful()) {
-        return;
+    // 3. COA documents: id, batch, document (file URL), summary, created_on, modified
+    foreach ($batch['documents'] ?? [] as $doc) {
+        // store $doc
     }
-
-    $batches = $response->json('results');
-
-    foreach ($batches as $batch) {
-        $batchModel = \App\Models\LeafLinkBatch::updateOrCreate(
-            [
-                'leaflink_batch_id' => $batch['id'],
-                'leaflink_product_id' => $leaflinkProductId
-            ],
-            [
-                'batch_number' => $batch['batch_number'],
-                'quantity' => $batch['quantity'] ?? 0,
-                'unit' => $batch['unit'] ?? 'gram',
-                'harvest_date' => $batch['harvest_date'] ?? null,
-                'test_date' => $batch['test_date'] ?? null,
-                'test_results' => $batch['test_results'] ?? null,  // JSON field
-            ]
-        );
-
-        // Sync batch documents (COAs)
-        $this->sync_batch_documents($batch['id']);
-    }
-
-    LogService::store(
-        'LeafLink Batches Synced',
-        "Product #{$leaflinkProductId}: " . count($batches) . " batches"
-    );
 }
 ```
 
-### Sync Batch Documents (COAs)
-
-```php
-public function sync_batch_documents(int $leaflinkBatchId)
-{
-    $api = new LeafLinkApi();
-
-    $response = $api->get('/batch-documents/', [
-        'batch' => $leaflinkBatchId
-    ]);
-
-    if (!$response->successful()) {
-        return;
-    }
-
-    $documents = $response->json('results');
-
-    foreach ($documents as $doc) {
-        \App\Models\LeafLinkBatchDocument::updateOrCreate(
-            [
-                'leaflink_document_id' => $doc['id'],
-                'leaflink_batch_id' => $leaflinkBatchId
-            ],
-            [
-                'document_type' => $doc['document_type'] ?? 'other',
-                'document_url' => $doc['document_url'],
-                'uploaded_date' => $doc['uploaded_date'] ?? now()
-            ]
-        );
-    }
-}
-```
+`ordering` is IGNORED on `/product-batches/`. Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
 
 ---
 
 ## Step 5: Sync Metadata (Brands, Categories, etc.)
 
-### Fetch and Cache Brands
+### Brands
 
 ```php
-public function sync_brands()
-{
-    $api = new LeafLinkApi();
-
-    // Get company ID
-    $company = $api->get('/companies/me/')->json();
-    $companyId = $company['id'];
-
-    // Fetch brands for this company
-    $brands = $api->get_brands($companyId);
-
-    foreach ($brands as $brand) {
-        \App\Models\LeafLinkBrand::updateOrCreate(
-            ['leaflink_brand_id' => $brand['id']],
-            [
-                'name' => $brand['name'],
-                'company_id' => $companyId,
-                'logo_url' => $brand['logo_url'] ?? null,
-                'description' => $brand['description'] ?? null
-            ]
-        );
-    }
-
-    LogService::store('LeafLink Brands Synced', count($brands) . " brands");
-}
+// /companies/me/ is not in the spec; use /brands/. The `company` filter is IGNORED
+// (returns every brand the key sees). Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
+$brands = $api->get('/brands/')->json('results');   // id, name, company, description, image, banner
 ```
 
-### Fetch Categories and Subcategories
+### Categories and Subcategories
 
 ```php
-public function sync_categories()
-{
-    $api = new LeafLinkApi();
-
-    // Fetch categories
-    $categories = $api->get_categories();
-
-    foreach ($categories as $category) {
-        \App\Models\LeafLinkCategory::updateOrCreate(
-            ['leaflink_category_id' => $category['id']],
-            [
-                'name' => $category['name'],
-                'description' => $category['description'] ?? null
-            ]
-        );
-    }
-
-    // Fetch subcategories
-    $subcategories = $api->get_subcategories();
-
-    foreach ($subcategories as $subcategory) {
-        \App\Models\LeafLinkSubcategory::updateOrCreate(
-            ['leaflink_subcategory_id' => $subcategory['id']],
-            [
-                'name' => $subcategory['name'],
-                'category_id' => $subcategory['category'],
-                'description' => $subcategory['description'] ?? null
-            ]
-        );
-    }
-
-    LogService::store(
-        'LeafLink Categories Synced',
-        count($categories) . " categories, " . count($subcategories) . " subcategories"
-    );
-}
+$categories = $api->get('/product-categories/')->json('results');      // id, name, slug, description
+$subcategories = $api->get('/product-subcategories/')->json('results'); // + category
 ```
+
+A `sub_category` that does not belong to the `category` is refused: 400 `"Subcategory does not belong to category"`. Verified 2026-10-16 (sandbox, r2_t6_category_pair.txt)
 
 ---
 
 ## Step 6: Selective Sync (Update Only Changed Products)
 
-### Track Last Sync Time
-
 ```php
-public function incremental_sync()
-{
-    $api = new LeafLinkApi();
-    $orgId = request()->user()->active_org->id;
+$since = $org->leaflink_products_synced_at ?? now()->subDays(30);
 
-    // Get last sync time
-    $lastSync = \App\Models\LeafLinkSyncLog::where('org_id', $orgId)
-        ->latest('synced_at')
-        ->first();
-
-    $modifiedSince = $lastSync?->synced_at ?? now()->subDays(30);
-
-    // Fetch only modified products
-    $response = $api->get('/products/', [
-        'modified__gte' => $modifiedSince->toIso8601String(),
-        'limit' => 100,
-        'offset' => 0
-    ]);
-
-    $modifiedProducts = $response->json('results');
-
-    $synced = 0;
-
-    foreach ($modifiedProducts as $product) {
-        \App\Models\LeafLinkProduct::updateOrCreate(
-            ['leaflink_id' => $product['id'], 'org_id' => $orgId],
-            [
-                'name' => $product['display_name'],
-                'price' => $product['unit_price'],
-                'quantity' => $product['inventory_quantity'],
-                'last_synced_at' => now()
-            ]
-        );
-
-        $synced++;
-    }
-
-    // Log this sync
-    \App\Models\LeafLinkSyncLog::create([
-        'org_id' => $orgId,
-        'synced_at' => now(),
-        'products_synced' => $synced
-    ]);
-
-    LogService::store('LeafLink Incremental Sync', "{$synced} products updated");
-
-    return redirect()->back()->with('message', "Updated {$synced} products");
-}
+$response = $api->get('/products/', [
+    'modified__gte' => $since->utc()->format('Y-m-d\TH:i:s\Z'),   // honoured
+    'limit' => 500,
+    'offset' => 0,
+]);
 ```
+
+- `modified__gte` and `created_on__gte/__lt` are honoured on `/products/`. Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
+- `modified` and `last_edit` both move on API price and quantity edits. Verified 2026-10-16 (sandbox, w_c_units.txt, r2_t4_inventory_mgmt.txt T4y)
+- `modified` does NOT move when orders reserve or deduct stock, so an incremental walk will not see order-driven `quantity`/`reserved_qty` changes. Verified 2026-10-16 (sandbox, w_b_inventory.txt). Re-read quantities on a full walk.
 
 ---
 
-## Step 7: Cache Management
-
-### Clear Cache After Sync
+## Step 7: Push Changes Back
 
 ```php
-public function full_sync()
-{
-    $api = new LeafLinkApi();
-    $orgId = request()->user()->active_org->id;
+// Changed fields only; PATCH is partial, omitted fields are kept.
+$payload = ['wholesale_price' => ['amount' => '320.00', 'currency' => 'USD']];
 
-    // Perform sync
-    $products = $api->get_inventory_items_enriched($orgId);
+// A unit change rides as a group: word + denomination id + multiplier (+ sell_in, price)
+$payload += [
+    'unit_of_measure' => 'Gram',
+    'unit_denomination' => 11,
+    'unit_multiplier' => 28,
+    'sell_in_unit_of_measure' => 'Case',   // null or "" to clear; multiplier 1 alone keeps "Case"
+];
 
-    // ... sync products ...
+$response = $api->patch("/products/{$id}/", $payload);
 
-    // Clear cache to force fresh fetch next time
-    $api->clearCache($orgId);
-
-    LogService::store('LeafLink Sync', "Cache cleared for org {$orgId}");
-}
+// Thresholds can flip the state on a quantity push: record what LeafLink says
+$local->listing_state = $response->json('listing_state');
 ```
 
-### Force Fresh Fetch (Bypass Cache)
-
-```php
-// Method 1: Clear cache first
-$api->clearCache($orgId);
-$products = $api->get_inventory_items_enriched($orgId);
-
-// Method 2: Use direct API call instead of cached method
-$response = $api->get('/products/', ['limit' => 500]);
-$products = $response->json('results');
-```
+- Omitted fields (units, multiplier, strains) are kept. Verified 2026-10-16 (sandbox, w_c_units.txt C2, C3; w_h_strains.txt H3)
+- `sell_in_unit_of_measure` clears only with `null` or `""`. Verified 2026-10-16 (sandbox, w_c_sellin_clear.txt)
+- The PATCH response already shows a threshold flip. Verified 2026-10-16 (sandbox, r3_g_threshold_response.txt)
+- `strains` and `product_data_items` replace the whole list: send the full list or leave the key out.
 
 ---
 
@@ -467,79 +220,39 @@ namespace App\Http\Controllers;
 
 use App\Services\Api\LeafLinkApi;
 use App\Services\LogService;
-use Illuminate\Http\Request;
 
 class LeafLinkSyncController extends Controller
 {
     public function sync_all()
     {
         $api = new LeafLinkApi();
-        $orgId = request()->user()->active_org->id;
+        $org = request()->user()->active_org;
 
         try {
-            // Step 1: Sync metadata
-            $this->sync_brands();
-            $this->sync_categories();
-
-            // Step 2: Sync products
-            $products = $api->get_inventory_items_enriched($orgId);
+            $this->sync_metadata($api);            // brands, categories (Step 5)
+            $listings = $this->fetch_all($api);    // Step 1 (dedupe by id)
 
             $synced = 0;
             $failed = 0;
 
-            foreach ($products as $product) {
+            foreach ($listings as $p) {
                 try {
-                    // Sync product
-                    $productModel = \App\Models\LeafLinkProduct::updateOrCreate(
-                        ['leaflink_id' => $product['id'], 'org_id' => $orgId],
-                        [
-                            'name' => $product['display_name'],
-                            'sku' => $product['sku'],
-                            'price' => $product['unit_price'],
-                            'quantity' => $product['inventory_quantity'],
-                            'brand_name' => $product['brand_name'],
-                            'category_name' => $product['category_name'],
-                            'last_synced_at' => now()
-                        ]
-                    );
-
-                    // Sync images
-                    $this->sync_product_images($product['id']);
-
-                    // Sync batches
-                    $this->sync_product_batches($product['id']);
-
+                    $this->store_listing($org, $p); // Step 2 (lossless fields)
                     $synced++;
-
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $failed++;
-                    LogService::store(
-                        'LeafLink Product Sync Error',
-                        "Product ID: {$product['id']}\nError: {$e->getMessage()}"
-                    );
+                    LogService::store('LeafLink Product Sync Error', "Product ID: {$p['id']}\nError: {$e->getMessage()}");
                 }
             }
 
-            // Clear cache
-            $api->clearCache($orgId);
-
-            LogService::store(
-                'LeafLink Full Sync Complete',
-                "Synced: {$synced}\nFailed: {$failed}"
-            );
+            LogService::store('LeafLink Full Sync Complete', "Synced: {$synced}\nFailed: {$failed}");
 
             return redirect()->back()->with('message', "Synced {$synced} products");
-
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             LogService::store('LeafLink Sync Failed', $e->getMessage());
             return redirect()->back()->with('error', 'Sync failed');
         }
     }
-
-    private function sync_brands() { /* ... */ }
-    private function sync_categories() { /* ... */ }
-    private function sync_product_images($productId) { /* ... */ }
-    private function sync_product_batches($productId) { /* ... */ }
 }
 ```
 
@@ -550,53 +263,19 @@ class LeafLinkSyncController extends Controller
 ### 1. Schedule Regular Syncs
 
 ```php
-// app/Console/Kernel.php
-
-protected function schedule(Schedule $schedule)
-{
-    // Sync products every 6 hours
-    $schedule->call(function () {
-        $organizations = \App\Models\Organization::all();
-
-        foreach ($organizations as $org) {
-            dispatch(new SyncLeafLinkProducts($org->id));
-        }
-    })->everySixHours();
-}
+// routes/console.php
+Schedule::job(new SyncLeafLinkProducts($orgId))->everySixHours();
 ```
 
 ### 2. Use Queue for Large Syncs
 
 ```php
-// Dispatch to queue for async processing
 dispatch(new SyncLeafLinkProducts($orgId))->onQueue('leaflink-sync');
 ```
 
-### 3. Track Sync History
+### 3. Never Retry Writes Blindly
 
-```php
-// Create sync log before starting
-$syncLog = \App\Models\LeafLinkSyncLog::create([
-    'org_id' => $orgId,
-    'status' => 'in_progress',
-    'started_at' => now()
-]);
-
-try {
-    // Perform sync...
-
-    $syncLog->update([
-        'status' => 'completed',
-        'completed_at' => now(),
-        'products_synced' => $synced
-    ]);
-} catch (Exception $e) {
-    $syncLog->update([
-        'status' => 'failed',
-        'error_message' => $e->getMessage()
-    ]);
-}
-```
+GETs can be retried. A POST that timed out may already exist on LeafLink (product lines and payments cannot be deleted or are not idempotent): read back by a natural key before re-sending.
 
 ---
 
@@ -605,21 +284,25 @@ try {
 ### Products Not Syncing
 
 **Check:**
-1. API key is valid (`/companies/me/` returns 200)
+1. API key is valid (`/products/?limit=1` returns 200)
 2. Products exist in LeafLink (`/products/` returns results)
-3. Company ID filter (brands, product lines are company-specific)
+3. A filter that "works" but returns everything is probably ignored (see `patterns/filtering.md`)
+
+### Wrong Unit or "One" After a Push
+
+**Cause:** the denomination was stored as a word or not stored; the push sent id 1. **Fix:** store `unit_denomination['id']` and send the id with the unit group.
+
+### Listing Hidden After a Quantity Push
+
+**Cause:** LeafLink thresholds. **Fix:** read `listing_state` from the PATCH response; see `categories/products.md`.
 
 ### Missing Images
 
-**Solution:** Images may not be available for all products. Handle null image_url gracefully.
-
-### Stale Cache
-
-**Solution:** Clear cache manually: `$api->clearCache($orgId)`
+Not every product has images. Handle an empty list.
 
 ---
 
 **See Also:**
-- `OPERATIONS_CATALOG.md` - Product operations reference
-- `CODE_EXAMPLES.md` - Sync code examples
-- `ERROR_HANDLING.md` - Sync error troubleshooting
+- `patterns/verified-behavior.md` - Proven write behaviour
+- `categories/products.md` - Product endpoints and filters
+- `patterns/error-handling.md` - Error troubleshooting

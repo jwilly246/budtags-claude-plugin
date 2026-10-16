@@ -20,7 +20,7 @@
     }
   ],
   "paths": {
-    "/customer-status/": {
+    "/customer-statuses/": {
       "get": {
         "operationId": "customer-status_list",
         "summary": "List",

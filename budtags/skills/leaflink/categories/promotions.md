@@ -1,6 +1,6 @@
 # Promotions - LeafLink API Category
 
-Complete reference for promotional code management endpoints - 5 total operations.
+Reference for promotional code endpoints - 5 operations. Checked against the official spec (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`); not exercised in the 2026-10-16 sandbox tests.
 
 ---
 
@@ -8,7 +8,7 @@ Complete reference for promotional code management endpoints - 5 total operation
 
 **OpenAPI Schema:** `schemas/openapi-promotions-reports.json`
 **Total Endpoints:** 5
-**Company Compatibility:** Seller companies only
+**Company Compatibility:** Seller companies (codes belong to a brand)
 
 ---
 
@@ -18,11 +18,27 @@ Complete reference for promotional code management endpoints - 5 total operation
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/promocodes/` | List promo codes |
-| POST | `/promocodes/` | Create promo code |
+| GET | `/promocodes/` | List promo codes for brands in the company's scope |
+| POST | `/promocodes/` | Create promo code (unique per brand + code) |
 | GET | `/promocodes/{id}/` | Get promo code details |
-| PATCH | `/promocodes/{id}/` | Update promo code |
-| DELETE | `/promocodes/{id}/` | Delete promo code |
+| PATCH | `/promocodes/{id}/` | Update a code's `start_date` and `end_date` |
+| DELETE | `/promocodes/{id}/` | Delete promo code (204) |
+
+---
+
+## PromoCode Fields (spec)
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | integer | Read-only |
+| `brand` | integer | **Required** |
+| `code` | string | **Required**; unique per brand |
+| `discount_type` | string | Enum `%` only |
+| `discount_amount` | string | "Percent discount for Order" |
+| `start_date` | string | **Required** |
+| `end_date` | string | **Required** |
+
+There is no `discount_value`, `minimum_order`, `max_uses`, `active` or `company` field, and no fixed-amount promo code.
 
 ---
 
@@ -32,135 +48,70 @@ Complete reference for promotional code management endpoints - 5 total operation
 
 ```php
 $response = $api->post('/promocodes/', [
+    'brand' => $brandId,
     'code' => 'SPRING2025',
-    'discount_type' => 'percentage',  // or 'fixed_amount'
-    'discount_value' => 10.00,  // 10% off or $10 off
+    'discount_type' => '%',
+    'discount_amount' => '10',
     'start_date' => '2025-03-01',
     'end_date' => '2025-03-31',
-    'minimum_order' => 100.00,  // Minimum order amount
-    'max_uses' => 100,  // Max redemptions
-    'active' => true,
-    'company' => $companyId
 ]);
 ```
 
-### 2. List Active Promo Codes
+The spec does not say whether `discount_amount` is 0-100 or a 0-1 fraction (order-level `%` discounts are 0-1 fractions, verified 2026-10-16 (sandbox, w_d_discount_tax.txt)). Read one existing code back before writing new ones.
+
+### 2. List Promo Codes for a Brand
 
 ```php
 $response = $api->get('/promocodes/', [
-    'active' => 'true',
-    'start_date__lte' => now()->toDateString(),
-    'end_date__gte' => now()->toDateString(),
-    'limit' => 50
+    'brand' => $brandId,
+    'limit' => 50,
 ]);
 
 $promoCodes = $response->json('results');
 ```
 
-### 3. Update Promo Code
+### 3. Extend a Promo Code
 
 ```php
+// The spec documents PATCH for the date fields only
 $response = $api->patch("/promocodes/{$promoId}/", [
-    'discount_value' => 15.00,  // Increase discount
-    'max_uses' => 200,  // Increase usage limit
-    'end_date' => '2025-04-30'  // Extend expiration
+    'end_date' => '2025-04-30',
 ]);
 ```
 
-### 4. Deactivate Promo Code
-
-```php
-$response = $api->patch("/promocodes/{$promoId}/", [
-    'active' => false
-]);
-```
-
-### 5. Search Promo Codes
+### 4. Find a Code
 
 ```php
 $response = $api->get('/promocodes/', [
-    'code__icontains' => 'spring',
-    'discount_type' => 'percentage',
-    'active' => 'true'
+    'code' => 'SPRING2025',
 ]);
 ```
 
----
-
-## Available Filters
-
-### Basic Filters
-- `code__icontains` - Code search
-- `active` - Active status
-- `discount_type` - 'percentage' or 'fixed_amount'
-
-### Date Filters
-- `start_date__gte`, `start_date__lte` - Start date range
-- `end_date__gte`, `end_date__lte` - End date range
-- `created_date__gte`, `created_date__lte` - Creation date range
-
-### Value Filters
-- `discount_value__gte`, `discount_value__lte` - Discount amount range
-- `minimum_order__gte`, `minimum_order__lte` - Minimum order range
-- `max_uses__gte`, `max_uses__lte` - Usage limit range
-
----
-
-## Discount Types
-
-### Percentage Discount
+### 5. Remove a Code
 
 ```php
-'discount_type' => 'percentage',
-'discount_value' => 10.00  // 10% off
+$response = $api->delete("/promocodes/{$promoId}/");   // 204
 ```
 
-- Applied as percentage of order total
-- Value should be between 0-100
-- Examples: 5%, 10%, 25% off
-
-### Fixed Amount Discount
-
-```php
-'discount_type' => 'fixed_amount',
-'discount_value' => 50.00  // $50 off
-```
-
-- Applied as flat dollar amount
-- Subtracted from order total
-- Examples: $10 off, $50 off
+To stop a code early without deleting it, PATCH its `end_date` to today.
 
 ---
 
-## Important Notes
+## Available Filters (spec)
 
-### Promo Code Rules
+- `brand` - Brand id
+- `code` - Code
+- `company_slug` - Company slug
+- `limit`, `offset` - Paging
 
-- **Unique codes**: Each code must be unique per company
-- **Case-insensitive**: "SPRING2025" = "spring2025"
-- **Expiration**: Automatically inactive after end_date
-- **Usage limits**: max_uses caps total redemptions
-- **Minimum order**: Optional requirement for code to apply
-
-### Validation
-
-Before accepting promo code:
-1. Check `active` status
-2. Verify current date is between start_date and end_date
-3. Check usage count < max_uses
-4. Verify order total >= minimum_order
-
-### Company Scoping
-
-- Only seller companies can create promo codes
-- Codes apply to that seller's products only
-- Buyers see and use codes during checkout
+No `__icontains`, `active`, date-range or value-range filters exist.
 
 ---
 
 ## Related Resources
 
 - **Schema:** `schemas/openapi-promotions-reports.json`
+- **Orders:** `categories/orders.md` - order-level `discount` / `discount_type`
 
 ---
 
@@ -168,14 +119,14 @@ Before accepting promo code:
 
 ```php
 // Create promo
-$api->post('/promocodes/', ['code' => 'SAVE10', 'discount_type' => 'percentage', 'discount_value' => 10]);
+$api->post('/promocodes/', ['brand' => $brandId, 'code' => 'SAVE10', 'discount_type' => '%', 'discount_amount' => '10', 'start_date' => '2025-03-01', 'end_date' => '2025-03-31']);
 
-// List active
-$api->get('/promocodes/', ['active' => 'true', 'end_date__gte' => now()->toDateString()]);
+// List for a brand
+$api->get('/promocodes/', ['brand' => $brandId]);
 
-// Update
-$api->patch("/promocodes/{$id}/", ['discount_value' => 15]);
+// Extend
+$api->patch("/promocodes/{$id}/", ['end_date' => '2025-04-30']);
 
-// Deactivate
-$api->patch("/promocodes/{$id}/", ['active' => false]);
+// Delete
+$api->delete("/promocodes/{$id}/");
 ```

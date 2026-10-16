@@ -1,6 +1,8 @@
 # Customers & CRM - LeafLink API Category
 
-Complete reference for customer relationship management endpoints - 22 total operations.
+Reference for the seller's customer (CRM) records, statuses, tiers and contacts.
+
+Write behaviour below was verified on the LeafLink sandbox on 2026-10-16. `patterns/verified-behavior.md` is the source of truth; raw files are in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`.
 
 ---
 
@@ -10,9 +12,8 @@ Complete reference for customer relationship management endpoints - 22 total ope
 - `schemas/openapi-customers-core.json` - Customer CRUD
 - `schemas/openapi-crm.json` - Contacts and activity tracking
 
-**Total Endpoints:** 22
 **Company Compatibility:** Seller companies only
-**Notable:** `/customers/` endpoint has **87 filter parameters** - most complex filtering in LeafLink API!
+**Notable:** `GET /customers/` lists 88 query parameters in the official spec. Several are silently IGNORED (see Filters below).
 
 ---
 
@@ -22,48 +23,44 @@ Complete reference for customer relationship management endpoints - 22 total ope
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/customers/` | List customers (87 filters!) |
-| POST | `/customers/` | Create customer |
+| GET | `/customers/` | List customers |
+| POST | `/customers/` | Create customer (required: `owner`, `name`) |
 | GET | `/customers/{id}/` | Get customer details |
-| PATCH | `/customers/{id}/` | Update customer |
-| DELETE | `/customers/{id}/` | Delete customer |
+| PATCH | `/customers/{id}/` | Update customer (partial) |
+| DELETE | `/customers/{id}/` | "Archive a customer by ID." (spec) |
 
 ### Customer Statuses
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/customer-statuses/` | List statuses |
-| POST | `/customer-statuses/` | Create status |
+| POST | `/customer-statuses/` | Create status (required: `state`, `owner`) |
 | GET | `/customer-statuses/{id}/` | Get status |
 | PATCH | `/customer-statuses/{id}/` | Update status |
 | DELETE | `/customer-statuses/{id}/` | Delete status |
 
-### Customer Tiers
+Status fields: `id`, `state` (the label), `order`, `description`, `owner`, `is_stock`, `hex_color` (spec `CompanyCustomerStatus`).
+
+### Customer Tiers (read-only)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/customer-tiers/` | List tiers |
-| POST | `/customer-tiers/` | Create tier |
 | GET | `/customer-tiers/{id}/` | Get tier |
-| PATCH | `/customer-tiers/{id}/` | Update tier |
-| DELETE | `/customer-tiers/{id}/` | Delete tier |
 
-### Contacts (CRM)
+The spec has no POST/PATCH/DELETE for tiers. Tier fields: `id`, `rank`, `sort`, `created_on`, `modified`.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/contacts/` | List contacts |
-| POST | `/contacts/` | Create contact |
-| GET | `/contacts/{id}/` | Get contact |
-| PATCH | `/contacts/{id}/` | Update contact |
-| DELETE | `/contacts/{id}/` | Delete contact |
+### Contacts and Activity Entries
 
-### Activity Entries (CRM)
+See `categories/crm.md`.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/activity-entries/` | List activities |
-| GET | `/activity-entries/{id}/` | Get activity |
+---
+
+## Customer Fields (spec `CustomerResponse`)
+
+`id`, `owner`, `name`, `nickname`, `dba`, `license_number`, `old_license_number`, `license_inactive`, `license_type`, `business_identifier`, `ein` (read-only), `status`, `tier`, `managers` (sales rep ids), `price_schedule`, `service_zone`, `discount_percent`, `payment_term`, `payment_methods`, `available_payment_options`, `address`, `unit_number`, `city`, `county`, `state`, `zipcode`, `country`, `corporate_address`, `delivery_address`, `phone`, `phone_extension`, `email`, `website`, `archived`, `delinquent`, `partner` (linked LeafLink buyer company), `external_id`, `external_ids`, `ext_acct_id`, `created_on`, `modified`.
+
+There is no `licenses` array, no `credit_limit`, and no `customer_status` / `customer_tier` field. Use `license_number`, `status`, `tier`.
 
 ---
 
@@ -73,47 +70,35 @@ Complete reference for customer relationship management endpoints - 22 total ope
 
 ```php
 $customer = $api->get_customer_by_id($customerId);
-
-// Response includes:
-// - id, name, email, phone
-// - licenses (array of license info)
-// - address, city, state, zip
-// - status, tier
-// - payment terms, credit limit
 ```
 
-### 2. Get Multiple Customers with Filters
+### 2. Get Multiple Customers
 
 ```php
-$customers = $api->get_customers(
-    ids: [123, 456, 789],
-    fields: ['id', 'name', 'email', 'licenses', 'status']
-);
-```
-
-### 3. Search Customers with Complex Filters
-
-```php
-// The /customers/ endpoint has 87 filter parameters!
+// id__in is honoured - verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
 $response = $api->get('/customers/', [
-    'license_types__in' => 'retail,cultivation',  // Multiple license types
-    'status' => 'active',                         // Only active
-    'state' => 'CO',                              // Colorado only
-    'city' => 'Denver',                           // In Denver
-    'name__icontains' => 'green',                 // Name contains "green"
-    'created_date__gte' => '2024-01-01',         // Created this year
-    'tier' => 5,                                  // Specific tier
-    'limit' => 100
+    'id__in' => '123,456,789',
+    'fields_include' => 'id,name,license_number,status',
 ]);
+```
+
+### 3. Find a Customer by Licence
+
+```php
+// One call per licence. license_number is exact AND case-sensitive.
+// license_number__in / __iexact / __icontains are IGNORED and return the whole list.
+// verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
+$response = $api->get('/customers/', ['license_number' => 'AU-R-000171']);
 ```
 
 ### 4. Update Customer
 
 ```php
+// PATCH is partial: only the keys you send change.
+// verified 2026-10-16 (sandbox, g_customers.txt step 1)
 $response = $api->patch("/customers/{$customerId}/", [
     'email' => 'newemail@example.com',
-    'phone' => '555-0123',
-    'status' => $statusId
+    'status' => $statusId,
 ]);
 ```
 
@@ -121,46 +106,58 @@ $response = $api->patch("/customers/{$customerId}/", [
 
 ```php
 $response = $api->post('/customer-statuses/', [
-    'name' => 'VIP Customer',
-    'company' => $companyId,
-    'color' => '#FFD700'
+    'state' => 'VIP Customer',
+    'owner' => $companyId,
+    'hex_color' => '#FFD700',
 ]);
 ```
 
 ---
 
-## Available Filters (87 Total!)
+## Customer PATCH Rules (verified 2026-10-16, sandbox)
 
-### Basic Information
-- `name__icontains`, `name__startswith` - Name search
-- `email__icontains` - Email search
-- `phone__icontains` - Phone search
-- `status` - Customer status ID
-- `tier` - Customer tier ID
+- **Partial.** A nickname-only PATCH kept every other field (g_customers.txt step 1).
+- **Top-level `address` / `city` / `zipcode` overwrite BOTH `corporate_address` and `delivery_address`** (g_customers.txt step 2).
+- A nested `delivery_address` or `corporate_address` PATCH changes only that address; top-level `address` mirrors delivery (g_customers.txt steps 8, 9).
+- **A partial nested object replaces the whole address.** `{"corporate_address": {"city": "Warren"}}` blanked address, state and zipcode (g_customers.txt step 10). Always send the full nested object.
+- **`archived: false` un-archives**, `archived: true` archives; other edits work while archived (g_customers.txt steps 3-5). Never send `archived` unless you mean it.
+- **`ein` is ignored**: 200, still reads `null` (g_customers.txt step 6). Spec (release 2.36.0): "DEPRECATED for writes", read-only and inherited from the linked LeafLink buyer company.
+- Customer `phone` accepts a formatted value like `(313) 555-0101` (r2_t14_customer_create.txt). Contact phones do not (see `crm.md`).
 
-### Location Filters
-- `city`, `state`, `zip_code`, `country`
-- `address__icontains` - Address search
+---
 
-### License Filters
-- `license_types__in` - Multiple license types
-- `license_numbers__icontains` - License number search
+## Filters
 
-### Relationship Filters
-- `company` - Filter by company ID
-- `sales_rep` - Filter by sales rep ID
+Names come from the official spec. "Verified" marks what the sandbox sweep proved (r3_a_param_sweep.txt). An ignored parameter returns the WHOLE list with a 200.
 
-### Business Filters
-- `payment_terms` - Payment terms
-- `credit_limit__gte`, `credit_limit__lte` - Credit limit range
-- `tax_exempt` - Tax exempt status
+### Identity
+- `id`, `id__in` (verified honoured)
+- `name`, `name__in`, `name__startswith` - `name` is exact match only (verified: a partial name returns 0)
+- `nickname`, `dba`, `business_license_name`, `business_identifier`, `email`, `phone`, `website`, `address` (each with `__in`, `__startswith`)
+- `external_id`, `external_id__in`, `ext_acct_id`, `ext_acct_id__isnull`, `external_id_key` + `external_id_values`
 
-### Date Filters
-- `created_date__gte`, `created_date__lte` - Creation date range
-- `modified__gte`, `modified__lte` - Last modified range
-- `last_order_date__gte`, `last_order_date__lte` - Last order range
+### Licence
+- `license_number` - exact, case-sensitive (verified; lowercase gives 0 rows)
+- `license_number__in` - listed in the spec but IGNORED (verified)
+- `license_number__iexact`, `license_number__icontains` - IGNORED (verified; not in the spec)
+- `old_license_number`, `license_type` (id), `license_inactive`
 
-**...and 60+ more filters!** See OpenAPI schema for complete list.
+### Relationship and status
+- `status`, `tier`, `state`, `partner` (comma lists of ids per the spec)
+- `owner`, `brand`, `price_schedule`, `service_zone`, `delinquent`
+- `archived` / `is_archived`, `leaflink_source`
+
+### Dates
+- `created_on__gt/__gte/__lt/__lte`
+- `modified__gt/__gte/__lt/__lte` (verified honoured)
+- `next_contact_date__*`
+
+### Response shape
+- `fields_include`, `fields_exclude`
+- `include_children` - `tags`, `service_zone`, `managers`, `contacts`, `license_type` (`contacts,managers` verified honoured)
+- `ordering=id` / `-id` - not in the spec for `/customers/`, but honoured (verified)
+
+There is no `created_date__*`, `payment_terms`, `credit_limit__*`, `name__icontains`, `city`, `zip_code`, `license_types__in` or `tax_exempt` filter.
 
 ---
 
@@ -168,36 +165,20 @@ $response = $api->post('/customer-statuses/', [
 
 ### Company Scoping
 
-- Only **seller companies** can manage customers
-- Customers represent buyer-seller relationships
+- Only **seller companies** manage customers
+- A customer is the seller's CRM record of a buyer; `partner` links it to the buyer's LeafLink company
 - Each customer is unique per seller company
 
-### Customer Statuses & Tiers
+### Contacts on a Customer
 
-**Statuses** - Custom labels for customer lifecycle:
-- Examples: "Active", "Inactive", "VIP", "Pending Approval"
-- Fully customizable per company
-
-**Tiers** - Customer segmentation:
-- Examples: "Gold", "Silver", "Bronze"
-- Can affect pricing, discounts, order minimums
-
-### Licenses Are Critical
-
-Customers (buyers/retailers) must have valid licenses to:
-- Place orders
-- Receive cannabis products
-- Maintain compliance
-
-Always verify `licenses` field when managing customers.
+Read a customer's contacts with `GET /customers/?include_children=contacts` (verified honoured). Deleted contacts stay in `/contacts/` lists; see `crm.md`.
 
 ---
 
 ## Related Resources
 
-- **Scenarios:** `scenarios/customer-workflow.md` - Customer relationship workflows
-- **Patterns:** `patterns/filtering.md` - Mastering the 87 filter parameters
-- **Patterns:** `patterns/company-scoping.md` - Seller-customer relationships
+- **Scenarios:** `scenarios/customer-workflow.md`
+- **Patterns:** `patterns/verified-behavior.md`, `patterns/filtering.md`, `patterns/company-scoping.md`
 - **Schemas:** `schemas/openapi-customers-core.json`, `schemas/openapi-crm.json`
 
 ---
@@ -208,15 +189,15 @@ Always verify `licenses` field when managing customers.
 // Get customer
 $customer = $api->get_customer_by_id($id);
 
-// Search customers
-$api->get('/customers/', ['state' => 'CO', 'status' => 'active', 'name__icontains' => 'green']);
+// Find by licence (exact, case-sensitive, one per call)
+$api->get('/customers/', ['license_number' => $licence]);
 
-// Update customer
+// Changed since
+$api->get('/customers/', ['modified__gte' => '2026-10-16T15:00:00Z', 'ordering' => 'id']);
+
+// Update (partial; send full nested address objects)
 $api->patch("/customers/{$id}/", ['email' => 'new@example.com']);
 
 // Create status
-$api->post('/customer-statuses/', ['name' => 'VIP', 'company' => $companyId]);
-
-// Create tier
-$api->post('/customer-tiers/', ['name' => 'Gold', 'company' => $companyId]);
+$api->post('/customer-statuses/', ['state' => 'VIP', 'owner' => $companyId]);
 ```

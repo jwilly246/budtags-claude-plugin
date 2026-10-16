@@ -1,315 +1,199 @@
 # LeafLink API Filtering
 
-Comprehensive filtering patterns using Django-style query parameters for LeafLink Marketplace V2 API.
+Query-parameter filters for LeafLink Marketplace V2 API list endpoints.
+
+Lines marked "verified 2026-10-16 (sandbox, file)" cite raw files in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`. "Spec" = the official OpenAPI (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`).
+
+---
+
+## The one rule: an ignored filter returns EVERYTHING
+
+LeafLink does not reject a filter it does not apply. It returns 200 with the **whole unfiltered list**, so `count` equals the unfiltered total. Several filters the spec lists are ignored in practice. Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt).
+
+Before relying on a filter, check it below. When a lookup must find one row (a licence, an id), check that every returned row really matches.
 
 ---
 
 ## Filter Operators
 
-LeafLink follows Django REST framework filtering conventions:
+There is no generic operator set. Each endpoint lists its own per-field variants in the spec (e.g. `/customers/` has `name`, `name__in`, `name__startswith`; `/orders-received/` has `created_on__gte/__lte/__gt/__lt`). Use only names the spec lists for that endpoint, then check them against the table below.
 
-| Operator | Example | Description |
-|----------|---------|-------------|
-| (none) | `status=draft` | Exact match |
-| `__in` | `status__in=draft,confirmed` | Multiple values (comma-separated) |
-| `__lt` | `created_date__lt=2025-01-31` | Less than |
-| `__lte` | `created_date__lte=2025-01-31` | Less than or equal |
-| `__gt` | `created_date__gt=2025-01-01` | Greater than |
-| `__gte` | `created_date__gte=2025-01-01` | Greater than or equal |
-| `__icontains` | `name__icontains=blue` | Case-insensitive contains |
-| `__startswith` | `name__startswith=Blue` | Starts with (case-sensitive) |
-| `__istartswith` | `name__istartswith=blue` | Starts with (case-insensitive) |
-| `__endswith` | `name__endswith=OG` | Ends with (case-sensitive) |
-| `__iendswith` | `name__iendswith=og` | Ends with (case-insensitive) |
-| `__isnull` | `deleted_at__isnull=true` | Check for null/non-null |
+| Form | Example | Meaning |
+|------|---------|---------|
+| (none) | `status=Submitted` | Exact match (some fields are case-insensitive, see table) |
+| `__gte` / `__lte` / `__gt` / `__lt` | `modified__gte=2026-10-16T15:00:00Z` | Range on dates and numbers |
+| `__in` | `id__in=2209363,2209361` | Comma-separated list (where honoured) |
+| `__startswith` | `name__startswith=Blue` | Prefix (listed on many customer fields) |
+| `__not` | `status__not=Draft` | Exclude (orders `status__not`) |
+| `__isnull` | `parent__isnull=true` | Null check (where listed) |
+
+Date filters are `created_on__*` and `modified__*` (plus `last_edit__*` on products). There is no `created_date` field anywhere. Send datetimes in Zulu: `2026-10-16T15:00:00Z`.
+
+---
+
+## Honoured vs ignored (sandbox, 2026-10-16)
+
+Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt; contacts also r2_t8_contacts.txt; ordering also r2_t9_pagination.txt). "Spec" = listed in the official spec for that endpoint.
+
+### `/products/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `sku` | HONOURED | yes |
+| `created_on__gte`, `created_on__lt` | HONOURED | yes |
+| `modified__gte` | HONOURED | yes |
+| `listing_state` | HONOURED | yes |
+| `include_children=strains` | HONOURED | yes |
+| `fields_include` | HONOURED (also always returns `display_name`, `quantity`, `reserved_qty`) | yes |
+| `id__gt`, `id__gte`, `id__in` | **IGNORED** | no |
+| `ordering` (`id` / `-id`) | **IGNORED** | no |
+
+### `/customers/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `id__in` | HONOURED | yes |
+| `name` | HONOURED, **exact match only** (`ZZ BUDTAGS` -> 0 rows) | yes |
+| `license_number` | HONOURED, **exact and case-sensitive** (lowercase -> 0 rows) | yes |
+| `license_number__in` | **IGNORED** (one or two values) | **yes, but ignored** |
+| `license_number__iexact`, `license_number__icontains` | **IGNORED** | no |
+| `modified__gte` | HONOURED | yes |
+| `ordering` (`id` / `-id`) | HONOURED | no |
+| `include_children=contacts,managers` | HONOURED | yes |
+| `fields_include` | HONOURED | yes |
+
+Find customers by licence with one `license_number=<exact>` call per licence. `license_number__in` silently returns the whole customer list.
+
+### `/contacts/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `delete=false` | HONOURED (default list INCLUDES deleted contacts) | yes |
+| `modified__gte` | HONOURED | yes |
+| `ordering` | HONOURED | no |
+
+### `/orders-received/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `status` | HONOURED, case-insensitive (`Rejected` = `rejected`) | yes |
+| `external_id_seller` | HONOURED | yes |
+| `created_on__gte`, `created_on__lt` | HONOURED | yes |
+| `modified__gte` | HONOURED | yes |
+| `customer` | HONOURED | yes |
+| `customer_id`, `customer__id` | **IGNORED** | no |
+| `include_children=line_items,sales_reps` | HONOURED (line_items come back even without it) | yes |
+| `ordering` (`id`, `-id`, `created_on`, `-created_on`, `-modified`) | HONOURED | no |
+| `fields_include=id` | **400** `"Fields `id` do not exist on this endpoint."`; use `number` (r2_t9_pagination.txt) | - |
+
+### `/line-items/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `order` | HONOURED (paging by `limit=1` + `next` works) | yes |
+| `ordering` | **IGNORED** | no |
+
+### `/order-payments/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `ordering` (`-id` / `id`) | HONOURED | no |
+| `modified__gte` | **IGNORED** | no |
+| `order` | **IGNORED** | no |
+
+The spec lists only `limit`/`offset` here. For one order's payments use `GET /orders-received/{number}/payments/` (paged, honours `limit`).
+
+### `/order-event-logs/`
+
+| Param | Result | Spec |
+|-------|--------|------|
+| `order` | HONOURED | yes |
+| `ordering` | HONOURED | no |
+| `modified__gte` | **IGNORED** | no |
+
+### Other endpoints
+
+| Endpoint | Param | Result | Spec |
+|----------|-------|--------|------|
+| `/product-images/` | `product`, `ordering` | HONOURED | `product` yes, `ordering` no |
+| `/product-batches/` | `ordering` | **IGNORED** | no |
+| `/strains/` | `name` | HONOURED | yes |
+| `/brands/` | `company` | **IGNORED** | **yes, but ignored** |
+| `/product-lines/` | `company` | **IGNORED** | **yes, but ignored** |
+| `/licenses/` | `company` | **IGNORED** | no |
+
+An App key sees one company, so the ignored `company` filters return that company's rows anyway; never rely on them with a User token.
 
 ---
 
 ## Common Filter Patterns
 
-### 1. Date Range Filtering (Most Common)
+### Incremental sync window
 
 ```php
 $response = $api->get('/orders-received/', [
-    'created_date__gte' => '2025-01-01',        // After or on Jan 1
-    'created_date__lte' => '2025-01-31',        // Before or on Jan 31
-]);
-```
-
-**Use Cases:**
-- Orders in specific month
-- Recent activity (last 7 days, 30 days)
-- Between two dates
-- After/before specific date
-
-**Examples:**
-```php
-// Today's orders
-'created_date__gte' => now()->startOfDay()->toIso8601String(),
-'created_date__lte' => now()->endOfDay()->toIso8601String()
-
-// Last 30 days
-'created_date__gte' => now()->subDays(30)->toDateString()
-
-// Specific month
-'created_date__gte' => '2025-01-01',
-'created_date__lt' => '2025-02-01'  // Note: __lt to exclude Feb 1
-```
-
-### 2. Status Filtering
-
-```php
-// Single status
-$response = $api->get('/orders-received/', [
-    'status' => 'confirmed'
-]);
-
-// Multiple statuses (comma-separated)
-$response = $api->get('/orders-received/', [
-    'status__in' => 'draft,confirmed,shipped'
-]);
-```
-
-**Common Statuses:**
-- Orders: `draft`, `confirmed`, `shipped`, `delivered`, `canceled`
-- Customers: `active`, `inactive`, `pending`
-
-### 3. Text Search
-
-```php
-// Case-insensitive contains (most flexible)
-$response = $api->get('/customers/', [
-    'name__icontains' => 'dispensary'
-]);
-
-// Starts with (find all "Blue *" products)
-$response = $api->get('/products/', [
-    'name__startswith' => 'Blue'
-]);
-
-// Exact match
-$response = $api->get('/products/', [
-    'name' => 'Blue Dream'
-]);
-```
-
-### 4. Relationship Filtering
-
-```php
-// Filter by related company
-$response = $api->get('/orders-received/', [
-    'customer' => 123  // Customer ID
-]);
-
-// Filter by related product
-$response = $api->get('/line-items/', [
-    'product' => 456  // Product ID
-]);
-
-// Multiple related IDs
-$response = $api->get('/orders-received/', [
-    'customer__in' => '123,456,789'
-]);
-```
-
-### 5. Null/Non-Null Filtering
-
-```php
-// Only show non-deleted items
-$response = $api->get('/products/', [
-    'deleted_at__isnull' => 'true'
-]);
-
-// Only show items with specific field set
-$response = $api->get('/customers/', [
-    'email__isnull' => 'false'  // Has email
-]);
-```
-
----
-
-## Complex Filtering Examples
-
-### Example 1: Orders with Multiple Criteria
-
-```php
-$response = $api->get('/orders-received/', [
-    'created_date__gte' => '2025-01-01',
-    'created_date__lte' => '2025-01-31',
-    'status__in' => 'confirmed,shipped',
-    'customer' => 123,
+    'modified__gte' => $since->utc()->format('Y-m-d\TH:i:s\Z'),
+    'ordering' => 'id',
     'limit' => 100,
-    'offset' => 0
+    'offset' => 0,
 ]);
 ```
 
-**Filters:**
-- Created in January 2025
-- Status is confirmed OR shipped
-- From customer ID 123
-- Paginated (100 per page)
-
-### Example 2: Customers with 87 Filter Parameters
+### Status
 
 ```php
-// The /customers/ endpoint supports 87 filter parameters!
-$response = $api->get('/customers/', [
-    'license_types__in' => 'retail,cultivation',  // Multiple license types
-    'status' => 'active',                         // Only active
-    'created_date__gte' => '2024-01-01',         // Created this year
-    'name__icontains' => 'green',                 // Name contains "green"
-    'city' => 'Denver',                           // Located in Denver
-    'state' => 'CO',                              // Colorado only
-    'limit' => 100
-]);
+// One status (case-insensitive)
+$api->get('/orders-received/', ['status' => 'Submitted']);
+
+// Exclude one
+$api->get('/orders-received/', ['status__not' => 'Draft']);
 ```
 
-### Example 3: Products with Price Range
+Real order statuses: Draft, Submitted, Accepted, Backorder, Fulfilled, Shipped, Complete, Rejected, Combined, Cancelled (spec).
+
+### Customer by licence
 
 ```php
-$response = $api->get('/products/', [
-    'category' => 5,                              // Specific category ID
-    'price__gte' => 10.00,                        // Minimum price $10
-    'price__lte' => 50.00,                        // Maximum price $50
-    'in_stock' => true,                           // Only in-stock items
-    'active' => true,                             // Only active products
-    'name__icontains' => 'og'                     // Contains "og"
-]);
+// One call per licence; exact, case-sensitive
+$response = $api->get('/customers/', ['license_number' => 'AU-R-000171']);
+```
+
+### Live contacts only
+
+```php
+$response = $api->get('/contacts/', ['delete' => 'false', 'ordering' => 'id']);
 ```
 
 ---
 
 ## Implementation in BudTags
 
-### Basic Filtering
+Build filters from the request, mapped to real LeafLink names:
 
 ```php
-// In controller
-public function index(Request $request) {
-    $filters = [];
-
-    // Add filters conditionally
-    if ($request->has('status')) {
-        $filters['status'] = $request->get('status');
-    }
-
-    if ($request->has('date_from')) {
-        $filters['created_date__gte'] = $request->get('date_from');
-    }
-
-    if ($request->has('date_to')) {
-        $filters['created_date__lte'] = $request->get('date_to');
-    }
-
-    $orders = $this->api->get('/orders-received/', $filters);
-
-    return response()->json($orders->json());
-}
-```
-
-### Dynamic Filter Building
-
-```php
-// Build filters from request
-$filters = collect($request->only([
-    'status',
-    'customer',
-    'date_from',
-    'date_to'
-]))
-->filter() // Remove null values
-->mapWithKeys(function ($value, $key) {
-    // Map friendly names to API parameters
-    return match($key) {
-        'date_from' => ['created_date__gte' => $value],
-        'date_to' => ['created_date__lte' => $value],
-        default => [$key => $value]
-    };
-})
-->toArray();
+$filters = collect($request->only(['status', 'customer', 'date_from', 'date_to']))
+    ->filter()
+    ->mapWithKeys(fn ($value, $key) => match ($key) {
+        'date_from' => ['created_on__gte' => $value],
+        'date_to' => ['created_on__lte' => $value],
+        default => [$key => $value],
+    })
+    ->toArray();
 
 $response = $api->get('/orders-received/', $filters);
 ```
 
 ---
 
-## Filter Validation
-
-### Common Errors
-
-**Invalid Filter Syntax:**
-```
-400 Bad Request: "Unknown filter: date__greater_than. Did you mean date__gte?"
-```
-
-**Solution:** Use correct operator names (__gte, __lte, __in, etc.)
-
-**Invalid Value Format:**
-```
-400 Bad Request: "Enter a valid date/time."
-```
-
-**Solution:** Use ISO 8601 format for dates
-
----
-
 ## Best Practices
 
 ✅ **Do:**
-- Use `__icontains` for flexible text search
-- Combine date range filters for time periods
-- Use `__in` for multiple status/ID filters
-- Filter on indexed fields when possible
-- Validate filter values before sending
+- Use only filter names the spec lists for that endpoint
+- Check the honoured/ignored table before trusting a filter
+- Verify returned rows match when looking up one record
+- Use `modified__gte` (Zulu) for incremental reads
 
 ❌ **Don't:**
-- Use `__contains` (case-sensitive, less flexible than `__icontains`)
-- Forget double underscores in operators
-- Send empty string values (use null checks instead)
-- Over-filter (too many filters slow down queries)
-
----
-
-## Quick Reference
-
-```php
-// Date ranges
-'created_date__gte' => '2025-01-01'  // On or after
-'created_date__lte' => '2025-01-31'  // On or before
-'created_date__gt' => '2025-01-01'   // After (exclusive)
-'created_date__lt' => '2025-02-01'   // Before (exclusive)
-
-// Multiple values
-'status__in' => 'draft,confirmed,shipped'
-'customer__in' => '123,456,789'
-
-// Text search
-'name__icontains' => 'blue'      // Case-insensitive contains
-'name__startswith' => 'Blue'     // Starts with
-'name' => 'Blue Dream'           // Exact match
-
-// Relationships
-'customer' => 123                // Related by ID
-'product' => 456
-
-// Null checks
-'email__isnull' => 'false'       // Has email
-'deleted_at__isnull' => 'true'   // Not deleted
-```
-
----
-
-## Most Complex Endpoint: /customers/
-
-The `/customers/` endpoint has **87 filter parameters** - the most in the LeafLink API!
-
-**Categories of filters:**
-- Basic info: name, email, phone, status
-- Location: city, state, zip_code, country
-- Licensing: license_types, license_numbers
-- Relationships: company, tier, sales_rep
-- Dates: created_date, modified, last_order_date
-- Business: payment_terms, credit_limit, tax_exempt
-- And 60+ more!
-
-Always reference the OpenAPI schema for complete filter documentation.
+- Use `created_date__*`, `status__in`, `total__gte`, `price__gte`, `name__icontains` on customers/products, `active`: they are not LeafLink filters
+- Use `license_number__in` or products `id__gt`/`id__in` (ignored, whole list comes back)
+- Expect a 400 for an unknown filter; you get the whole list

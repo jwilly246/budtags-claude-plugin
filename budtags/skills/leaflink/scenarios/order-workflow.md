@@ -1,6 +1,8 @@
 # LeafLink Order Workflow
 
-Complete guide for managing the LeafLink order lifecycle from fetching to fulfillment.
+Guide for managing the LeafLink order lifecycle from fetching to fulfillment (seller side, `/orders-received/`).
+
+Behaviour lines tagged "verified 2026-10-16 (sandbox, file)" cite raw files in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`. `patterns/verified-behavior.md` wins on any conflict.
 
 ## Overview
 
@@ -17,17 +19,34 @@ This workflow covers:
 ## Order Lifecycle
 
 ```
-draft → accept → confirm → ship → deliver
-          ↓
-       cancel (can cancel from any status)
+Draft -> submit -> Submitted -> accept -> Accepted -> fulfill -> Fulfilled -> ship -> Shipped -> complete -> Complete
+                       |                     |                      |                    |
+                    cancel / reject       reject                 reject               reject (allowed)
 ```
 
-**Status Definitions:**
-- **draft**: Order created but not yet accepted by seller
-- **confirmed**: Seller accepted, ready for fulfillment
-- **shipped**: Order has been shipped
-- **delivered**: Order received by customer
-- **cancelled**: Order cancelled (can happen from any status)
+**Statuses** (spec): `Draft`, `Submitted`, `Accepted`, `Backorder`, `Fulfilled`, `Shipped`, `Complete`, `Rejected`, `Combined`, `Cancelled`.
+- **Submitted**: buyer placed the order, or the seller created it on the buyer's behalf
+- **Accepted**: seller accepted it and is prepping
+- **Fulfilled**: picked, packed, staged
+- **Shipped**: left the facility
+- **Complete**: retailer received it
+- **Rejected**: seller cancelled it
+- **Cancelled**: retailer cancelled it
+
+Actions (spec): `submit`, `accept`, `fulfill`, `cancel`, `reject`, `ship`, `complete`. There is no `confirm` or `deliver`.
+
+**What LeafLink allows** (verified 2026-10-16 (sandbox, w_b_inventory.txt, r2_t15_transitions.txt, r3_c_line_delete.txt, r3_i_reject_shipped_paid.txt)):
+
+| Status | available_transitions |
+|--------|-----------------------|
+| Submitted | accepted, cancelled, rejected |
+| Accepted | fulfilled, rejected |
+| Fulfilled | shipped, accepted, rejected |
+| Shipped | complete, rejected, fulfilled |
+| Complete | shipped (Complete -> Rejected = 400) |
+| Cancelled, Rejected | (none) |
+
+Shipped -> Rejected returns 200 (paid or not) and clears `ship_date` + `payment_due_date`; `paid` and `payment_balance` stay.
 
 ---
 
@@ -40,30 +59,29 @@ use App\Services\Api\LeafLinkApi;
 
 $api = new LeafLinkApi();
 
-// Get all confirmed orders
+// Accepted orders
 $orders = $api->get_orders(
     page: 1,
-    status: 'confirmed',
+    status: 'Accepted',   // case-insensitive; comma list allowed
     path: '/leaflink/orders'
 );
 
-// Iterate through orders
 foreach ($orders as $order) {
-    echo "Order #{$order['number']}: \${$order['total']}\n";
+    echo "Order {$order['short_id']}: \${$order['total']['amount']}\n";
 }
 ```
 
 ### Filter by Date Range
 
 ```php
-// Orders from the last 30 days
+// Orders created in the last 30 days
 $orders = $api->get_orders(
     page: 1,
     status: 'all',
     path: '/leaflink/orders',
     extraParams: [
-        'created_date__gte' => now()->subDays(30)->toDateString(),
-        'created_date__lte' => now()->toDateString()
+        'created_on__gte' => now()->subDays(30)->utc()->toIso8601ZuluString(),
+        'created_on__lte' => now()->utc()->toIso8601ZuluString(),
     ]
 );
 ```
@@ -71,14 +89,14 @@ $orders = $api->get_orders(
 ### Advanced Filtering
 
 ```php
-// Complex query: confirmed orders from specific customer for next week
+// Open orders for one customer changed since yesterday
 $response = $api->get('/orders-received/', [
-    'status' => 'confirmed',
-    'customer' => 123,                          // Customer ID
-    'delivery_date__gte' => now()->toDateString(),
-    'delivery_date__lte' => now()->addDays(7)->toDateString(),
+    'status' => 'Submitted,Accepted',
+    'customer' => 123,
+    'modified__gte' => now()->subDay()->utc()->toIso8601ZuluString(),
+    'include_children' => 'line_items',
     'limit' => 100,
-    'offset' => 0
+    'offset' => 0,
 ]);
 
 $orders = $response->json('results');
@@ -87,18 +105,21 @@ $totalCount = $response->json('count');
 
 ### Available Order Filters
 
+From the spec; honoured/ignored verified 2026-10-16 (sandbox, r3_a_param_sweep.txt).
+
 | Filter | Example | Description |
 |--------|---------|-------------|
-| `status` | `'confirmed'` | Exact status match |
-| `status__in` | `'confirmed,shipped'` | Multiple statuses |
-| `customer` | `123` | Customer ID |
-| `created_date__gte` | `'2025-01-01'` | Created after date |
-| `created_date__lte` | `'2025-01-31'` | Created before date |
-| `delivery_date__gte` | `'2025-02-01'` | Delivery after date |
-| `delivery_date__lte` | `'2025-02-15'` | Delivery before date |
-| `modified__gte` | `'2025-01-15'` | Modified after date |
-| `order_date__gte` | `'2025-01-01'` | Order placed after date |
-| `number__icontains` | `'ABC'` | Order number contains |
+| `status` | `'Accepted'` or `'Submitted,Accepted'` | Case-insensitive, comma list (honoured) |
+| `status__not` | `'Cancelled,Rejected'` | Exclude statuses |
+| `customer` | `123` | Spec: customer name/nickname; an id also worked (honoured) |
+| `created_on__gte` / `__lte` | `'2025-01-01T00:00:00Z'` | Created range (honoured) |
+| `modified__gte` / `__lte` | `'2025-01-15T00:00:00Z'` | Modified range (honoured) |
+| `external_id_seller` | `'ZZ-1001'` | Seller's own number (honoured) |
+| `paid` | `'true'` | Paid flag |
+| `sales_rep` | `789` | Company-staff id |
+| `number` | uuid | Order number |
+
+`customer_id` and `customer__id` are IGNORED. There is no `status__in`, `delivery_date__*`, `created_date__*`, `order_date__*` or `number__icontains`.
 
 ---
 
@@ -107,93 +128,82 @@ $totalCount = $response->json('count');
 ### Get Single Order
 
 ```php
-$response = $api->get_order('12345');
+$response = $api->get_order($orderNumber);   // uuid
 
 if ($response->successful()) {
     $order = $response->json();
 
-    echo "Order #{$order['number']}\n";
-    echo "Customer: {$order['customer']['name']}\n";
+    echo "Order {$order['short_id']} ({$order['number']})\n";
+    echo "Customer: {$order['customer']['display_name']}\n";
     echo "Status: {$order['status']}\n";
-    echo "Total: \${$order['total']}\n";
-    echo "Subtotal: \${$order['subtotal']}\n";
-    echo "Tax: \${$order['tax_total']}\n";
-    echo "Delivery: {$order['delivery_date']}\n";
+    echo "Total: \${$order['total']['amount']}\n";
+    echo "Tax: \${$order['final_tax']} at {$order['tax_amount']} ({$order['tax_type']})\n";
+    echo "Balance: \${$order['payment_balance']}\n";
+    echo "Ship date: {$order['ship_date']}\n";   // Mountain offset
 }
 ```
+
+There is no `subtotal`, `tax_total` or `delivery_date` field.
 
 ### Get Order with Line Items
 
 ```php
-$orderId = '12345';
-
-// Get order
-$order = $api->get_order($orderId)->json();
-
-// Get line items
-$lineItems = $api->get_order_line_items($orderId);
-
-echo "Order #{$order['number']}\n";
-echo "Line Items:\n";
+$order = $api->get_order($orderNumber)->json();
+$lineItems = $api->get_order_line_items($orderNumber);
 
 foreach ($lineItems as $item) {
-    echo "- {$item['product_name']} x {$item['quantity']} = \${$item['total']}\n";
+    $price = $item['on_sale'] ? $item['sale_price'] : $item['ordered_unit_price'];
+    // quantity = listing units; bulk_units = cases; price is per sold-in unit (per case)
+    echo "- product {$item['product']} x {$item['bulk_units']} cases @ \${$price['amount']}\n";
 }
-
-echo "\nTotal: \${$order['total']}\n";
 ```
 
 ---
 
 ## Step 3: Process Line Items
 
-### List All Line Items for Order
-
-```php
-$lineItems = $api->get_order_line_items('12345');
-
-foreach ($lineItems as $item) {
-    echo "{$item['product_name']}\n";
-    echo "Quantity: {$item['quantity']}\n";
-    echo "Unit Price: \${$item['unit_price']}\n";
-    echo "Total: \${$item['total']}\n";
-    echo "---\n";
-}
-```
+Prices are per sold-in unit (per case when `unit_multiplier` > 1); `quantity` counts listing units. Quantity 28 on a multiplier-28 listing at 300 = 1 case, line total 300. Verified 2026-10-16 (sandbox, w_b_inventory.txt).
 
 ### Add Line Item to Order
 
 ```php
 $response = $api->post('/line-items/', [
-    'order' => 12345,
+    'order' => $orderNumber,
     'product' => 456,
-    'quantity' => 10,
-    'unit_price' => 25.00,
-    'notes' => 'Special packaging requested'
+    'quantity' => '28',
+    'ordered_unit_price' => ['amount' => '300.00', 'currency' => 'USD'],
+    'sale_price' => ['amount' => '0.00', 'currency' => 'USD'],
+    'notes' => 'Special packaging requested',
 ]);
 
 if ($response->successful()) {
     $lineItem = $response->json();
-    LogService::store(
-        'LeafLink Line Item Added',
-        "Order #12345: Added {$lineItem['product_name']} x {$lineItem['quantity']}"
-    );
+    // Save $lineItem['id'] NOW: a retried create duplicates the line.
 }
 ```
+
+Adding lines through the order PATCH is an UPSERT keyed by `id`: an entry without `id` always adds a new line (even for the same product), omitted lines are kept, `[]` -> 400. Verified 2026-10-16 (sandbox, r2_t1_line_semantics.txt).
 
 ### Update Line Item Quantity
 
 ```php
 $response = $api->patch('/line-items/789/', [
-    'quantity' => 15
+    'quantity' => '56',
 ]);
-
-if ($response->successful()) {
-    $lineItem = $response->json();
-    echo "Updated quantity to {$lineItem['quantity']}\n";
-    echo "New total: \${$lineItem['total']}\n";
-}
 ```
+
+`PATCH /line-items/{id}/` works on every status. A nested `line_items` order PATCH is refused on Cancelled/Rejected (400 `"Order cannot be edited."`). Verified 2026-10-16 (sandbox, r2_t7_sale_clear.txt).
+
+### Clear a Sale Price
+
+```php
+// Clear with 0.00; null -> 400, on_sale -> 400 (read-only)
+$api->patch('/line-items/789/', [
+    'sale_price' => ['amount' => '0.00', 'currency' => 'USD'],
+]);
+```
+
+An on-sale line keeps billing its `sale_price` even after `ordered_unit_price` is changed. Verified 2026-10-16 (sandbox, w_a_sale_price.txt).
 
 ### Delete Line Item
 
@@ -205,76 +215,63 @@ if ($response->status() === 204) {
 }
 ```
 
+DELETE returns 204 on every status, Complete/Cancelled/Rejected included, and the order total changes. Gate it on our side. Verified 2026-10-16 (sandbox, r3_c_line_delete.txt).
+
 ---
 
 ## Step 4: Transition Orders
 
-### Accept Order (Draft → Confirmed)
+### Accept Order (Submitted -> Accepted)
 
 ```php
-public function accept_order(string $orderId)
+public function accept_order(string $orderNumber)
 {
     $api = new LeafLinkApi();
-    $response = $api->transition_order($orderId, 'accept');
+    $response = $api->transition_order($orderNumber, 'accept');
 
     if ($response->successful()) {
         $order = $response->json();
 
         LogService::store(
             'LeafLink Order Accepted',
-            "Order #{$order['number']}\n" .
-            "Customer: {$order['customer']['name']}\n" .
+            "Order {$order['short_id']}\n" .
+            "Customer: {$order['customer']['display_name']}\n" .
             "Status: {$order['status']}\n" .
-            "Total: \${$order['total']}"
+            "Total: \${$order['total']['amount']}"
         );
 
         return redirect()->back()->with('message', 'Order accepted');
     }
 
-    $error = $response->json('detail') ?? 'Failed to accept order';
-    return redirect()->back()->with('error', $error);
+    return redirect()->back()->with('error', 'Failed to accept order');
 }
 ```
 
-### Confirm Order (Accepted → Confirmed)
+### Fulfill Order (Accepted -> Fulfilled)
 
 ```php
-$response = $api->transition_order('12345', 'confirm');
-
-if ($response->successful()) {
-    // Order is now confirmed and ready for fulfillment
-    $order = $response->json();
-
-    // Trigger fulfillment process
-    dispatch(new ProcessOrderFulfillment($order['id']));
-}
+$response = $api->transition_order($orderNumber, 'fulfill');
+// LeafLink now deducts the line quantities from the listing's quantity
+// and releases the reserve (verified 2026-10-16 (sandbox, w_b_inventory.txt)).
 ```
 
-### Ship Order (Confirmed → Shipped)
+### Ship Order (Fulfilled -> Shipped)
 
 ```php
 public function ship_order(Request $request)
 {
-    $orderId = $request->input('order_id');
+    $orderNumber = $request->input('order_number');
     $trackingNumber = $request->input('tracking_number');
 
-    // Update order notes with tracking
     $api = new LeafLinkApi();
-    $api->patch("/orders-received/{$orderId}/", [
-        'notes' => "Tracking: {$trackingNumber}"
+    $api->patch("/orders-received/{$orderNumber}/", [
+        'shipping_details' => "Tracking: {$trackingNumber}",   // "" -> 400; null clears
+        'ship_date' => now()->toDateString() . 'T17:00:00Z',
     ]);
 
-    // Transition to shipped
-    $response = $api->transition_order($orderId, 'ship');
+    $response = $api->transition_order($orderNumber, 'ship');
 
     if ($response->successful()) {
-        // Send shipping notification to customer
-        $order = $response->json();
-
-        Mail::to($order['customer']['email'])->send(
-            new OrderShipped($order, $trackingNumber)
-        );
-
         return redirect()->back()->with('message', 'Order marked as shipped');
     }
 
@@ -282,43 +279,20 @@ public function ship_order(Request $request)
 }
 ```
 
-### Deliver Order (Shipped → Delivered)
+### Complete Order (Shipped -> Complete)
 
 ```php
-$response = $api->transition_order('12345', 'deliver');
-
-if ($response->successful()) {
-    LogService::store(
-        'LeafLink Order Delivered',
-        "Order #12345 marked as delivered"
-    );
-
-    // Trigger post-delivery actions
-    // - Request review
-    // - Update inventory
-    // - Generate analytics
-}
+$response = $api->transition_order($orderNumber, 'complete');
 ```
 
-### Cancel Order
+### Reject / Cancel Order
 
 ```php
-$response = $api->transition_order('12345', 'cancel');
-
-if ($response->successful()) {
-    $order = $response->json();
-
-    LogService::store(
-        'LeafLink Order Cancelled',
-        "Order #{$order['number']} cancelled"
-    );
-
-    // Restore inventory quantities
-    foreach ($order['line_items'] as $item) {
-        // Restore stock...
-    }
-}
+// reject = seller cancels; cancel = only offered on Submitted
+$response = $api->transition_order($orderNumber, 'reject');
 ```
+
+Reject after Fulfilled gives the quantity back to the listing; reject on Shipped clears `ship_date` and `payment_due_date`. Complete cannot be rejected. Verified 2026-10-16 (sandbox, w_b_inventory.txt, r3_i_reject_shipped_paid.txt, r2_t15_transitions.txt).
 
 ---
 
@@ -327,54 +301,44 @@ if ($response->successful()) {
 ### List Order Payments
 
 ```php
-$response = $api->get('/order-payments/', [
-    'order' => 12345
-]);
+// /order-payments/?order= is IGNORED (returns every payment); use the order's own list
+$response = $api->get("/orders-received/{$orderNumber}/payments/");
 
-$payments = $response->json('results');
-
-foreach ($payments as $payment) {
-    echo "Payment: \${$payment['amount']}\n";
-    echo "Method: {$payment['payment_method']}\n";
-    echo "Date: {$payment['payment_date']}\n";
+foreach ($response->json('results') as $payment) {
+    echo "Payment: \${$payment['total']['amount']} ({$payment['payment_type']}) on {$payment['payment_date']}\n";
 }
 ```
+
+Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt).
 
 ### Record Payment
 
 ```php
 $response = $api->post('/order-payments/', [
-    'order' => 12345,
-    'amount' => 500.00,
-    'payment_method' => 'ach',
-    'payment_date' => now()->toDateString(),
-    'reference_number' => 'ACH123456',
-    'notes' => 'First installment payment'
+    'order' => $orderNumber,                        // uuid
+    'recorded_by' => $companyStaffId,
+    'total' => ['amount' => '500.00', 'currency' => 'USD'],
+    'payment_date' => now()->toDateString() . 'T17:00:00Z',
+    'payment_type' => 'ach',                        // other, cash, check, credit, trade, ach, wire, cashier
+    'reason' => 'ACH123456 first installment',
 ]);
-
-if ($response->successful()) {
-    $payment = $response->json();
-
-    LogService::store(
-        'LeafLink Payment Recorded',
-        "Order #12345: \${$payment['amount']} via {$payment['payment_method']}"
-    );
-}
 ```
+
+Payment rules (verified 2026-10-16 (sandbox, w_e_payments.txt, r2_t15_transitions.txt)):
+- NOT idempotent: the same body twice records two payments. Never auto-retry; re-read the order's payments first.
+- Overpay -> 400 `"You cannot overpay for an invoice."`.
+- A payment for the exact balance sets `paid` true and `paid_date`; `paid` itself cannot be PATCHed (400).
+- Payments are accepted on Cancelled and Rejected orders. Refuse them on our side.
 
 ### Check Payment Status
 
 ```php
-// Get order with payments
-$order = $api->get_order('12345')->json();
+$order = $api->get_order($orderNumber)->json();
 
-$totalPaid = collect($order['payments'])->sum('amount');
-$balance = $order['total'] - $totalPaid;
-
-if ($balance <= 0) {
-    echo "Order fully paid\n";
+if ($order['paid']) {
+    echo "Order fully paid on {$order['paid_date']}\n";
 } else {
-    echo "Balance remaining: \${$balance}\n";
+    echo "Balance remaining: \${$order['payment_balance']}\n";
 }
 ```
 
@@ -386,31 +350,19 @@ if ($balance <= 0) {
 
 ```php
 $response = $api->post('/order-sales-reps/', [
-    'order' => 12345,
-    'sales_rep' => 789,              // Company staff ID
-    'commission_percent' => 5.0
+    'order' => $orderNumber,
+    'rep' => 789,              // company-staff id
 ]);
-
-if ($response->successful()) {
-    LogService::store(
-        'LeafLink Sales Rep Assigned',
-        "Order #12345: Assigned sales rep #789 (5% commission)"
-    );
-}
 ```
 
-### List Sales Reps for Order
+`sales_reps` sent inside the order create or PATCH came back `[]` with a 200 in the sandbox. Read back after any rep write. Verified 2026-10-16 (sandbox, r2_t11_order_create_shape.txt).
+
+### List Sales Reps
 
 ```php
-$response = $api->get('/order-sales-reps/', [
-    'order' => 12345
-]);
-
-$salesReps = $response->json('results');
-
-foreach ($salesReps as $rep) {
-    echo "{$rep['sales_rep_name']}: {$rep['commission_percent']}% commission\n";
-}
+// /order-sales-reps/ takes only limit/offset (spec); filter by order client-side,
+// or read sales_reps on the order with include_children=sales_reps
+$order = $api->get("/orders-received/{$orderNumber}/", ['include_children' => 'sales_reps'])->json();
 ```
 
 ---
@@ -421,27 +373,16 @@ foreach ($salesReps as $rep) {
 
 ```php
 $response = $api->get('/order-event-logs/', [
-    'order' => 12345,
-    'limit' => 100
+    'order' => $orderNumber,   // honoured; modified__gte is IGNORED
+    'limit' => 100,
 ]);
 
-$events = $response->json('results');
-
-foreach ($events as $event) {
-    echo "[{$event['date']}] {$event['event_type']}: {$event['description']}\n";
+foreach ($response->json('results') as $event) {
+    echo "[{$event['created_on']}] {$event['event_type']} by {$event['author_name']} ({$event['source']})\n";
 }
 ```
 
-**Event Types:**
-- Order created
-- Order accepted
-- Order confirmed
-- Order shipped
-- Order delivered
-- Order cancelled
-- Payment received
-- Line item added/modified
-- Status changed
+**Event types** (spec): `accepted`, `backordered`, `cancelled`, `completed`, `created`, `edited`, `fulfilled`, `rejected`, `combined`, `rep_edited`, `shipped`, `shipping_edited`, `submitted`, `unaccepted`. `source` is `app`, `api` or `other`.
 
 ---
 
@@ -461,7 +402,7 @@ class LeafLinkOrderController extends Controller
     {
         $api = new LeafLinkApi();
 
-        $status = $request->input('status', 'confirmed');
+        $status = $request->input('status', 'Accepted');
         $page = $request->input('page', 1);
 
         $orders = $api->get_orders(
@@ -469,8 +410,8 @@ class LeafLinkOrderController extends Controller
             status: $status,
             path: '/leaflink/orders',
             extraParams: [
-                'created_date__gte' => $request->input('date_from', now()->subDays(30)->toDateString()),
-                'created_date__lte' => $request->input('date_to', now()->toDateString())
+                'created_on__gte' => $request->input('date_from', now()->subDays(30)->toDateString()) . 'T00:00:00Z',
+                'created_on__lte' => $request->input('date_to', now()->toDateString()) . 'T23:59:59Z',
             ]
         );
 
@@ -479,47 +420,43 @@ class LeafLinkOrderController extends Controller
             'filters' => [
                 'status' => $status,
                 'date_from' => $request->input('date_from'),
-                'date_to' => $request->input('date_to')
-            ]
+                'date_to' => $request->input('date_to'),
+            ],
         ]);
     }
 
-    public function show(string $id)
+    public function show(string $number)
     {
         $api = new LeafLinkApi();
 
-        $order = $api->get_order($id)->json();
-        $lineItems = $api->get_order_line_items($id);
-
         return Inertia::render('Leaflink/OrderDetails', [
-            'order' => $order,
-            'lineItems' => $lineItems
+            'order' => $api->get_order($number)->json(),
+            'lineItems' => $api->get_order_line_items($number),
         ]);
     }
 
     public function transition(Request $request)
     {
         $values = $request->validate([
-            'order_id' => 'required|string',
-            'action' => 'required|in:accept,confirm,ship,deliver,cancel'
+            'order_number' => 'required|string',
+            'action' => 'required|in:submit,accept,fulfill,ship,complete,reject,cancel',
         ]);
 
         $api = new LeafLinkApi();
-        $response = $api->transition_order($values['order_id'], $values['action']);
+        $response = $api->transition_order($values['order_number'], $values['action']);
 
         if ($response->successful()) {
             $order = $response->json();
 
             LogService::store(
                 'LeafLink Order Transitioned',
-                "Order #{$order['number']}: {$values['action']}"
+                "Order {$order['short_id']}: {$values['action']}"
             );
 
             return redirect()->back()->with('message', 'Order transitioned successfully');
         }
 
-        $error = $response->json('detail') ?? 'Failed to transition order';
-        return redirect()->back()->with('error', $error);
+        return redirect()->back()->with('error', 'Failed to transition order');
     }
 }
 ```
@@ -531,7 +468,7 @@ class LeafLinkOrderController extends Controller
 ### 1. Always Check Response Status
 
 ```php
-$response = $api->get_order('12345');
+$response = $api->get_order($orderNumber);
 
 if (!$response->successful()) {
     LogService::store(
@@ -540,60 +477,37 @@ if (!$response->successful()) {
     );
     return redirect()->back()->with('error', 'Failed to fetch order');
 }
-
-$order = $response->json();
 ```
 
-### 2. Log All Transitions
+### 2. Send Money Fields Together
+
+- Tax = rate x (lines + shipping), before discount; discount hits lines only.
+- `tax_type` `%` only, rate 0-1 (0.24). `discount_type` `%` = 0-1 fraction.
+- Sending `discount_type` alone re-reads the stored `discount` in the new type (10 `$` becomes 1000%). Always send `discount` + `discount_type` together.
+
+Verified 2026-10-16 (sandbox, w_d_discount_tax.txt, r2_t2_shipping_tax.txt).
+
+### 3. Send Dates at 17:00Z
+
+`ship_date` / `payment_due_date` as `YYYY-MM-DDT17:00:00Z`. Midnight Detroit lands on the previous day in LeafLink's Mountain time. Verified 2026-10-16 (sandbox, w_f_dates.txt).
+
+### 4. Validate Transitions from LeafLink
+
+Use the order's own `available_transitions` instead of a hard-coded map:
 
 ```php
-// Log before transition
-LogService::store(
-    'LeafLink Order Transition Attempted',
-    "Order #{$orderId}: Attempting {$action}"
-);
+$order = $api->get_order($orderNumber)->json();
+$target = ['accept' => 'accepted', 'fulfill' => 'fulfilled', 'ship' => 'shipped',
+           'complete' => 'complete', 'reject' => 'rejected', 'cancel' => 'cancelled'][$action] ?? null;
 
-$response = $api->transition_order($orderId, $action);
-
-// Log result
-if ($response->successful()) {
-    LogService::store('LeafLink Order Transition Success', "Order #{$orderId}: {$action} succeeded");
-} else {
-    LogService::store('LeafLink Order Transition Failed', "Order #{$orderId}: {$action} failed");
-}
-```
-
-### 3. Handle Partial Payments
-
-```php
-$order = $api->get_order('12345')->json();
-$totalPaid = collect($order['payments'])->sum('amount');
-$balance = $order['total'] - $totalPaid;
-
-if ($balance > 0) {
-    // Send payment reminder
-    // Don't ship until fully paid
-}
-```
-
-### 4. Validate Transitions
-
-```php
-$validTransitions = [
-    'draft' => ['accept', 'cancel'],
-    'confirmed' => ['ship', 'cancel'],
-    'shipped' => ['deliver', 'cancel'],
-    'delivered' => [],
-    'cancelled' => []
-];
-
-$currentStatus = $order['status'];
-$action = $request->input('action');
-
-if (!in_array($action, $validTransitions[$currentStatus])) {
+if (!in_array($target, $order['available_transitions'] ?? [], true)) {
     return redirect()->back()->with('error', 'Invalid transition');
 }
 ```
+
+### 5. Never Auto-Retry Writes
+
+Payment POSTs and id-less line entries duplicate on retry. Read back first.
 
 ---
 
@@ -601,25 +515,23 @@ if (!in_array($action, $validTransitions[$currentStatus])) {
 
 ### Order Not Found (404)
 
-**Cause:** Order doesn't belong to your company or doesn't exist.
-
-**Solution:** Verify you're using the correct company context and order ID.
+**Cause:** Order doesn't belong to your company, or an integer id was used instead of the `number` uuid.
 
 ### Cannot Transition (400)
 
-**Cause:** Invalid transition for current status.
+**Cause:** Action not in the order's `available_transitions` (e.g. reject on Complete).
 
-**Solution:** Check order's current status and valid transitions.
+### "Order cannot be edited." (400)
+
+**Cause:** Nested order PATCH on a Cancelled or Rejected order. Use `PATCH /line-items/{id}/`.
 
 ### Payment Total Mismatch
 
-**Cause:** Payments don't add up to order total.
-
-**Solution:** Reconcile payments, add partial payment if needed.
+**Cause:** A retried payment POST recorded twice, or a payment was recorded on a Cancelled/Rejected order. Compare `/orders-received/{number}/payments/` with `payment_balance`.
 
 ---
 
 **See Also:**
-- `OPERATIONS_CATALOG.md` - Complete order operations reference
-- `ERROR_HANDLING.md` - Error troubleshooting
-- `CODE_EXAMPLES.md` - Code snippets
+- `categories/orders.md` - Endpoint and filter reference
+- `patterns/verified-behavior.md` - Sandbox-proven behaviour
+- `patterns/error-handling.md` - Error troubleshooting

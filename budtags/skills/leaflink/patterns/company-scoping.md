@@ -2,79 +2,56 @@
 
 Understanding seller vs buyer context in LeafLink API - the most important concept for successful integration.
 
+"Spec" = the official OpenAPI (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`); "docs" = its text copies in `.../leaflink_docs_gap_audit/text/`.
+
 ---
 
 ## Critical Concept
 
-**Every LeafLink API request is scoped to a company context.**
+**Every LeafLink API request is scoped by the API key.**
 
-API keys are associated with ONE company, and all operations return data for that company only.
+- **App token**: "access via API to the single company in which the App token was created" (docs, api_authorization.txt). Budtags uses App keys: one key = one company.
+- **User token**: "access to all companies via API that the user is permissioned within" (docs). With a User token, always filter by `company`, and remember several endpoints ignore `company` (see below).
 
 ---
 
 ## Two Company Types
 
+A company is a seller, a buyer, or both: `/companies/` returns `seller` and `buyer` **booleans**. There is no `company_type` field (spec CompanyResponse; Evo reads `"seller": true, "buyer": false` in sandbox logs/requests.jsonl 2026-10-16).
+
 ### 1. Seller (Brand/Manufacturer)
 
-**Primary Role**: Product provider
+**Endpoints Used** (spec paths):
+- `/orders-received/`, `/orders-received/{number}/`, `/orders-received/{number}/transition/{action}/`, `/orders-received/{number}/line-items/`, `/orders-received/{number}/payments/`
+- `/line-items/`, `/order-payments/`, `/order-event-logs/`, `/order-sales-reps/`
+- `/products/`, `/product-lines/`, `/strains/`, `/product-images/`, `/product-batches/`
+- `/customers/`, `/customer-statuses/`, `/customer-tiers/`, `/contacts/`, `/activity-entries/`
+- `/brands/`, `/licenses/`, `/companies/`, `/company-staff/`
+- `/inventory/items/` and `/inventory/facilities/` (BETA). Brand inventory itself lives on the product: `quantity`, `reserved_qty`, `available_inventory` (docs, brands_api_inventory.txt). There is no `/inventory-items/` path.
 
-**Capabilities:**
-- Manages product catalog
-- Receives orders from buyers (retailers)
-- Ships orders to buyers
-- Tracks customer relationships
-- Manages seller inventory
-
-**Endpoints Used:**
-- `/orders-received/*` - Incoming orders from buyers
-- `/products/*` - Product catalog management
-- `/customers/*` - Customer relationships
-- `/inventory-items/*` - Seller inventory
-- `/brands/*` - Brand management
-
-**Example Workflow:**
-1. Buyer browses seller's product catalog
-2. Buyer places order → appears in `/orders-received/`
-3. Seller accepts/confirms order
-4. Seller ships products to buyer
-5. Order marked as delivered
+**Order lifecycle** (spec statuses): Draft -> Submitted -> Accepted -> Fulfilled -> Shipped -> Complete, plus Backorder, Rejected, Cancelled, Combined. Transitions and their inventory effects: `verified-behavior.md`.
 
 ### 2. Buyer (Retailer/Dispensary)
 
-**Primary Role**: Product purchaser/retailer
-
-**Capabilities:**
-- Places orders from sellers
-- Receives deliveries
-- Tracks retailer inventory for POS
-- Manages own facilities
-
-**Endpoints Used:**
-- `/buyer/orders/*` - Outgoing orders to sellers
-- `/retailer-inventory/*` - Retail inventory tracking
-- `/facilities/*` - Retailer locations
-- (Limited product browsing - seller catalogs)
-
-**Example Workflow:**
-1. Buyer browses seller catalogs
-2. Buyer creates order → appears in `/buyer/orders/`
-3. Seller confirms and ships
-4. Buyer receives delivery
-5. Updates retailer inventory
+**Endpoints Used** (spec paths):
+- `/buyer/orders/` - orders placed with sellers
+- `/retailer-inventory/` - retail inventory
+- Product browsing of seller catalogs
 
 ---
 
 ## API Key Company Association
 
-Each API key is tied to ONE company:
-
 ```php
-// API key determines which company's data you see
-$headers = ['Authorization' => 'App SELLER_KEY'];  // See seller data only
-$headers = ['Authorization' => 'App BUYER_KEY'];   // See buyer data only
+// The App key decides which company's data you see
+$headers = ['Authorization' => 'App ' . $sellerKey];
 ```
 
-You CANNOT switch company context with the same API key.
+You cannot switch company with the same App key.
+
+### `company` filters that are ignored
+
+Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt): `/brands/?company=`, `/product-lines/?company=` and `/licenses/?company=` return the same rows with or without the filter. With an App key that is harmless (one company). With a User token, filter client-side.
 
 ---
 
@@ -83,32 +60,25 @@ You CANNOT switch company context with the same API key.
 | Resource | Seller Sees | Buyer Sees |
 |----------|-------------|------------|
 | **Orders** | Incoming orders (`/orders-received/`) | Outgoing orders (`/buyer/orders/`) |
-| **Products** | Own products only (can create/update) | All seller products (read-only browsing) |
-| **Customers** | Own customer relationships | N/A (not applicable to buyers) |
-| **Inventory** | Own seller inventory (`/inventory-items/`) | Own retailer inventory (`/retailer-inventory/`) |
-| **Line Items** | Line items for orders received | Line items for orders placed |
+| **Products** | Own listings (create/update; archive instead of delete) | Seller catalogs (read) |
+| **Customers** | Own customer records | N/A |
+| **Inventory** | Product `quantity` / `reserved_qty` / `available_inventory`; `/inventory/items/` (BETA) | `/retailer-inventory/` |
+| **Line Items** | Lines on orders received | Lines on orders placed |
 
 ---
 
 ## Checking Company Context
 
+`/companies/me/` is not in the spec (it works in practice per the docs audit). The spec path is `/companies/`:
+
 ```php
-// Get authenticated company
-$response = $api->get('/companies/me/');
+$company = $api->get('/companies/')->json('results.0');
+// { "id": 11992, "name": "EVO Pharms", "seller": true, "buyer": false, ... }
 
-$company = $response->json();
-// {
-//     "id": 123,
-//     "name": "Acme Cannabis Co",
-//     "company_type": "seller",  // or "buyer"
-//     ...
-// }
+if ($company['seller']) {
+    // seller endpoints
+}
 ```
-
-**Use this to:**
-- Determine which endpoints are available
-- Route to correct order endpoints
-- Display appropriate UI/features
 
 ---
 
@@ -116,67 +86,44 @@ $company = $response->json();
 
 ### Issue 1: Empty Results
 
-**Symptom**: API call returns empty array when data should exist
+**Cause**: wrong company context, or a filter that IS honoured narrowed it to nothing.
 
-**Cause**: Using wrong company context
-
-**Solution**:
 ```php
-// ❌ Wrong: Buyer trying to access seller orders
-$api->get('/orders-received/');  // Returns []
+// ❌ Buyer key on seller orders
+$api->get('/orders-received/');
 
-// ✅ Correct: Buyer using buyer orders endpoint
+// ✅ Buyer orders
 $api->get('/buyer/orders/');
 ```
 
-### Issue 2: 404 Not Found
+### Issue 2: Too MANY results
 
-**Symptom**: GET /resource/{id}/ returns 404
+**Cause**: an ignored filter returns the whole list with a 200 (sandbox, r3_a_param_sweep.txt). See `filtering.md`.
 
-**Cause**: Resource doesn't belong to authenticated company
+### Issue 3: 404 Not Found
 
-**Solution**:
-- Verify resource ID belongs to your company
-- Check company context before accessing resources
-- Only access resources you created or received
-
-### Issue 3: Mismatched Order Endpoints
-
-**Symptom**: Can't find orders in expected endpoint
-
-**Cause**: Confusion between seller/buyer order endpoints
-
-**Solution**:
-```php
-// Seller company - received orders
-$orders = $api->get('/orders-received/');
-
-// Buyer company - placed orders
-$orders = $api->get('/buyer/orders/');
-```
+**Cause**: the id doesn't exist, isn't your company's, or (line items) was deleted.
 
 ---
 
 ## Best Practices
 
 ✅ **Do:**
-- Always check company type at integration start
-- Use correct endpoint for company context
-- Filter by company-scoped relationships
-- Log company context in debug messages
+- Use App keys (one company each)
+- Read `seller` / `buyer` from `/companies/`
+- Log the company id in debug messages
 
 ❌ **Don't:**
-- Assume data visibility across companies
-- Try to access other companies' data
-- Mix seller/buyer endpoints
-- Forget company context when troubleshooting
+- Look for `company_type` (it doesn't exist)
+- Call `/inventory-items/` (it doesn't exist)
+- Trust `company=` on brands, product-lines or licenses
 
 ---
 
 ## Key Takeaways
 
-1. **One API key = One company** - No switching contexts
-2. **Seller orders** = `/orders-received/` (incoming)
-3. **Buyer orders** = `/buyer/orders/` (outgoing)
-4. **Empty results** = Usually wrong company context
-5. **Check company type FIRST** when building integrations
+1. **One App key = one company**
+2. **Seller orders** = `/orders-received/` (keyed by `number`)
+3. **Buyer orders** = `/buyer/orders/`
+4. **Company type** = `seller` / `buyer` booleans on `/companies/`
+5. **Empty or too-full results** = check company context and whether the filter is honoured

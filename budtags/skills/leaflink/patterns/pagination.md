@@ -2,6 +2,8 @@
 
 Offset-based pagination patterns for LeafLink Marketplace V2 API.
 
+Lines marked "verified 2026-10-16 (sandbox, file)" cite raw files in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`. Full evidence list: `verified-behavior.md`.
+
 ---
 
 ## Pagination Method
@@ -12,8 +14,10 @@ LeafLink uses **offset-based pagination** for all list endpoints.
 
 | Parameter | Type | Default | Max | Description |
 |-----------|------|---------|-----|-------------|
-| `limit` | integer | 50 | 100 | Number of results per page |
+| `limit` | integer | 50 | 500 | Number of results per page. `limit=1000` -> 400 |
 | `offset` | integer | 0 | - | Starting position (0-indexed) |
+
+Default 50 and max 500: verified 2026-10-16 (sandbox, r2_t9_pagination.txt) on `/products/`, `/customers/`, `/contacts/` and `/line-items/` (100 and 500 returned full pages, 1000 returned 400). The official docs give neither number.
 
 ---
 
@@ -21,10 +25,14 @@ LeafLink uses **offset-based pagination** for all list endpoints.
 
 ```php
 $response = $api->get('/orders-received/', [
-    'limit' => 100,    // Get 100 results
-    'offset' => 0      // Start at beginning
+    'limit' => 100,
+    'offset' => 0,
+    'ordering' => 'id',
+    'fields_include' => 'number,status,modified', // orders use `number`, not `id`
 ]);
 ```
+
+`/orders-received/?fields_include=id` returns 400 `"Fields `id` do not exist on this endpoint."`: verified 2026-10-16 (sandbox, r2_t9_pagination.txt, logs/requests.jsonl).
 
 ---
 
@@ -32,138 +40,73 @@ $response = $api->get('/orders-received/', [
 
 ```json
 {
-    "count": 250,                           // Total number of results
-    "next": "https://app.leaflink.com/api/v2/orders-received/?limit=100&offset=100",  // Next page URL
-    "previous": null,                       // Previous page URL (null for first page)
-    "results": [...]                        // Array of results (up to 'limit' items)
+    "count": 250,
+    "next": "https://www.leaflink.com/api/v2/orders-received/?limit=100&offset=100",
+    "previous": null,
+    "results": [...]
 }
 ```
 
 **Response Fields:**
 - `count` - Total number of matching results across all pages
-- `next` - Full URL to next page (null if no more pages)
+- `next` - Full URL to next page (null if no more pages); it keeps your filters and `limit`
 - `previous` - Full URL to previous page (null on first page)
 - `results` - Array of items for current page
 
 ---
 
-## Calculating Pages
+## Ordering: a stable walk needs it, and some endpoints ignore it
 
-```php
-// Calculate total pages
-$totalPages = ceil($response->json('count') / $limit);
+An offset walk is only safe when the order is fixed. A row that moves pages mid-walk is skipped or read twice.
 
-// Calculate current page (1-indexed for display)
-$currentPage = ($offset / $limit) + 1;
+`ordering=` verified 2026-10-16 (sandbox, r3_a_param_sweep.txt, r2_t9_pagination.txt):
 
-// Calculate next offset
-$nextOffset = $offset + $limit;
+| Endpoint | `ordering=id` / `-id` |
+|----------|----------------------|
+| `/customers/` | HONOURED |
+| `/contacts/` | HONOURED |
+| `/orders-received/` | HONOURED (`id`, `-id`, `created_on`, `-created_on`, `-modified`) |
+| `/order-payments/` | HONOURED |
+| `/order-event-logs/` | HONOURED |
+| `/product-images/` | HONOURED |
+| `/products/` | **IGNORED** (`id` and `-id` return the same order) |
+| `/line-items/` | **IGNORED** |
+| `/product-batches/` | **IGNORED** |
 
-// Check if more pages exist
-$hasMore = $response->json('next') !== null;
-```
+- Pass `ordering=id` on every offset walk where it is honoured.
+- `/products/` has no working ordering AND no working id cursor: `id__gt`, `id__gte` and `id__in` are IGNORED and return the whole list (sandbox, r3_a_param_sweep.txt). On a full products walk, dedupe by `id` and compare the distinct ids with `count`. For incremental reads use `modified__gte` / `created_on__gte` (honoured).
+- Never page with `ordering=-modified` on a list that is changing; rows move pages while you walk.
 
 ---
 
 ## Implementation in BudTags
 
-The `LeafLinkApi` service provides a helper method for Laravel pagination:
-
-```php
-// LeafLinkApi::paginate_get()
-protected function paginate_get(
-    string $url,
-    int $page,
-    string $path,
-    array $values = [],
-): LengthAwarePaginator {
-    $amt = 50;  // Results per page
-
-    if ($page < 1) {
-        $page = 1;
-    }
-
-    $offset = ($page - 1) * $amt;
-
-    $response = $this->get($url, [
-        'limit' => $amt,
-        'offset' => $offset,
-        ...$values,
-    ]);
-
-    return new LengthAwarePaginator(
-        $response->json('results'),
-        $response->json('count'),
-        50,
-        $page,
-        ['path' => $path]
-    );
-}
-```
-
-**Usage:**
-```php
-// Controller method
-public function index(Request $request) {
-    $orders = $this->api->paginate_get(
-        url: '/orders-received/',
-        page: $request->get('page', 1),
-        path: '/leaflink/orders',
-        values: [
-            'status' => 'confirmed',
-            'created_date__gte' => '2025-01-01'
-        ]
-    );
-
-    return Inertia::render('Leaflink/Orders', [
-        'orders' => $orders
-    ]);
-}
-```
+`app/Services/Api/LeafLinkApi.php`:
+- `paginate_get($url, $page, $path, $values)` - one page as a `LengthAwarePaginator`, delegating to `LeafLinkPaginator::paginate_get()`
+- `get_paginated_results($endpoint, $limit, $values)` - every page as a `Collection` (`LeafLinkPaginator::get_all_pages()`, default limit `LeafLinkPaginator::DEFAULT_BULK_LIMIT`)
 
 ---
 
 ## Iterating Through All Pages
 
-### Manual Iteration
-
 ```php
-// Fetch all results across multiple pages
-$allResults = [];
+$all = [];
 $offset = 0;
-$limit = 100;
+$limit = 500;
 
 do {
-    $response = $api->get('/orders-received/', [
+    $data = $api->get('/customers/', [
         'limit' => $limit,
-        'offset' => $offset
-    ]);
+        'offset' => $offset,
+        'ordering' => 'id',   // honoured on /customers/
+    ])->json();
 
-    $data = $response->json();
-    $allResults = array_merge($allResults, $data['results']);
+    foreach ($data['results'] as $row) {
+        $all[$row['id']] = $row; // dedupe by id
+    }
 
     $offset += $limit;
 } while ($data['next'] !== null);
-
-// $allResults now contains all orders
-```
-
-### Using 'next' URL
-
-```php
-// Alternative: Follow 'next' URLs
-$allResults = [];
-$url = '/orders-received/';
-
-do {
-    $response = $api->get($url);
-    $data = $response->json();
-
-    $allResults = array_merge($allResults, $data['results']);
-
-    // Extract path from next URL
-    $url = $data['next'] ? parse_url($data['next'], PHP_URL_PATH) . '?' . parse_url($data['next'], PHP_URL_QUERY) : null;
-} while ($url !== null);
 ```
 
 ---
@@ -171,78 +114,47 @@ do {
 ## Combining Pagination with Filters
 
 ```php
-// Paginate with filters
 $response = $api->get('/orders-received/', [
     'limit' => 100,
     'offset' => 0,
-    'status' => 'confirmed',
-    'created_date__gte' => '2025-01-01',
-    'created_date__lte' => '2025-01-31'
+    'ordering' => 'id',
+    'status' => 'Submitted',                    // case-insensitive
+    'modified__gte' => '2026-10-01T00:00:00Z',
 ]);
-
-// Response includes filtered count
-// count: 45  (total matching filtered results)
-// results: [... up to 100 items ...]
+// count = matching rows only
 ```
+
+**Check every filter.** An IGNORED filter still returns 200 with the WHOLE list, so `count` equals the unfiltered count. Honoured/ignored table: `filtering.md`.
 
 ---
 
-## Performance Considerations
+## Rate limits
 
-### Optimal Page Sizes
-
-| Use Case | Recommended Limit | Reason |
-|----------|------------------|---------|
-| **UI Display** | 50 | Good balance for user experience |
-| **Bulk Processing** | 100 | Maximum allowed, minimize API calls |
-| **Real-time Updates** | 25-50 | Faster response times |
-| **Mobile Apps** | 25 | Smaller payloads |
-
-### Caching Strategy
-
-```php
-// Cache first page for frequently accessed lists
-$cacheKey = "leaflink_orders_page1_{$orgId}";
-
-$firstPage = Cache::remember($cacheKey, 300, function () use ($api) {
-    return $api->get('/orders-received/', [
-        'limit' => 50,
-        'offset' => 0,
-        'status' => 'confirmed'
-    ])->json();
-});
-```
+- No rate-limit headers on responses: verified 2026-10-16 (sandbox, r2_t8_t9_console.txt "response headers").
+- Docs: "API access is limited to 300 requests/minute, with a burst rate of 1000 requests/minute. Rate limits are tied to the owner of the API key used." Over the limit -> 429 (docs audit `text/api_authorization.txt`). Keys generated by the same LeafLink user share one budget.
 
 ---
 
 ## Common Pitfalls
 
 ❌ **Don't:**
-- Fetch all results at once without pagination (may timeout or hit memory limits)
-- Use negative offset values
-- Exceed limit of 100 per page
-- Forget to handle the case when `results` is empty
+- Expect `ordering` or `id__gt` to stabilise a `/products/` walk (both ignored)
+- Use `limit` above 500 (400)
+- Trust a filtered `count` without checking the filter is honoured
+- Use `fields_include=id` on `/orders-received/` (400; use `number`)
 
 ✅ **Do:**
-- Use maximum limit (100) for bulk operations
-- Check `next` field to determine if more pages exist
-- Cache frequently accessed first pages
-- Handle empty `results` array gracefully
-- Show total count to users: `count` field
+- Pass `ordering=id` where it is honoured
+- Dedupe by id on every full walk
+- Check `next` to know if more pages exist
+- Handle an empty `results` array
 
 ---
 
 ## Quick Reference
 
 ```php
-// Basic pagination
-$page1 = $api->get('/orders-received/', ['limit' => 50, 'offset' => 0]);
-$page2 = $api->get('/orders-received/', ['limit' => 50, 'offset' => 50]);
-$page3 = $api->get('/orders-received/', ['limit' => 50, 'offset' => 100]);
-
-// Check for more pages
-$hasMore = $response->json('next') !== null;
-
-// Get total result count
-$total = $response->json('count');
+$page1 = $api->get('/customers/', ['limit' => 500, 'offset' => 0, 'ordering' => 'id']);
+$hasMore = $page1->json('next') !== null;
+$total = $page1->json('count');
 ```

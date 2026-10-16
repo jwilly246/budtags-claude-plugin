@@ -13,22 +13,21 @@ This skill package uses a **progressive disclosure architecture** with:
 - **scenarios/** - 4 task-based workflow templates (~100-150 lines each)
   - Step-by-step implementation guides
   - Examples: order-workflow.md, product-sync-workflow.md, inventory-workflow.md
-- **patterns/** - 6 pattern files (~40-80 lines each)
+- **patterns/** - 7 pattern files
+  - verified-behavior.md (sandbox-proven write/read behaviour, 2026-10-16, with evidence; wins over any other file)
   - authentication.md, company-scoping.md, pagination.md, filtering.md, date-formats.md, error-handling.md
-  - Extracted from original LEAFLINK_API_RULES.md
 - **schemas/** - All 9 OpenAPI specification files (315KB total)
   - Full endpoint details (methods, paths, parameters, request/response structures)
   - Valid OpenAPI 3.0 format
 - **ENTITY_TYPES.md** - TypeScript type reference for all LeafLink entities
-- **backups/** - Original comprehensive docs (preserved for reference)
+- **backups/** - Original comprehensive docs (historical only: they predate the 2026-10-16 corrections and contain wrong fields, filters and statuses; never cite them)
   - LEAFLINK_API_RULES.md.backup
   - OPERATIONS_CATALOG.md.backup
   - CODE_EXAMPLES.md.backup
   - ERROR_HANDLING.md.backup
 
 **Total Size**: ~480KB (with modular files)
-**Total Operations**: 117+ operations across 8 categories
-**Total Endpoints**: 60 paths with 117+ operations
+**Total Endpoints**: 66 paths in the official spec (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`)
 **Context Efficiency**: 60-85% reduction in context usage vs monolithic approach
 
 ---
@@ -69,6 +68,7 @@ This skill is already installed in your project at:
      │   ├── promotions.md
      │   └── reports.md
      ├── patterns/
+     │   ├── verified-behavior.md
      │   ├── authentication.md
      │   ├── company-scoping.md
      │   ├── pagination.md
@@ -105,7 +105,7 @@ Just ask Claude about LeafLink integration - it will automatically use this skil
 You: How do I filter LeafLink orders by date range?
 
 Claude: [Loads patterns/filtering.md and scenarios/order-workflow.md]
-To filter orders by date range, use the __gte and __lte operators...
+To filter orders by date range, use created_on__gte / created_on__lt (Zulu datetimes)...
 [Provides focused answer with progressive disclosure]
 ```
 
@@ -114,7 +114,7 @@ To filter orders by date range, use the __gte and __lte operators...
 You: Show me all customer endpoints
 
 Claude: [Loads categories/customers.md]
-The customers category has 22 endpoints... [Lists endpoints]
+[Lists the customer endpoints]
 ```
 
 ---
@@ -123,7 +123,7 @@ The customers category has 22 endpoints... [Lists endpoints]
 
 When this skill is active, Claude can:
 
-✅ **Find Endpoints** - Search 117+ endpoints by name, category, method, or purpose
+✅ **Find Endpoints** - Search the spec's 66 paths by name, category, method, or purpose
 ✅ **Provide Exact Details** - Read schema JSON files for request/response formats
 ✅ **Check Company Compatibility** - Warn about seller vs buyer restrictions
 ✅ **Explain Patterns** - Reference authentication, pagination, company scoping, filtering
@@ -159,15 +159,15 @@ You: What LeafLink operations are available?
 
 Claude: [Loads skill.md router only]
 
-I have complete documentation for 117+ LeafLink operations across 8 categories:
+I have documentation for the LeafLink Marketplace V2 API across 8 categories:
 
-📦 Orders (21 endpoints) - Fetch, create, update, transition orders
-🌿 Products & Catalog (24 endpoints) - Products, batches, images, strains, categories
-👥 Customers & CRM (22 endpoints) - Customers, statuses, tiers, contacts, activities
-📊 Inventory (20 endpoints) - Items, facilities, retailer inventory, batch tracking
-🏢 Companies (10 endpoints) - Profiles, staff, brands, licenses
-🎁 Promotions (5 endpoints) - Promo codes and discounts
-📈 Reporting (3 endpoints) - Report generation and downloads
+📦 Orders - Fetch, create, update, transition orders, lines, payments
+🌿 Products & Catalog - Listings, batches, images, strains, categories
+👥 Customers & CRM - Customers, statuses, tiers, contacts, activities
+📊 Inventory - Product inventory fields, /inventory/items/ + /inventory/facilities/ (BETA), retailer inventory
+🏢 Companies - Profiles, staff, brands, licenses
+🎁 Promotions - Promo codes
+📈 Reporting - Report generation and downloads
 
 What category would you like to explore?
 ```
@@ -183,11 +183,11 @@ Use the get_orders() method with date range parameters:
 ```php
 $orders = $api->get_orders(
     page: 1,
-    status: 'confirmed',
+    status: 'Submitted',
     path: '/leaflink/orders',
     extraParams: [
-        'created_date__gte' => '2025-01-01',
-        'created_date__lte' => '2025-01-31',
+        'created_on__gte' => '2026-10-01T00:00:00Z',
+        'created_on__lt' => '2026-11-01T00:00:00Z',
     ]
 );
 ```
@@ -235,13 +235,14 @@ Load only the files needed for each question:
 - Endpoint lists, use cases, filters
 
 ### 3. Pattern Files
-6 reusable pattern files:
-- Authentication - API key setup
+7 reusable pattern files:
+- Verified Behavior - sandbox-proven writes and reads (2026-10-16), with evidence
+- Authentication - API key setup, rate limits
 - Company Scoping - Seller vs buyer (CRITICAL!)
-- Pagination - Offset-based patterns
-- Filtering - 87 params for customers!
-- Date Formats - ISO 8601
-- Error Handling - Common errors
+- Pagination - limit/offset (default 50, max 500), ordering
+- Filtering - real filter names + honoured/ignored table
+- Date Formats - Mountain-time reads, T17:00:00Z writes
+- Error Handling - real error bodies, safe retries
 
 ### 4. Scenario Workflows
 4 step-by-step workflow guides:
@@ -279,7 +280,8 @@ Complete type definitions for all LeafLink entities
 │   ├── crm.md
 │   ├── promotions.md
 │   └── reports.md
-├── patterns/ (~6 files, 40-80 lines each)
+├── patterns/ (7 files)
+│   ├── verified-behavior.md (sandbox evidence, wins)
 │   ├── authentication.md
 │   ├── company-scoping.md (CRITICAL!)
 │   ├── pagination.md
@@ -320,6 +322,11 @@ Complete type definitions for all LeafLink entities
 4. **Test workflows** - Verify all scenarios still work correctly
 
 ### Version History
+
+**skill v1.1.0** - 2026-10-16 (Correctness pass)
+- ✅ Corrected every prose claim against the official OpenAPI spec and the 2026-10-15 docs gap audit
+- ✅ Added patterns/verified-behavior.md: write and read behaviour proven on the sandbox 2026-10-16, each line citing its evidence file
+- ✅ Removed invented fields, filters, statuses and endpoints (`/inventory-items/`, `company_type`, `created_date`, `confirmed`/`delivered`)
 
 **v2.0.0** - January 2025 (Progressive Disclosure Refactoring)
 - ✅ Implemented progressive disclosure architecture

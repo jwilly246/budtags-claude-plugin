@@ -1,16 +1,17 @@
 # LeafLink Customer Workflow
 
-Guide for managing customer relationships, licenses, and CRM activities.
+Guide for managing customer records, licences, statuses, contacts and CRM activity.
+
+Field and filter names come from the official spec. Write behaviour is tagged "verified 2026-10-16 (sandbox, <file>)"; raw files are in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`. `patterns/verified-behavior.md` wins on any conflict.
 
 ## Overview
 
 This workflow covers:
 - Managing customer profiles
-- Tracking customer licenses
+- Looking customers up by licence
 - Organizing customers by status and tier
 - Managing contacts
 - Logging customer activities
-- CRM integration
 
 ---
 
@@ -23,9 +24,11 @@ use App\Services\Api\LeafLinkApi;
 
 $api = new LeafLinkApi();
 
+// ordering=id gives a stable offset walk (honoured on /customers/ - r3_a_param_sweep.txt)
 $response = $api->get('/customers/', [
     'limit' => 100,
-    'offset' => 0
+    'offset' => 0,
+    'ordering' => 'id',
 ]);
 
 $customers = $response->json('results');
@@ -33,9 +36,8 @@ $totalCount = $response->json('count');
 
 foreach ($customers as $customer) {
     echo "{$customer['name']}\n";
-    echo "Email: {$customer['email']}\n";
+    echo "Licence: {$customer['license_number']}\n";
     echo "City: {$customer['city']}, {$customer['state']}\n";
-    echo "Licenses: " . count($customer['licenses']) . "\n";
     echo "---\n";
 }
 ```
@@ -43,96 +45,93 @@ foreach ($customers as $customer) {
 ### Get Customer by ID
 
 ```php
-$customerId = 123;
-
 $response = $api->get_customer_by_id($customerId);
 
 if ($response->successful()) {
     $customer = $response->json();
 
     echo "Customer: {$customer['name']}\n";
-    echo "Email: {$customer['email']}\n";
-    echo "Phone: {$customer['phone']}\n";
-    echo "Status: {$customer['customer_status']}\n";
-    echo "Tier: {$customer['customer_tier']}\n";
+    echo "Status id: {$customer['status']}\n";
+    echo "Tier id: {$customer['tier']}\n";
+    echo "Archived: " . ($customer['archived'] ? 'yes' : 'no') . "\n";
 }
 ```
 
 ### Get Multiple Customers
 
 ```php
-$customerIds = [123, 456, 789];
-$fields = ['id', 'name', 'email', 'licenses', 'city', 'state'];
-
-$response = $api->get_customers(
-    ids: $customerIds,
-    fields: $fields
-);
-
-$customers = $response->json('results');
+// id__in honoured - verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
+$response = $api->get('/customers/', [
+    'id__in' => '123,456,789',
+    'fields_include' => 'id,name,license_number,city,state',
+]);
 ```
 
 ---
 
 ## Step 2: Filter Customers
 
-### Filter by License Type
+### Find by Licence
 
 ```php
-// Find all retail dispensaries in Colorado
-$response = $api->get('/customers/', [
-    'license_types__in' => 'retail',
-    'state' => 'CO',
-    'status' => 'active',
-    'limit' => 100
-]);
-
-$retailCustomers = $response->json('results');
+// license_number is exact AND case-sensitive; one licence per call.
+// license_number__in / __iexact / __icontains are IGNORED and return the whole list.
+// verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
+foreach ($licences as $licence) {
+    $match = $api->get('/customers/', ['license_number' => $licence])->json('results');
+}
 ```
 
-### Filter by Name and Location
+### Filter by Status, Tier, State
 
 ```php
+// status, tier, state take ids (comma lists allowed per the spec)
 $response = $api->get('/customers/', [
-    'name__icontains' => 'green',     // Name contains "green"
-    'city' => 'Denver',
-    'state' => 'CO',
-    'limit' => 50
+    'status' => $statusId,
+    'tier' => $tierId,
+    'archived' => 'false',
+    'limit' => 100,
 ]);
+```
 
-$customers = $response->json('results');
+### Filter by Name
+
+```php
+// name is EXACT match only (a partial name returned 0 rows) - r3_a_param_sweep.txt
+// For a prefix use name__startswith (spec; not sandbox-tested).
+$response = $api->get('/customers/', ['name' => 'Green Valley Dispensary']);
 ```
 
 ### Filter by Date Range
 
 ```php
-// Customers created in last 30 days
+// Created in the last 30 days (created_on, not created_date)
 $response = $api->get('/customers/', [
-    'created_date__gte' => now()->subDays(30)->toDateString(),
-    'created_date__lte' => now()->toDateString(),
-    'limit' => 100
+    'created_on__gte' => now()->subDays(30)->utc()->format('Y-m-d\TH:i:s\Z'),
+    'limit' => 100,
 ]);
 
-$newCustomers = $response->json('results');
+// Changed since a checkpoint (honoured - r3_a_param_sweep.txt)
+$response = $api->get('/customers/', ['modified__gte' => '2026-10-16T15:00:00Z']);
 ```
 
-### Available Customer Filters (87 Total!)
-
-Common filters include:
+### Common Customer Filters (spec)
 
 | Filter | Example | Description |
 |--------|---------|-------------|
-| `name__icontains` | `'dispensary'` | Name contains (case-insensitive) |
-| `email__icontains` | `'@gmail.com'` | Email contains |
-| `city` | `'Denver'` | Exact city match |
-| `state` | `'CO'` | State abbreviation |
-| `zip_code` | `'80202'` | ZIP code |
-| `license_types__in` | `'retail,cultivation'` | Multiple license types |
-| `license_number__icontains` | `'C11'` | License number contains |
-| `customer_status` | `5` | Customer status ID |
-| `customer_tier` | `3` | Customer tier ID |
-| `created_date__gte` | `'2024-01-01'` | Created after date |
-| `modified__gte` | `'2025-01-01'` | Modified after date |
+| `id__in` | `'123,456'` | Several ids (verified honoured) |
+| `name` | `'Green Valley'` | Exact name (verified exact only) |
+| `name__startswith` | `'Green'` | Name prefix |
+| `license_number` | `'AU-R-000171'` | Exact, case-sensitive (verified) |
+| `status` | `5` | Customer status id(s) |
+| `tier` | `3` | Customer tier id(s) |
+| `state` | `'MI'` | State |
+| `archived` | `'false'` | Archived flag |
+| `created_on__gte` | `'2026-01-01T00:00:00Z'` | Created after |
+| `modified__gte` | `'2026-10-16T00:00:00Z'` | Modified after (verified honoured) |
+| `include_children` | `'contacts,managers'` | Nested children (verified honoured) |
+
+There is no `created_date__*`, `name__icontains`, `email__icontains`, `city`, `zip_code`, `license_types__in`, `license_number__icontains`, `customer_status` or `customer_tier` filter.
 
 ---
 
@@ -141,16 +140,17 @@ Common filters include:
 ### Create New Customer
 
 ```php
+// Required: owner, name (spec CustomerCreate)
 $response = $api->post('/customers/', [
+    'owner' => $companyId,
     'name' => 'Green Valley Dispensary',
     'email' => 'orders@greenvalley.com',
-    'phone' => '555-123-4567',
-    'address' => '123 Main St',
-    'city' => 'Denver',
-    'state' => 'CO',
-    'zip_code' => '80202',
-    'customer_status' => 1,  // Status ID (optional)
-    'customer_tier' => 2      // Tier ID (optional)
+    'phone' => '(313) 555-0101',          // customer phone accepts formatting (r2_t14_customer_create.txt)
+    'license_number' => 'AU-R-000171',
+    'corporate_address' => ['address' => '100 Corporate Ave', 'city' => 'Detroit', 'state' => 'MI', 'zipcode' => '48201'],
+    'delivery_address' => ['address' => '200 Delivery St', 'city' => 'Ann Arbor', 'state' => 'MI', 'zipcode' => '48104'],
+    'status' => $statusId,   // optional
+    'tier' => $tierId,       // optional
 ]);
 
 if ($response->successful()) {
@@ -158,29 +158,29 @@ if ($response->successful()) {
 
     LogService::store(
         'LeafLink Customer Created',
-        "Customer: {$customer['name']}\nEmail: {$customer['email']}"
+        "Customer: {$customer['name']}\nID: {$customer['id']}"
     );
 }
 ```
+
+Do not send `ein`: it is "DEPRECATED for writes" (spec, release 2.36.0) and a PATCH of it is ignored (g_customers.txt step 6).
 
 ### Update Customer Information
 
 ```php
-$customerId = 123;
-
+// Partial PATCH: only sent keys change - verified 2026-10-16 (sandbox, g_customers.txt step 1)
 $response = $api->patch("/customers/{$customerId}/", [
     'email' => 'newemail@greenvalley.com',
-    'phone' => '555-999-8888',
-    'customer_tier' => 3  // Promote to higher tier
+    'tier' => $tierId,
 ]);
-
-if ($response->successful()) {
-    LogService::store(
-        'LeafLink Customer Updated',
-        "Customer #{$customerId} information updated"
-    );
-}
 ```
+
+**Address rules** (verified 2026-10-16 (sandbox, g_customers.txt)):
+- Top-level `address` / `city` / `zipcode` overwrite BOTH `corporate_address` and `delivery_address` (step 2).
+- A nested `delivery_address` or `corporate_address` changes only that address (steps 8, 9).
+- A partial nested object replaces the whole address: `{"corporate_address": {"city": "Warren"}}` blanked address, state and zipcode (step 10). Always send the full nested object.
+
+**Archive rules** (g_customers.txt steps 3-5): `archived: true` archives, `archived: false` un-archives, other edits still work while archived. Only send `archived` when the user changed it. `DELETE /customers/{id}/` also archives (spec).
 
 ---
 
@@ -189,15 +189,11 @@ if ($response->successful()) {
 ### List Customer Statuses
 
 ```php
-$response = $api->get('/customer-statuses/', [
-    'limit' => 50
-]);
-
-$statuses = $response->json('results');
+$statuses = $api->get('/customer-statuses/', ['limit' => 50])->json('results');
 
 foreach ($statuses as $status) {
     echo "ID: {$status['id']}\n";
-    echo "Name: {$status['name']}\n";
+    echo "Label: {$status['state']}\n";        // the status name is `state`
     echo "Description: {$status['description']}\n";
     echo "---\n";
 }
@@ -206,183 +202,112 @@ foreach ($statuses as $status) {
 ### Create Custom Status
 
 ```php
+// Required: state, owner (spec CompanyCustomerStatus)
 $response = $api->post('/customer-statuses/', [
-    'name' => 'VIP',
-    'description' => 'VIP customers with priority service'
+    'state' => 'VIP',
+    'owner' => $companyId,
+    'description' => 'VIP customers with priority service',
+    'hex_color' => '#FFD700',
 ]);
-
-if ($response->successful()) {
-    $status = $response->json();
-
-    LogService::store(
-        'Customer Status Created',
-        "Status: {$status['name']} (ID: {$status['id']})"
-    );
-}
 ```
 
 ### Update Customer Status
 
 ```php
-$statusId = 5;
-
 $response = $api->patch("/customer-statuses/{$statusId}/", [
-    'name' => 'Premium VIP',
-    'description' => 'Updated VIP tier with additional benefits'
+    'state' => 'Premium VIP',
 ]);
 ```
 
 ### Assign Status to Customer
 
 ```php
-$customerId = 123;
-$statusId = 5;
-
 $response = $api->patch("/customers/{$customerId}/", [
-    'customer_status' => $statusId
+    'status' => $statusId,
 ]);
-
-if ($response->successful()) {
-    LogService::store(
-        'Customer Status Assigned',
-        "Customer #{$customerId} assigned to status #{$statusId}"
-    );
-}
 ```
 
 ---
 
-## Step 5: Manage Customer Tiers
+## Step 5: Customer Tiers (read-only)
 
-### List Customer Tiers
+The spec only has `GET /customer-tiers/` and `GET /customer-tiers/{id}/`. Tiers cannot be created or edited through the API. Tier fields: `id`, `rank`, `sort`.
 
 ```php
-$response = $api->get('/customer-tiers/', [
-    'limit' => 50
-]);
-
-$tiers = $response->json('results');
+$tiers = $api->get('/customer-tiers/', ['limit' => 50])->json('results');
 
 foreach ($tiers as $tier) {
-    echo "{$tier['name']}\n";
-    echo "Discount: {$tier['discount_percent']}%\n";
-    echo "---\n";
+    echo "{$tier['id']}: {$tier['rank']}\n";
 }
-```
 
-### Create Tier with Discount
-
-```php
-$response = $api->post('/customer-tiers/', [
-    'name' => 'Gold',
-    'description' => 'Gold tier customers',
-    'discount_percent' => 10.0
-]);
-
-if ($response->successful()) {
-    $tier = $response->json();
-
-    LogService::store(
-        'Customer Tier Created',
-        "Tier: {$tier['name']} ({$tier['discount_percent']}% discount)"
-    );
-}
-```
-
-### Update Tier Discount
-
-```php
-$tierId = 2;
-
-$response = $api->patch("/customer-tiers/{$tierId}/", [
-    'discount_percent' => 15.0  // Increase discount
-]);
-```
-
-### Segment Customers by Tier
-
-```php
-// Get all Gold tier customers
-$response = $api->get('/customers/', [
-    'customer_tier' => 2,  // Gold tier ID
-    'status' => 'active',
-    'limit' => 100
-]);
-
-$goldCustomers = $response->json('results');
-
-echo "Gold tier customers: " . count($goldCustomers) . "\n";
+// Customers in a tier
+$goldCustomers = $api->get('/customers/', ['tier' => $goldTierId, 'archived' => 'false'])->json('results');
 ```
 
 ---
 
 ## Step 6: Manage Contacts
 
-### List Customer Contacts
+Contact fields (spec): `owner`, `first_name`, `last_name`, `email`, `secondary_email`, `role`, `description`, `phone`, `phone_extension`, `secondary_phone`, `secondary_phone_extension`, `delete`. There is no `customer`, `title` or `is_primary`.
+
+### List a Customer's Contacts
 
 ```php
-$customerId = 123;
+// Contacts come nested on the customer - include_children=contacts (honoured, r3_a_param_sweep.txt)
+$customer = $api->get('/customers/', [
+    'id' => $customerId,
+    'include_children' => 'contacts',
+])->json('results.0');
 
-$response = $api->get('/contacts/', [
-    'customer' => $customerId,
-    'limit' => 50
-]);
-
-$contacts = $response->json('results');
-
-foreach ($contacts as $contact) {
-    echo "{$contact['first_name']} {$contact['last_name']}\n";
-    echo "Title: {$contact['title']}\n";
-    echo "Email: {$contact['email']}\n";
-    echo "Phone: {$contact['phone']}\n";
-    echo "Primary: " . ($contact['is_primary'] ? 'Yes' : 'No') . "\n";
-    echo "---\n";
+foreach ($customer['contacts'] ?? [] as $contact) {
+    echo "{$contact['first_name']} {$contact['last_name']} - {$contact['email']}\n";
 }
+```
+
+### List All Live Contacts
+
+```php
+// The default list INCLUDES deleted contacts - always send delete=false.
+// verified 2026-10-16 (sandbox, r2_t8_contacts.txt)
+$contacts = $api->get('/contacts/', ['delete' => 'false', 'limit' => 100])->json('results');
 ```
 
 ### Add New Contact
 
 ```php
+// Required: owner, first_name. Names max 30 chars. Phone = 10 bare digits.
+// verified 2026-10-16 (sandbox, r2_t12_contact_patch.txt)
 $response = $api->post('/contacts/', [
-    'customer' => 123,
+    'owner' => $companyId,
     'first_name' => 'John',
     'last_name' => 'Doe',
     'email' => 'john@greenvalley.com',
-    'phone' => '555-123-4567',
-    'title' => 'Purchasing Manager',
-    'is_primary' => true
+    'phone' => preg_replace('/\D/', '', '(313) 555-0100'),   // "3135550100"
+    'role' => 'Purchasing Manager',
 ]);
-
-if ($response->successful()) {
-    $contact = $response->json();
-
-    LogService::store(
-        'Contact Added',
-        "Customer #{$contact['customer']}: {$contact['first_name']} {$contact['last_name']}"
-    );
-}
 ```
+
+`(313) 555-0100`, `+13135550100` and `313.555.0100` all give 400 `"Phone number must consist of 10 digits."`; a 31-char `first_name` gives 400 (r2_t12_contact_patch.txt).
 
 ### Update Contact Information
 
 ```php
-$contactId = 456;
-
+// Partial PATCH (r2_t12_contact_patch.txt T12.1)
 $response = $api->patch("/contacts/{$contactId}/", [
     'email' => 'john.doe@newdomain.com',
-    'phone' => '555-999-8888'
+    'phone' => '3135559999',
 ]);
 ```
 
 ### Delete Contact
 
 ```php
-$contactId = 456;
-
 $response = $api->delete("/contacts/{$contactId}/");
 
+// 204, but the contact is only flagged: GET still returns it with delete: true,
+// and it stays in the default /contacts/ list (r2_t8_contacts.txt).
 if ($response->status() === 204) {
-    LogService::store('Contact Deleted', "Contact #{$contactId} removed");
+    LogService::store('Contact Deleted', "Contact #{$contactId} flagged deleted");
 }
 ```
 
@@ -390,108 +315,57 @@ if ($response->status() === 204) {
 
 ## Step 7: Track Customer Activities
 
+Activity entry fields (spec): `type`, `date`, `entry` (message), `owner`, `author`, `customer`, `contact`, `company`, `staff`, `brand`, `delete`.
+
 ### List Customer Activities
 
 ```php
-$customerId = 123;
-
 $response = $api->get('/activity-entries/', [
     'customer' => $customerId,
-    'date__gte' => now()->subDays(30)->toDateString(),  // Last 30 days
-    'limit' => 100
+    'date__gte' => now()->subDays(30)->utc()->format('Y-m-d\TH:i:s\Z'),
+    'delete' => 'false',
+    'limit' => 100,
 ]);
 
-$activities = $response->json('results');
-
-foreach ($activities as $activity) {
+foreach ($response->json('results') as $activity) {
     echo "[{$activity['date']}] {$activity['entry']}\n";
 }
 ```
 
-### Filter Activities by Date Range
+### Search Activity Text
 
 ```php
-$response = $api->get('/activity-entries/', [
-    'customer' => 123,
-    'date__gte' => '2025-01-01',
-    'date__lte' => '2025-01-31',
-    'limit' => 100
-]);
-
-$januaryActivities = $response->json('results');
-```
-
-### Search Activity Descriptions
-
-```php
-$response = $api->get('/activity-entries/', [
-    'entry__icontains' => 'order',  // Activities mentioning "order"
-    'limit' => 50
-]);
-
-$orderActivities = $response->json('results');
+// spec: `search` ("Search by entry field") or entry__startswith; there is no entry__icontains
+$orderActivities = $api->get('/activity-entries/', [
+    'search' => 'order',
+    'limit' => 50,
+])->json('results');
 ```
 
 ---
 
 ## Step 8: Customer Segmentation
 
-### High-Value Customers
-
 ```php
-// Find VIP customers in top tier
-$response = $api->get('/customers/', [
-    'customer_tier' => 3,      // Top tier
-    'customer_status' => 5,    // VIP status
-    'status' => 'active',
-    'limit' => 100
-]);
+// Top tier + VIP status
+$vipCustomers = $api->get('/customers/', [
+    'tier' => $topTierId,
+    'status' => $vipStatusId,
+    'archived' => 'false',
+    'limit' => 100,
+])->json('results');
 
-$vipCustomers = $response->json('results');
-```
+// New in the last 30 days
+$newCustomers = $api->get('/customers/', [
+    'created_on__gte' => now()->subDays(30)->utc()->format('Y-m-d\TH:i:s\Z'),
+    'limit' => 100,
+])->json('results');
 
-### New Customers (Last 30 Days)
+// By state
+$michigan = $api->get('/customers/', ['state' => 'MI', 'limit' => 100])->json('results');
 
-```php
-$response = $api->get('/customers/', [
-    'created_date__gte' => now()->subDays(30)->toDateString(),
-    'limit' => 100
-]);
-
-$newCustomers = $response->json('results');
-```
-
-### Customers by Region
-
-```php
-// Colorado customers
-$response = $api->get('/customers/', [
-    'state' => 'CO',
-    'status' => 'active',
-    'limit' => 100
-]);
-
-$coloradoCustomers = $response->json('results');
-```
-
-### License Type Segmentation
-
-```php
-// Retail dispensaries
-$response = $api->get('/customers/', [
-    'license_types__in' => 'retail',
-    'limit' => 100
-]);
-
-$retailers = $response->json('results');
-
-// Cultivation facilities
-$response = $api->get('/customers/', [
-    'license_types__in' => 'cultivation',
-    'limit' => 100
-]);
-
-$cultivators = $response->json('results');
+// By licence type (license_type takes ONE license-type id)
+$retailers = $api->get('/customers/', ['license_type' => $retailLicenseTypeId, 'limit' => 100])->json('results');
 ```
 
 ---
@@ -513,12 +387,13 @@ class LeafLinkCustomerController extends Controller
         $api = new LeafLinkApi();
 
         $filters = [
-            'name__icontains' => $request->input('search'),
+            'name__startswith' => $request->input('search'),
             'state' => $request->input('state'),
-            'customer_tier' => $request->input('tier'),
-            'customer_status' => $request->input('status'),
+            'tier' => $request->input('tier'),
+            'status' => $request->input('status'),
+            'ordering' => 'id',
             'limit' => 100,
-            'offset' => 0
+            'offset' => 0,
         ];
 
         // Remove null filters
@@ -529,7 +404,7 @@ class LeafLinkCustomerController extends Controller
         return Inertia::render('Leaflink/Customers', [
             'customers' => $response->json('results'),
             'totalCount' => $response->json('count'),
-            'filters' => $request->only(['search', 'state', 'tier', 'status'])
+            'filters' => $request->only(['search', 'state', 'tier', 'status']),
         ]);
     }
 
@@ -537,24 +412,21 @@ class LeafLinkCustomerController extends Controller
     {
         $api = new LeafLinkApi();
 
-        $customer = $api->get_customer_by_id($id)->json();
+        $customer = $api->get('/customers/', [
+            'id' => $id,
+            'include_children' => 'contacts,managers',
+        ])->json('results.0');
 
-        // Get customer contacts
-        $contacts = $api->get('/contacts/', [
-            'customer' => $id
-        ])->json('results');
-
-        // Get recent activities
         $activities = $api->get('/activity-entries/', [
             'customer' => $id,
-            'date__gte' => now()->subDays(90)->toDateString(),
-            'limit' => 50
+            'delete' => 'false',
+            'limit' => 50,
         ])->json('results');
 
         return Inertia::render('Leaflink/CustomerDetails', [
             'customer' => $customer,
-            'contacts' => $contacts,
-            'activities' => $activities
+            'contacts' => $customer['contacts'] ?? [],
+            'activities' => $activities,
         ]);
     }
 
@@ -562,15 +434,17 @@ class LeafLinkCustomerController extends Controller
     {
         $values = $request->validate([
             'name' => 'required|string',
-            'email' => 'required|email',
+            'email' => 'nullable|email',
             'phone' => 'nullable|string',
-            'city' => 'required|string',
-            'state' => 'required|string|size:2',
-            'customer_tier' => 'nullable|integer'
+            'license_number' => 'nullable|string',
+            'tier' => 'nullable|integer',
         ]);
 
         $api = new LeafLinkApi();
-        $response = $api->post('/customers/', $values);
+        $response = $api->post('/customers/', [
+            'owner' => $request->user()->active_org->leaflink_company_id,
+            ...$values,
+        ]);
 
         if ($response->successful()) {
             $customer = $response->json();
@@ -589,32 +463,37 @@ class LeafLinkCustomerController extends Controller
 }
 ```
 
+(`leaflink_company_id` is illustrative; use wherever the org stores its LeafLink company id.)
+
 ---
 
 ## Best Practices
 
-### 1. Maintain Clean Customer Data
+### 1. Never Push Normal Forms Back
+
+- Contact phones: strip to 10 digits before every push (r2_t12_contact_patch.txt).
+- Addresses: send complete nested objects, never top-level `address` when the two addresses differ (g_customers.txt).
+- `archived`: send only on a real archive/un-archive (g_customers.txt).
+- `ein`: never send (ignored; deprecated for writes).
+
+### 2. Audit Customer Data
 
 ```php
-// Regularly audit and clean customer data
 public function audit_customers()
 {
     $api = new LeafLinkApi();
 
-    $response = $api->get('/customers/', ['limit' => 500]);
-    $customers = $response->json('results');
+    // Max page size is 500 (r2_t9_pagination.txt)
+    $customers = $api->get('/customers/', ['limit' => 500, 'ordering' => 'id'])->json('results');
 
     $issues = [];
 
     foreach ($customers as $customer) {
-        // Check for missing email
         if (empty($customer['email'])) {
             $issues[] = ['customer_id' => $customer['id'], 'issue' => 'Missing email'];
         }
-
-        // Check for missing license
-        if (empty($customer['licenses'])) {
-            $issues[] = ['customer_id' => $customer['id'], 'issue' => 'No license'];
+        if (empty($customer['license_number'])) {
+            $issues[] = ['customer_id' => $customer['id'], 'issue' => 'No licence number'];
         }
     }
 
@@ -624,28 +503,20 @@ public function audit_customers()
 }
 ```
 
-### 2. Track Customer Engagement
+### 3. Track Customer Engagement
 
 ```php
-// Log all customer interactions
 LogService::store(
     'Customer Interaction',
     "Customer #{$customerId}: {$interactionType}\n{$notes}"
 );
 ```
 
-### 3. Segment for Marketing
-
-```php
-// Create targeted customer lists
-$vipList = $this->get_vip_customers();
-$newList = $this->get_new_customers();
-$inactiveList = $this->get_inactive_customers();
-```
-
 ---
 
 **See Also:**
-- `OPERATIONS_CATALOG.md` - Customer operations
-- `ORDER_WORKFLOW.md` - Order management
-- `ERROR_HANDLING.md` - Troubleshooting
+- `categories/customers.md` - Customer endpoints, fields, filters
+- `categories/crm.md` - Contacts and activity entries
+- `patterns/verified-behavior.md` - Sandbox-verified write behaviour
+- `scenarios/order-workflow.md` - Order management
+- `patterns/error-handling.md` - Troubleshooting

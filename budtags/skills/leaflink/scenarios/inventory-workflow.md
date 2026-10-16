@@ -1,87 +1,88 @@
 # LeafLink Inventory Workflow
 
-Guide for managing inventory, facilities, and stock levels with LeafLink.
+Guide for managing stock levels, facilities and batches with LeafLink. Endpoints checked against the official spec; behaviour lines verified 2026-10-16 on the sandbox (raw files in `~/budtags-audits/2026-10-15/leaflink_sandbox_tests/out/`). On write behaviour, `patterns/verified-behavior.md` wins.
 
 ## Overview
 
 This workflow covers:
-- Tracking inventory across facilities
+- Reading seller inventory (it lives on the product/listing)
 - Updating inventory quantities
+- Facilities and batch-level items (BETA)
 - Managing retailer inventory (POS integration)
 - Batch tracking
-- Inventory reconciliation
+- Inventory reconciliation against LeafLink's own order deductions
+
+**Key fact:** a brand's inventory is the product's `quantity` / `reserved_qty` / `available_inventory` [doc:brands_api_inventory.txt]. There is no `/inventory-items/` endpoint.
 
 ---
 
-## Step 1: Fetch Inventory Items
+## Step 1: Fetch Inventory
 
-### Get All Inventory
+### Get All Seller Inventory
 
 ```php
 use App\Services\Api\LeafLinkApi;
 
 $api = new LeafLinkApi();
 
-// Fetch all inventory items
-$response = $api->get('/inventory-items/', [
-    'limit' => 100,
-    'offset' => 0
+$response = $api->get('/products/', [
+    'fields_include' => 'id,sku,name,quantity,reserved_qty,available_inventory,listing_state,inventory_management,unit_of_measure,unit_denomination,unit_multiplier',
+    'archived' => 'false',
+    'limit' => 500,      // max 500
+    'offset' => 0,
 ]);
 
-$inventoryItems = $response->json('results');
-
-foreach ($inventoryItems as $item) {
-    echo "Product ID: {$item['product']}\n";
-    echo "Facility: {$item['facility']}\n";
-    echo "Quantity: {$item['quantity']} {$item['unit']}\n";
-    echo "---\n";
+foreach ($response->json('results') as $listing) {
+    echo "{$listing['name']}: {$listing['quantity']} on hand, {$listing['reserved_qty']} reserved\n";
 }
 ```
 
-### Filter by Facility
+- All three quantities count **listing units** (one unit = denomination x unit_of_measure, e.g. Gram / id 11 = 28 g); one case = `unit_multiplier` units. Verified 2026-10-16 (sandbox, w_b_inventory.txt, w_c_units.txt)
+- `/products/` ignores `ordering` and `id__gt`: dedupe by `id` across pages. Verified 2026-10-16 (sandbox, r3_a_param_sweep.txt)
+
+### Batch-Level Items (BETA)
 
 ```php
-$response = $api->get('/inventory-items/', [
-    'facility' => 456,  // Facility ID
-    'limit' => 100
+$response = $api->get('/inventory/items/', [
+    'product' => 123,          // spec filters: product, include_archived
 ]);
 
-$facilityInventory = $response->json('results');
+foreach ($response->json('results') as $item) {
+    // id, facility, product, batch, quantity, quantity_in_product_uom,
+    // reserved_qty, reserved_qty_in_product_uom, is_archived
+}
 ```
 
-### Filter by Product
-
-```php
-$response = $api->get('/inventory-items/', [
-    'product' => 123,  // Product ID
-    'limit' => 50
-]);
-
-$productInventory = $response->json('results');
-```
+"This API is in active development and is subject to change." [spec]
 
 ---
 
 ## Step 2: Update Inventory Quantities
 
-### Update Single Inventory Item
+### Update One Listing
 
 ```php
-$inventoryItemId = 789;
-
-$response = $api->patch("/inventory-items/{$inventoryItemId}/", [
-    'quantity' => 50  // New quantity
+$response = $api->patch("/products/{$productId}/", [
+    'quantity' => '50',        // listing units
 ]);
 
 if ($response->successful()) {
-    $item = $response->json();
+    $listing = $response->json();
+
+    // Thresholds can flip the state on a quantity push; the response already shows it
+    $localListing->update(['listing_state' => $listing['listing_state']]);
 
     LogService::store(
         'LeafLink Inventory Updated',
-        "Item #{$item['id']}: Quantity updated to {$item['quantity']}"
+        "Product #{$listing['id']}: quantity {$listing['quantity']}, state {$listing['listing_state']}"
     );
 }
 ```
+
+- `quantity` or `available_inventory` can be sent; LeafLink derives the other from `reserved_qty` [doc:brands_api_inventory.txt]. Verified 2026-10-16 (sandbox, r2_t4_inventory_mgmt.txt T4x)
+- A quantity-only PATCH keeps every other field (units, multiplier, price). Verified 2026-10-16 (sandbox, w_c_units.txt C3)
+- Threshold flip shows in the PATCH response and beats a `listing_state` sent in the same PATCH. Verified 2026-10-16 (sandbox, r2_t3_thresholds.txt, r3_g_threshold_response.txt)
+- Unlimited (2) and Inherited (3) listings accept the quantity too; the mode does not change. Verified 2026-10-16 (sandbox, r2_t4_inventory_mgmt.txt)
 
 ### Bulk Inventory Update
 
@@ -95,8 +96,8 @@ public function bulk_update_inventory(array $updates)
 
     foreach ($updates as $update) {
         try {
-            $response = $api->patch("/inventory-items/{$update['item_id']}/", [
-                'quantity' => $update['new_quantity']
+            $response = $api->patch("/products/{$update['product_id']}/", [
+                'quantity' => (string) $update['new_quantity'],   // listing units
             ]);
 
             if ($response->successful()) {
@@ -108,15 +109,12 @@ public function bulk_update_inventory(array $updates)
             $failed++;
             LogService::store(
                 'Inventory Update Error',
-                "Item ID: {$update['item_id']}\nError: {$e->getMessage()}"
+                "Product ID: {$update['product_id']}\nError: {$e->getMessage()}"
             );
         }
     }
 
-    LogService::store(
-        'Bulk Inventory Update',
-        "Success: {$success}\nFailed: {$failed}"
-    );
+    LogService::store('Bulk Inventory Update', "Success: {$success}\nFailed: {$failed}");
 
     return ['success' => $success, 'failed' => $failed];
 }
@@ -124,39 +122,25 @@ public function bulk_update_inventory(array $updates)
 
 ---
 
-## Step 3: Manage Facilities
+## Step 3: Facilities
 
-### List All Facilities
+### List All Facilities (BETA)
 
 ```php
-$response = $api->get('/facilities/', [
-    'company' => 123  // Your company ID
-]);
-
-$facilities = $response->json('results');
+$facilities = $api->get('/inventory/facilities/')->json('results');
 
 foreach ($facilities as $facility) {
-    echo "{$facility['name']}\n";
-    echo "Address: {$facility['address']['street']}, {$facility['address']['city']}\n";
-    echo "License: {$facility['license']}\n";
-    echo "---\n";
+    echo "{$facility['id']}: {$facility['name']} - {$facility['description']}\n";
 }
 ```
 
 ### Get Facility Details
 
 ```php
-$facilityId = 456;
-
-$response = $api->get("/facilities/{$facilityId}/");
-
-if ($response->successful()) {
-    $facility = $response->json();
-
-    echo "Facility: {$facility['name']}\n";
-    echo "Address: " . json_encode($facility['address'], JSON_PRETTY_PRINT) . "\n";
-}
+$facility = $api->get("/inventory/facilities/{$facilityId}/")->json();
 ```
+
+Facilities carry only `id`, `name`, `description` in the spec. Licences live on `/licenses/` and on the product's `license`.
 
 ---
 
@@ -170,33 +154,29 @@ public function sync_pos_inventory()
     $api = new LeafLinkApi();
     $companyId = 123;  // Your company ID
 
-    // Get inventory from your POS system (e.g., BioTrack, METRC)
     $posInventory = $this->fetch_pos_inventory();  // Your POS integration
 
     $synced = 0;
 
     foreach ($posInventory as $posItem) {
         try {
-            // Create or update retailer inventory in LeafLink
+            // All eight fields are required on POST [spec]
             $response = $api->post('/retailer-inventory/', [
                 'company' => $companyId,
-                'source' => 'BioTrack',  // or 'METRC', 'Dutchie', etc.
+                'source' => 'BioTrack',
                 'name' => $posItem['product_name'],
                 'sku' => $posItem['sku'],
                 'brand' => $posItem['brand_name'],
                 'quantity' => $posItem['quantity'],
-                'unit_of_measure' => $posItem['unit'] ?? 'grams',
-                'is_low' => $posItem['quantity'] < 10  // Low stock threshold
+                'unit_of_measure' => $posItem['unit'],
+                'is_low' => $posItem['quantity'] < 10,
             ]);
 
             if ($response->successful()) {
                 $synced++;
             }
         } catch (Exception $e) {
-            LogService::store(
-                'POS Sync Error',
-                "SKU: {$posItem['sku']}\nError: {$e->getMessage()}"
-            );
+            LogService::store('POS Sync Error', "SKU: {$posItem['sku']}\nError: {$e->getMessage()}");
         }
     }
 
@@ -210,38 +190,20 @@ public function sync_pos_inventory()
 
 ```php
 $response = $api->get('/retailer-inventory/', [
-    'company' => 123,
-    'is_low' => true,  // Only show low stock items
-    'limit' => 100
+    'company' => 123,          // the only filter in the spec
+    'limit' => 100,
 ]);
 
-$lowStockItems = $response->json('results');
-
-foreach ($lowStockItems as $item) {
-    echo "{$item['name']} - {$item['sku']}\n";
-    echo "Brand: {$item['brand']}\n";
-    echo "Quantity: {$item['quantity']} {$item['unit_of_measure']}\n";
-    echo "Source: {$item['source']}\n";
-    echo "---\n";
-}
+$lowStockItems = collect($response->json('results'))->where('is_low', true);
 ```
 
 ### Update Retailer Inventory Quantity
 
 ```php
-$retailerInventoryId = 789;
-
 $response = $api->patch("/retailer-inventory/{$retailerInventoryId}/", [
     'quantity' => 25,
-    'is_low' => false  // No longer low stock
+    'is_low' => false,
 ]);
-
-if ($response->successful()) {
-    LogService::store(
-        'Retailer Inventory Updated',
-        "Item #{$retailerInventoryId}: Quantity updated to 25"
-    );
-}
 ```
 
 ---
@@ -252,23 +214,13 @@ if ($response->successful()) {
 
 ```php
 $response = $api->get('/batches/', [
-    'product' => 123,  // Product ID
-    'limit' => 50
+    'products' => 123,          // spec filter name is `products`
+    'limit' => 50,
 ]);
 
-$batches = $response->json('results');
-
-foreach ($batches as $batch) {
-    echo "Batch: {$batch['batch_number']}\n";
-    echo "Quantity: {$batch['quantity']} {$batch['unit']}\n";
-    echo "Harvest Date: {$batch['harvest_date']}\n";
-
-    if (isset($batch['test_results'])) {
-        echo "THC: {$batch['test_results']['thc_percent']}%\n";
-        echo "CBD: {$batch['test_results']['cbd_percent']}%\n";
-    }
-
-    echo "---\n";
+foreach ($response->json('results') as $batch) {
+    echo "Batch: {$batch['production_batch_number']} ({$batch['batch_date']})\n";
+    echo "THC: {$batch['thc']} {$batch['cannabinoid_unit']}, CBD: {$batch['cbd']}\n";
 }
 ```
 
@@ -276,50 +228,41 @@ foreach ($batches as $batch) {
 
 ```php
 $response = $api->post('/batches/', [
-    'product' => 123,
-    'batch_number' => 'BATCH-2025-001',
-    'quantity' => 1000,
-    'unit' => 'grams',
-    'harvest_date' => '2025-01-01',
-    'test_date' => '2025-01-10',
-    'test_results' => [
-        'thc_percent' => 22.5,
-        'cbd_percent' => 0.8,
-        'total_cannabinoids' => 25.3,
-        'terpenes' => [
-            'myrcene' => 1.2,
-            'limonene' => 0.8
-        ]
-    ]
+    'owner' => $companyId,
+    'production_batch_number' => 'BATCH-2025-001',
+    'batch_date' => '2025-01-01',
+    'testing_source' => $testingSource,
+    'thc' => '22.5',
+    'cbd' => '0.8',
+    'total_cannabinoids' => '25.3',
+    'cannabinoid_unit' => $unit,
 ]);
 
-if ($response->successful()) {
-    $batch = $response->json();
+$batch = $response->json();
 
-    LogService::store(
-        'LeafLink Batch Created',
-        "Batch #{$batch['batch_number']} created for product #{$batch['product']}"
-    );
-}
+// Link to a listing
+$api->post('/product-batches/', ['product' => 123, 'batch' => $batch['id']]);
 ```
 
-### Update Batch Quantity
-
-```php
-$batchId = 456;
-
-$response = $api->patch("/batches/{$batchId}/", [
-    'quantity' => 750  // Updated quantity after sales
-]);
-
-if ($response->successful()) {
-    LogService::store('Batch Quantity Updated', "Batch #{$batchId}: 750 grams remaining");
-}
-```
+A batch has no quantity field [spec]; stock is counted on the listing.
 
 ---
 
 ## Step 6: Inventory Reconciliation
+
+### What LeafLink Does by Itself
+
+Verified 2026-10-16 (sandbox, w_b_inventory.txt); matches the docs' event table [doc:brands_api_inventory.txt].
+
+| Order event | `quantity` | `reserved_qty` |
+|-------------|-----------|----------------|
+| Created as Submitted | no change | + line qty |
+| Accepted | no change | no change |
+| Fulfilled | - line qty | - line qty (released) |
+| Shipped | no change | no change |
+| Rejected after Fulfilled | + line qty (given back) | no change |
+
+`reserved_qty` = sum of open Submitted/Accepted/Backorder line quantities (3,217 of 3,217 listings matched). Verified 2026-10-16 (sandbox, r2_reserve.txt)
 
 ### Compare LeafLink vs Local Inventory
 
@@ -327,116 +270,63 @@ if ($response->successful()) {
 public function reconcile_inventory()
 {
     $api = new LeafLinkApi();
-    $orgId = request()->user()->active_org->id;
 
-    // Get LeafLink inventory
-    $response = $api->get('/inventory-items/', ['limit' => 500]);
-    $leaflinkInventory = collect($response->json('results'))->keyBy('product');
-
-    // Get local inventory
-    $localInventory = \App\Models\LeafLinkProduct::where('org_id', $orgId)
-        ->get()
-        ->keyBy('leaflink_id');
+    $leaflink = collect($this->fetch_all_listings($api))->keyBy('id');   // Step 1, deduped
+    $local = $org->listings()->get()->keyBy('leaflink_product_id');
 
     $discrepancies = [];
 
-    foreach ($leaflinkInventory as $productId => $leaflinkItem) {
-        $localItem = $localInventory->get($productId);
+    foreach ($leaflink as $productId => $listing) {
+        $localItem = $local->get($productId);
 
         if (!$localItem) {
-            $discrepancies[] = [
-                'product_id' => $productId,
-                'issue' => 'Missing from local database',
-                'leaflink_qty' => $leaflinkItem['quantity']
-            ];
+            $discrepancies[] = ['product_id' => $productId, 'issue' => 'Missing from local database'];
             continue;
         }
 
-        if ($localItem->quantity != $leaflinkItem['quantity']) {
+        // Expected LeafLink quantity = our on-hand (in listing units)
+        // minus lines LeafLink already deducted at Fulfilled that have not left our stock yet.
+        $expected = $localItem->on_hand_listing_units - $localItem->fulfilled_not_shipped_units;
+
+        if ((float) $listing['quantity'] != (float) $expected) {
             $discrepancies[] = [
                 'product_id' => $productId,
                 'issue' => 'Quantity mismatch',
-                'local_qty' => $localItem->quantity,
-                'leaflink_qty' => $leaflinkItem['quantity'],
-                'difference' => $leaflinkItem['quantity'] - $localItem->quantity
+                'expected_qty' => $expected,
+                'leaflink_qty' => $listing['quantity'],
             ];
         }
     }
-
-    LogService::store(
-        'Inventory Reconciliation',
-        "Found " . count($discrepancies) . " discrepancies:\n" .
-        json_encode($discrepancies, JSON_PRETTY_PRINT)
-    );
 
     return $discrepancies;
 }
 ```
 
-### Auto-Sync Discrepancies
+Pushing gross on-hand after LeafLink already deducted a Fulfilled order re-inflates the listing until the stock really leaves. LeafLink's own recommended procedures [doc:brands_api_inventory.txt]:
+- Export orders from Fulfilled, consider inventory reserved immediately; sync with `quantity`.
+- Export orders from Submitted, consider inventory reserved immediately; sync with `available_inventory`.
+- Export orders from Submitted, don't consider inventory reserved until Fulfilled; sync with `quantity`.
 
-```php
-public function fix_discrepancies(array $discrepancies)
-{
-    $fixed = 0;
-
-    foreach ($discrepancies as $discrepancy) {
-        $productId = $discrepancy['product_id'];
-        $correctQty = $discrepancy['leaflink_qty'];
-
-        try {
-            // Update local quantity to match LeafLink
-            \App\Models\LeafLinkProduct::where('leaflink_id', $productId)
-                ->update(['quantity' => $correctQty]);
-
-            $fixed++;
-        } catch (Exception $e) {
-            LogService::store(
-                'Reconciliation Fix Error',
-                "Product ID: {$productId}\nError: {$e->getMessage()}"
-            );
-        }
-    }
-
-    LogService::store('Inventory Reconciliation Fixed', "{$fixed} discrepancies resolved");
-
-    return $fixed;
-}
-```
+A listing's `modified` does not move on these order-driven changes, so a `modified__gte` walk misses them. Verified 2026-10-16 (sandbox, w_b_inventory.txt)
 
 ---
 
 ## Step 7: Low Stock Alerts
 
-### Check for Low Stock Items
+LeafLink has its own per-listing settings: `low_inventory_alert_threshold`, `should_alert_on_low_inventory` (both seen on sandbox reads, not in the spec), and the `threshold_*` fields that flip `listing_state`. Verified 2026-10-16 (sandbox, r3_g_threshold_response.txt, r2_t3_thresholds.txt)
 
 ```php
 public function check_low_stock(int $threshold = 10)
 {
     $api = new LeafLinkApi();
 
-    $response = $api->get('/inventory-items/', [
-        'limit' => 500
-    ]);
+    $listings = $api->get('/products/', [
+        'fields_include' => 'id,name,available_inventory,listing_state',
+        'archived' => 'false',
+        'limit' => 500,
+    ])->json('results');
 
-    $inventoryItems = $response->json('results');
-
-    $lowStockItems = array_filter($inventoryItems, function ($item) use ($threshold) {
-        return $item['quantity'] < $threshold;
-    });
-
-    if (count($lowStockItems) > 0) {
-        LogService::store(
-            'Low Stock Alert',
-            count($lowStockItems) . " items below {$threshold} units:\n" .
-            json_encode($lowStockItems, JSON_PRETTY_PRINT)
-        );
-
-        // Send notification
-        // Mail::to($manager)->send(new LowStockAlert($lowStockItems));
-    }
-
-    return $lowStockItems;
+    return array_filter($listings, fn ($l) => (float) $l['available_inventory'] < $threshold);
 }
 ```
 
@@ -458,36 +348,34 @@ class LeafLinkInventoryController extends Controller
     {
         $api = new LeafLinkApi();
 
-        $response = $api->get('/inventory-items/', [
+        $response = $api->get('/products/', [
+            'fields_include' => 'id,name,quantity,reserved_qty,available_inventory,listing_state',
             'limit' => 100,
-            'offset' => 0
+            'offset' => 0,
         ]);
 
-        $inventory = $response->json('results');
-        $totalCount = $response->json('count');
-
         return Inertia::render('Leaflink/Inventory', [
-            'inventory' => $inventory,
-            'totalCount' => $totalCount
+            'inventory' => $response->json('results'),
+            'totalCount' => $response->json('count'),
         ]);
     }
 
     public function update(Request $request)
     {
         $values = $request->validate([
-            'item_id' => 'required|integer',
-            'quantity' => 'required|numeric|min:0'
+            'product_id' => 'required|integer',
+            'quantity' => 'required|numeric|min:0',
         ]);
 
         $api = new LeafLinkApi();
-        $response = $api->patch("/inventory-items/{$values['item_id']}/", [
-            'quantity' => $values['quantity']
+        $response = $api->patch("/products/{$values['product_id']}/", [
+            'quantity' => (string) $values['quantity'],
         ]);
 
         if ($response->successful()) {
             LogService::store(
                 'Inventory Quantity Updated',
-                "Item #{$values['item_id']}: {$values['quantity']}"
+                "Product #{$values['product_id']}: {$values['quantity']} (state {$response->json('listing_state')})"
             );
 
             return redirect()->back()->with('message', 'Inventory updated');
@@ -495,25 +383,6 @@ class LeafLinkInventoryController extends Controller
 
         return redirect()->back()->with('error', 'Failed to update inventory');
     }
-
-    public function reconcile()
-    {
-        $discrepancies = $this->reconcile_inventory();
-
-        return Inertia::render('Leaflink/InventoryReconciliation', [
-            'discrepancies' => $discrepancies
-        ]);
-    }
-
-    public function sync_pos()
-    {
-        $synced = $this->sync_pos_inventory();
-
-        return redirect()->back()->with('message', "Synced {$synced} items from POS");
-    }
-
-    private function reconcile_inventory() { /* ... */ }
-    private function sync_pos_inventory() { /* ... */ }
 }
 ```
 
@@ -523,48 +392,27 @@ class LeafLinkInventoryController extends Controller
 
 ### 1. Regular Inventory Audits
 
-Schedule daily reconciliation:
-
-```php
-// app/Console/Kernel.php
-
-protected function schedule(Schedule $schedule)
-{
-    $schedule->call(function () {
-        $controller = new LeafLinkInventoryController();
-        $discrepancies = $controller->reconcile_inventory();
-
-        if (count($discrepancies) > 0) {
-            // Alert management
-        }
-    })->daily();
-}
-```
+Schedule a daily reconciliation (Step 6) and alert on discrepancies.
 
 ### 2. Track Inventory Movements
 
 ```php
-// Log all quantity changes
-$api->patch("/inventory-items/{$itemId}/", ['quantity' => $newQty]);
+$response = $api->patch("/products/{$productId}/", ['quantity' => (string) $newQty]);
 
 LogService::store(
     'Inventory Adjustment',
-    "Item #{$itemId}: {$oldQty} → {$newQty} (Change: {$diff})"
+    "Product #{$productId}: {$oldQty} → {$newQty}, state {$response->json('listing_state')}"
 );
 ```
 
-### 3. Maintain Minimum Stock Levels
+### 3. Push Listing Units
 
-```php
-if ($item['quantity'] < $minimumStock) {
-    // Trigger reorder
-    dispatch(new CreatePurchaseOrder($item['product']));
-}
-```
+Convert Metrc on-hand into listing units (divide by the listing's base units per unit) before pushing. Pushing grams to a Gram/28 listing overstates stock 28x.
 
 ---
 
 **See Also:**
-- `OPERATIONS_CATALOG.md` - Inventory operations
-- `PRODUCT_SYNC_WORKFLOW.md` - Product sync
-- `ERROR_HANDLING.md` - Troubleshooting
+- `patterns/verified-behavior.md` - Proven write behaviour
+- `categories/inventory.md` - Inventory endpoints
+- `scenarios/product-sync-workflow.md` - Product sync
+- `patterns/error-handling.md` - Troubleshooting

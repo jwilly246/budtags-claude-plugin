@@ -1,6 +1,6 @@
 # Reporting - LeafLink API Category
 
-Complete reference for report generation and download endpoints - 3 total operations.
+Reference for report export endpoints - 3 operations. Checked against the official spec (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`); not exercised in the 2026-10-16 sandbox tests.
 
 ---
 
@@ -8,7 +8,7 @@ Complete reference for report generation and download endpoints - 3 total operat
 
 **OpenAPI Schema:** `schemas/openapi-promotions-reports.json`
 **Total Endpoints:** 3
-**Company Compatibility:** All company types
+**Company Compatibility:** All company types (legacy User tokens see only report types the user has permission for)
 
 ---
 
@@ -18,131 +18,83 @@ Complete reference for report generation and download endpoints - 3 total operat
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/reports/` | List available reports |
-| POST | `/reports/` | Generate new report |
-| GET | `/reports/{id}/download/` | Download generated report |
+| GET | `/reports/` | List reports generated under the company scope |
+| POST | `/reports/` | Request a new report export (201) |
+| GET | `/reports/{number}/` | Retrieve one report |
+
+There is no `/reports/{id}/download/` endpoint. The finished file is in the report's `export` field.
+
+---
+
+## ReportDownload Fields (spec)
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `number` | string | Report id used in `/reports/{number}/` |
+| `report_type` | string | **Required**; enum below |
+| `company` | integer | **Required** |
+| `query` | object | Report query (shape not documented) |
+| `status` | string | `running`, `failed`, `completed` |
+| `user` | integer | Staff user who requested it |
+| `request_time` | string | When it was requested |
+| `complete_time` | string | When the export email was sent |
+| `export` | string | The exported document |
+| `to_email` | string | Where the export was emailed |
+
+**`report_type` values:** `orders-assigned`, `orders-received`, `orders-sent`, `orders-report`, `ordered-products`, `accounts-receivable`, `customer-value`, `sales-rep-activity-feed`, `brand-performance`, `brand-owner-brand-performance`, `brand-owner-inventory-overview`.
+
+The spec lists no `format`, `start_date`, `end_date` or `filters` fields; any date range goes in `query`, whose shape is undocumented.
 
 ---
 
 ## Common Use Cases
 
-### 1. List Available Reports
+### 1. List Reports
 
 ```php
-$response = $api->get('/reports/');
+$response = $api->get('/reports/', ['limit' => 50]);
 $reports = $response->json('results');
-
-// Response includes:
-// - id, report_type, status
-// - created_date, parameters
-// - download_url (when ready)
+// each: number, report_type, status, request_time, complete_time, export, to_email
 ```
 
-### 2. Generate Report
+### 2. Request a Report
 
 ```php
 $response = $api->post('/reports/', [
-    'report_type' => 'sales',  // sales, inventory, orders
-    'start_date' => '2025-01-01',
-    'end_date' => '2025-01-31',
-    'format' => 'csv',  // csv, xlsx, pdf
-    'filters' => [
-        'customer' => $customerId,  // Optional filters
-        'product_category' => 5
-    ]
+    'company' => $companyId,
+    'report_type' => 'accounts-receivable',
+    'query' => [],   // undocumented shape
 ]);
 
-$report = $response->json();
-$reportId = $report['id'];
+$reportNumber = $response->json('number');
 ```
 
 ### 3. Check Report Status
 
 ```php
-$response = $api->get("/reports/{$reportId}/");
-$report = $response->json();
+$report = $api->get("/reports/{$reportNumber}/")->json();
 
 if ($report['status'] === 'completed') {
-    $downloadUrl = $report['download_url'];
-    // Report ready to download
-} else {
-    // Status: 'pending', 'processing', 'failed'
+    $export = $report['export'];
+} elseif ($report['status'] === 'failed') {
+    // handle failure
 }
+// otherwise 'running'
 ```
 
-### 4. Download Report
+### 4. Poll for Completion
 
 ```php
-// Once status is 'completed'
-$response = $api->get("/reports/{$reportId}/download/");
-
-// Save file
-file_put_contents("report_{$reportId}.csv", $response->body());
-
-// Or redirect user to download URL
-return redirect($report['download_url']);
-```
-
-### 5. Poll for Report Completion
-
-```php
-// Reports are generated asynchronously
+// Reports run asynchronously
 $maxAttempts = 30;
 $attempt = 0;
 
 do {
-    sleep(2);  // Wait 2 seconds between checks
-    $response = $api->get("/reports/{$reportId}/");
-    $report = $response->json();
+    sleep(2);
+    $report = $api->get("/reports/{$reportNumber}/")->json();
     $attempt++;
-} while ($report['status'] !== 'completed' && $attempt < $maxAttempts);
-
-if ($report['status'] === 'completed') {
-    // Download report
-    $file = $api->get("/reports/{$reportId}/download/")->body();
-}
+} while ($report['status'] === 'running' && $attempt < $maxAttempts);
 ```
-
----
-
-## Report Types
-
-### Sales Reports
-- Order totals and trends
-- Revenue by product/category
-- Customer purchasing patterns
-- Sales rep performance
-
-### Inventory Reports
-- Stock levels across facilities
-- Low stock alerts
-- Inventory turnover
-- Batch tracking
-
-### Order Reports
-- Order history and details
-- Fulfillment metrics
-- Delivery performance
-- Pending orders
-
----
-
-## Report Formats
-
-### CSV (Comma-Separated Values)
-- Best for: Data analysis, Excel import
-- File extension: `.csv`
-- Easy to parse programmatically
-
-### XLSX (Excel)
-- Best for: Spreadsheet viewing, formatting
-- File extension: `.xlsx`
-- Maintains formatting, formulas
-
-### PDF
-- Best for: Printing, archiving
-- File extension: `.pdf`
-- Fixed format, not editable
 
 ---
 
@@ -150,73 +102,26 @@ if ($report['status'] === 'completed') {
 
 | Status | Description | Action |
 |--------|-------------|--------|
-| `pending` | Report queued | Wait |
-| `processing` | Report generating | Poll for completion |
-| `completed` | Report ready | Download |
-| `failed` | Generation error | Check error message, retry |
+| `running` | Report generating | Poll |
+| `completed` | Report ready | Read `export` |
+| `failed` | Generation error | Retry or check `query` |
 
 ---
 
-## Available Filters
+## Available Filters (spec)
 
-### Date Filters
-- `start_date`, `end_date` - Report date range
-- `created_date__gte`, `created_date__lte` - Report creation range
+- `company_slug` - Company slug
+- `limit`, `offset` - Paging
 
-### Report Filters
-- `report_type` - Type of report
-- `status` - Current status
-- `format` - Output format
-
-### Custom Filters (per report type)
-Varies by report type:
-- Customer, product, category filters
-- Facility, location filters
-- Sales rep, order status filters
+No `report_type`, `status` or date filters exist on the list.
 
 ---
 
 ## Important Notes
 
-### Asynchronous Generation
-
-Reports are NOT generated immediately:
-1. POST request creates report job
-2. Status starts as `pending` or `processing`
-3. Poll GET endpoint until status is `completed`
-4. Download via `/download/` endpoint
-
-Typical generation time: 5-30 seconds depending on data size.
-
-### Download URLs
-
-- Download URLs are temporary
-- URLs expire after 24-48 hours
-- Save file locally if needed long-term
-- Can re-generate report if URL expires
-
-### Rate Limits
-
-- Limited concurrent report generations
-- Recommended: Generate reports during off-peak hours
-- Large reports may take longer to process
-
----
-
-## Best Practices
-
-✅ **Do:**
-- Poll with reasonable intervals (2-5 seconds)
-- Set maximum retry attempts
-- Handle failed reports gracefully
-- Save downloaded reports to local storage
-- Use appropriate format for use case
-
-❌ **Don't:**
-- Poll too frequently (< 1 second intervals)
-- Generate massive date ranges unnecessarily
-- Assume immediate completion
-- Leave reports without cleanup
+- Reports are asynchronous: POST creates the job; poll `GET /reports/{number}/` until `status` leaves `running`.
+- `complete_time` is described as the time the export email was sent; the export also goes to `to_email`.
+- Download URL lifetime, generation time and concurrency limits are not documented.
 
 ---
 
@@ -229,13 +134,12 @@ Typical generation time: 5-30 seconds depending on data size.
 ## Quick Reference
 
 ```php
-// Generate report
-$report = $api->post('/reports/', ['report_type' => 'sales', 'start_date' => '2025-01-01', 'end_date' => '2025-01-31']);
+// Request report
+$report = $api->post('/reports/', ['company' => $companyId, 'report_type' => 'orders-received']);
 
 // Check status
-$status = $api->get("/reports/{$reportId}/")->json('status');
+$status = $api->get("/reports/{$report->json('number')}/")->json('status');   // running | completed | failed
 
-// Download (when completed)
-$file = $api->get("/reports/{$reportId}/download/")->body();
-file_put_contents("report.csv", $file);
+// Result
+$export = $api->get("/reports/{$report->json('number')}/")->json('export');
 ```
