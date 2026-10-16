@@ -10,9 +10,10 @@
 #   - .git/info/exclude line: keeps the main tree's changes list clean without
 #     touching tracked files.
 #   - Copies .env and .env.testing (gitignored, so a fresh worktree has neither).
-#   - Rewrites the worktree's .env.testing DB_DATABASE to budtags_<slug>_test,
-#     creates that base database, and migrates it. Parallel workers derive
-#     <base>_1..14 automatically (auto-created + migrated on first test run).
+#   - Rewrites the worktree's .env.testing DB_DATABASE to budtags_<slug>_test
+#     and builds the whole family with `composer migrate-test-dbs`: the base is
+#     created and migrated once, then cloned into the <base>_1..14 parallel
+#     workers, so the first test run starts at once.
 #   - APFS-clones vendor and public/build (cp -Rc: instant, copy-on-write) and
 #     symlinks node_modules. Never symlink vendor (breaks the PHP autoloader).
 set -euo pipefail
@@ -54,12 +55,6 @@ grep -qxF "/$dir_name/" "$main_root/.git/info/exclude" 2>/dev/null \
 cp "$main_root/.env" "$worktree/.env"
 sed -E "s/^DB_DATABASE=.*/DB_DATABASE=${test_db}/" "$main_root/.env.testing" > "$worktree/.env.testing"
 
-db_host="$(sed -n 's/^DB_HOST=//p' "$main_root/.env.testing")"
-db_user="$(sed -n 's/^DB_USERNAME=//p' "$main_root/.env.testing")"
-db_pass="$(sed -n 's/^DB_PASSWORD=//p' "$main_root/.env.testing")"
-mysql -h "${db_host:-127.0.0.1}" -u "${db_user:-root}" -p"$db_pass" \
-    -e "CREATE DATABASE IF NOT EXISTS \`$test_db\`"
-
 # Its own Redis test DB pair, so a gate here never FLUSHDBs another
 # worktree's keys mid-run (see assign-redis-db.sh).
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -75,14 +70,15 @@ if [ -d "$main_root/public/build" ]; then
 fi
 ln -s "$main_root/node_modules" "$worktree/node_modules"
 
-(cd "$worktree" && env DB_DATABASE="$test_db" REDIS_DB="$redis_db" REDIS_CACHE_DB="$redis_cache_db" php -d memory_limit=2G artisan migrate --env=testing --force)
+# Creates the base itself, so no password goes on a mysql command line here.
+(cd "$worktree" && env DB_DATABASE="$test_db" REDIS_DB="$redis_db" REDIS_CACHE_DB="$redis_cache_db" composer migrate-test-dbs)
 
 cat <<SUMMARY
 
 Worktree ready.
   path:      $worktree
   branch:    $branch (from $base_ref, --no-track)
-  test DB:   $test_db  (workers ${test_db}_1..14 auto-provision on first run)
+  test DB:   $test_db  (+ workers ${test_db}_1..14, cloned from it)
   Redis:     DB $redis_db (default) / DB $redis_cache_db (cache), this worktree only
 
 Run tests from the worktree as:
