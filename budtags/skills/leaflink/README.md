@@ -20,11 +20,6 @@ This skill package uses a **progressive disclosure architecture** with:
   - Full endpoint details (methods, paths, parameters, request/response structures)
   - Valid OpenAPI 3.0 format
 - **ENTITY_TYPES.md** - TypeScript type reference for all LeafLink entities
-- **backups/** - Original comprehensive docs (historical only: they predate the 2026-10-16 corrections and contain wrong fields, filters and statuses; never cite them)
-  - LEAFLINK_API_RULES.md.backup
-  - OPERATIONS_CATALOG.md.backup
-  - CODE_EXAMPLES.md.backup
-  - ERROR_HANDLING.md.backup
 
 **Total Size**: ~480KB (with modular files)
 **Total Endpoints**: 66 paths in the official spec (`~/budtags-audits/2026-10-15/leaflink_docs_gap_audit/official_openapi.json`)
@@ -82,8 +77,6 @@ This skill is already installed in your project at:
      │   └── customer-workflow.md
      ├── schemas/
      │   └── (9 OpenAPI JSON files)
-     └── backups/
-         └── (Original comprehensive docs)
      ```
 
 3. **Done!** Claude will automatically detect and load the skill.
@@ -303,11 +296,6 @@ Complete type definitions for all LeafLink entities
 │   ├── openapi-companies.json (27KB)
 │   ├── openapi-promotions-reports.json (15KB)
 │   └── openapi-shared.json (14KB)
-└── backups/ (Original comprehensive docs)
-    ├── LEAFLINK_API_RULES.md.backup
-    ├── OPERATIONS_CATALOG.md.backup
-    ├── CODE_EXAMPLES.md.backup
-    └── ERROR_HANDLING.md.backup
 ```
 
 ---

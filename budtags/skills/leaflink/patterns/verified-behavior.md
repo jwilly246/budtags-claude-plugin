@@ -192,3 +192,17 @@ Send date-only fields (`ship_date`, `payment_due_date`) as `YYYY-MM-DDT17:00:00Z
 - **`/orders-received/` `fields_include` takes order field names**: `fields_include=id` -> 400 `"Fields `id` do not exist on this endpoint."` [log, r2_t9_pagination.txt]. Use `number`.
 - `/orders-received/` returns `line_items` even without `include_children` [r3_a_param_sweep.txt].
 - **No rate-limit headers** on responses [r2_t8_t9_console.txt "response headers"]. Docs: 300 requests/minute, burst 1000/minute, tied to the API key's owner, 429 when exceeded [doc:api_authorization.txt].
+---
+
+## Write sweep (round 4, 2026-10-16): every write Budtags sends, exercised once
+
+- **Customer `discount_percent` is a FRACTION (0.05 = 5%) and LeafLink applies it as the default discount on every NEW order for that customer.** `3` -> next order 300% off, total -1037.40; `0.05` -> order discount 0.05 `%` [r4_c_customer_patch.txt, r4_o_orders.txt]. Never send a whole percent. An explicit order `discount: 0` overrides the customer default [r4_o_orders.txt].
+- **Product `drop_date`: midnight Detroit lands a day early** (`2026-11-01T00:00:00-04:00` -> `2026-10-31T22:00:00-06:00`); send `T17:00:00Z` like order dates [r4_p_product_patch.txt, r4_pc_product_create_extras.txt].
+- **`allow_fractional_quantities: true` on a Unit/Case listing -> 400 for the WHOLE body** `["Cannot select Unit or Case with Fractional Quantities"]`; the other flags in that PATCH are NOT applied. Only weight units may be fractional [r4_p_product_patch.txt].
+- **`external_ids`: PATCH merges keys; omitting a key does NOT remove it; `{"<key>": null}` removes it.** Unregistered integration keys -> 400 `"Integration other does not exists"`. No 36-char limit is enforced [r4_f_followups.txt].
+- **`product_data_items` replaces the whole list** (send all rows or none) [r4_p_product_patch.txt].
+- Payment refusal besides overpay: `"Order balance cannot be greater than order total."` (e.g. an order with a negative total) [r4_o_orders.txt]. `payment_type` accepts credit, cash, wire, other, ach, check; `money_order` -> 400.
+- Orders: `status: "Draft"` on create -> 201 Draft (transitions `cancelled`, `submitted`); `delivery_info: {manifest_number}` + `ship_date` PATCH stored [r4_o_orders.txt].
+- Contacts: `secondary_phone` follows the same 10-bare-digit rule as `phone`; nulls clear [r4_k_contact_patch.txt]. Customers: `managers: [id]` stored; `license_number` without `license_type` was accepted here [r4_c_customer_patch.txt].
+- Strains POST `{name, strain_classification, company}`, product-lines POST `{name, brand}`, product-images POST (multipart) + DELETE all work as Budtags sends them [r4_x_strain_productline.txt, r4_i_product_images.txt].
+- **Quantity PATCH below `reserved_qty`**: accepted, listing stays Available, available goes negative, Accept still works, **Fulfil -> 400 "...has insufficient inventory. Please restock the product before fulfilling the order."** until quantity is raised [r4_q_qty_below_reserved.txt]. Budtags pushes the true number and alerts (Jason ruling 2026-10-16).
